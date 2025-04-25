@@ -5,6 +5,7 @@ import imageCompression from 'browser-image-compression';
 
 function AddUserForm() {
   const [name, setName] = useState('');
+  const [correo, setCorreo] = useState('');
   const [department, setDepartment] = useState('');
   const [imageBase64, setImageBase64] = useState('');
   const [isCompressing, setIsCompressing] = useState(false);
@@ -53,7 +54,7 @@ function AddUserForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !department) {
+    if (!name || !correo || !department) {
       alert('Por favor complete todos los campos');
       return;
     }
@@ -62,6 +63,7 @@ function AddUserForm() {
       
       await addDoc(collection(db, 'users'), {
         name,
+        correo,
         department,
         imageBase64: imageBase64 || null, // Guarda Base64 o null si no hay imagen
         createdAt: new Date()
@@ -69,6 +71,7 @@ function AddUserForm() {
 
       // Resetear formulario
       setName('');
+      setCorreo('');
       setDepartment('');
       setImageBase64('');
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -103,6 +106,13 @@ function AddUserForm() {
           placeholder="Nombre completo"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          required   
+        />
+        <input
+          type="text"
+          placeholder="Correo usuario"
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
           required
         />
         <input
