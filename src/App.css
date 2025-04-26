@@ -101,7 +101,17 @@
     padding: 0;
   }
 
+
+.user-email {
+  font-size: 0.75rem;
+  margin: 0.2rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
   .user-card {
+    overflow: hidden; /* Evita que el contenido se desborde */
     flex-direction: row; /* Cambiamos a fila en móvil */
     align-items: center;
     padding: 0.8rem;
@@ -122,12 +132,9 @@
   .user-info h3 {
     font-size: 0.95rem;
     margin-bottom: 0.3rem;
+    min-width: 0; /* Permite que el texto se ajuste */
   }
 
-  .user-email {
-    font-size: 0.75rem;
-    margin: 0.2rem 0;
-  }
 
   .department {
     font-size: 0.7rem;
