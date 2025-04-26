@@ -1,97 +1,90 @@
-import React, { useState, useRef } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import React, { useState, useRef, useEffect } from 'react';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import imageCompression from 'browser-image-compression';
 
-function AddUserForm() {
-  const [name, setName] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [department, setDepartment] = useState('');
-  const [imageBase64, setImageBase64] = useState('');
+function AddUserForm({ onUserAdded, userToEdit, onEditUser }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    correo: '',
+    department: '',
+    imageBase64: ''
+  });
   const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef();
 
-  
-  // Función de compresión y conversión a Base64
+  // Cargar datos del usuario a editar
+  useEffect(() => {
+    if (userToEdit) {
+      setFormData(userToEdit);
+      if (userToEdit.imageBase64) {
+        setImageBase64(userToEdit.imageBase64);
+      }
+    }
+  }, [userToEdit]);
+
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Verificar si es imagen
-    if (!file.type.match('image.*')) {
-      alert('Por favor seleccione un archivo de imagen');
-      return;
-    }
-
-    setIsCompressing(true);
-
-    try {
-      // Opciones de compresión
-      const options = {
-        maxSizeMB: 0.5,               // Tamaño máximo final (0.5MB)
-        maxWidthOrHeight: 800,        // Dimensión máxima
-        useWebWorker: true,           // Usar hilo separado para mejor performance
-        fileType: 'image/webp'        // Convertir a WebP para mejor compresión
-      };
-      
-      // Comprimir imagen
-      const compressedFile = await imageCompression(file, options);
-      
-      // Convertir a Base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageBase64(reader.result);
-        setIsCompressing(false);
-      };
-      reader.readAsDataURL(compressedFile);
-
-    } catch (error) {
-      console.error("Error al comprimir:", error);
-      setIsCompressing(false);
-      alert('Error al procesar la imagen');
-    }
+    // ... (mantén igual tu código actual de compresión)
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !correo || !department) {
+    if (!formData.name || !formData.correo || !formData.department) {
       alert('Por favor complete todos los campos');
       return;
     }
 
     try {
-      
-      await addDoc(collection(db, 'users'), {
-        name,
-        correo,
-        department,
-        imageBase64: imageBase64 || null, // Guarda Base64 o null si no hay imagen
-        createdAt: new Date()
-      });
+      if (userToEdit) {
+        // Modo Edición
+        await updateDoc(doc(db, 'users', userToEdit.id), {
+          ...formData,
+          imageBase64: formData.imageBase64 || null
+        });
+        onEditUser({ ...formData, id: userToEdit.id });
+        alert('Usuario actualizado exitosamente!');
+      } else {
+        // Modo Creación
+        const docRef = await addDoc(collection(db, 'users'), {
+          ...formData,
+          imageBase64: formData.imageBase64 || null,
+          createdAt: new Date()
+        });
+        onUserAdded(prev => [...prev, { id: docRef.id, ...formData }]);
+        alert('Usuario guardado exitosamente!');
+      }
 
       // Resetear formulario
-      setName('');
-      setCorreo('');
-      setDepartment('');
-      setImageBase64('');
+      setFormData({
+        name: '',
+        correo: '',
+        department: '',
+        imageBase64: ''
+      });
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      alert('Usuario guardado exitosamente!');
     } catch (error) {
       console.error("Error:", error);
-      alert('Error al guardar usuario');
+      alert(`Error al ${userToEdit ? 'actualizar' : 'guardar'} usuario`);
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
     <div className="form-container">
-      <h3>Agregar Usuario</h3>
+      <h3>{userToEdit ? 'Editar Usuario' : 'Agregar Usuario'}</h3>
       <form onSubmit={handleSubmit}>
         {isCompressing && <p>Comprimiendo imagen...</p>}
-        {imageBase64 && !isCompressing && (
+        {formData.imageBase64 && !isCompressing && (
           <div className="image-preview">
             <img 
-              src={imageBase64} 
+              src={formData.imageBase64} 
               alt="Preview" 
               style={{
                 maxWidth: '100px', 
@@ -103,23 +96,26 @@ function AddUserForm() {
         )}
         <input
           type="text"
+          name="name"
           placeholder="Nombre completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={handleChange}
           required   
         />
         <input
-          type="text"
+          type="email"
+          name="correo"
           placeholder="Correo usuario"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
+          value={formData.correo}
+          onChange={handleChange}
           required
         />
         <input
           type="text"
+          name="department"
           placeholder="Departamento"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
+          value={formData.department}
+          onChange={handleChange}
           required
         />
         <input
@@ -133,7 +129,7 @@ function AddUserForm() {
           type="submit" 
           disabled={isCompressing}
         >
-          {isCompressing ? 'Procesando...' : 'Guardar Usuario'}
+          {isCompressing ? 'Procesando...' : (userToEdit ? 'Actualizar Usuario' : 'Guardar Usuario')}
         </button>
       </form>
     </div>
