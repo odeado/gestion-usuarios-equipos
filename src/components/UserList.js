@@ -1,7 +1,6 @@
 import React from 'react';
-import { FaTrash, FaEdit } from 'react-icons/fa';
 
-function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUser en las props
+function UserList({ users, onSelectUser, onDeleteUser }) {
   const getDepartmentColor = (dept) => {
     const colors = {
       'Ventas': '#ffeb3b',
@@ -26,10 +25,7 @@ function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUse
           >
             {user.imageBase64 && (
               <div className="user-avatar">
-                <img 
-                  src={user.imageBase64} 
-                  alt={user.name}
-                />
+                <img src={user.imageBase64} alt={user.name} />
               </div>
             )}
             <div className="user-info">
@@ -57,7 +53,7 @@ function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUse
                     // Lógica de edición aquí
                   }}
                 >
-                  <FaEdit />
+                  Editar
                 </button>
                 <button
                   className="delete-button"
@@ -66,7 +62,7 @@ function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUse
                     onDeleteUser(user.id);
                   }}
                 >
-                  <FaTrash />
+                  Eliminar
                 </button>
                 <button 
                   className="details-button"
@@ -75,7 +71,7 @@ function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUse
                     onSelectUser(user.id);
                   }}
                 >
-                  Ver Detalles
+                  Detalles
                 </button>
               </div>
             </div>
