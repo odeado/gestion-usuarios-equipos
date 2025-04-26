@@ -48,6 +48,40 @@ function UserList({ users, onSelectUser }) {
                 {user.department}
               </p>
 <p className="user-email">{user.correo}</p>
+
+                // En el import de React agrega:
+import { FaTrash, FaEdit } from 'react-icons/fa'; // Necesitarás instalar react-icons
+
+// Modifica el botón existente y agrega los nuevos:
+<div className="user-actions">
+  <button
+    className="edit-button"
+    onClick={(e) => {
+      e.stopPropagation();
+      // Aquí iría la lógica para editar
+    }}
+  >
+    <FaEdit />
+  </button>
+  <button
+    className="delete-button"
+    onClick={(e) => {
+      e.stopPropagation();
+      onDeleteUser(user.id);
+    }}
+  >
+    <FaTrash />
+  </button>
+  <button 
+    className="details-button"
+    // ... (el código existente del botón Ver Detalles)
+  >
+    Ver Detalles
+  </button>
+</div>
+
+
+                
               <button 
                 className="details-button"
                 onClick={(e) => {
