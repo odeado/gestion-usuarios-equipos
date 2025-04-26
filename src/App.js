@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase'; // Asegúrate de tener tu configuración Firebase
 // Importaciones (fíjate en las mayúsculas)
