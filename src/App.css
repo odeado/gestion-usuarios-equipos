@@ -125,3 +125,51 @@
   border: 1px solid #ddd;
   border-radius: 5px;
 }
+
+/* Media queries para móvil */
+@media (max-width: 768px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0;
+  }
+
+  .user-card {
+    flex-direction: row; /* Cambiamos a fila en móvil */
+    align-items: center;
+    padding: 0.8rem;
+    gap: 1rem;
+  }
+
+  .user-avatar {
+    width: auto;
+    margin-bottom: 0;
+  }
+
+  .user-avatar img {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+  }
+
+  .user-info h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .user-email {
+    font-size: 0.75rem;
+    margin: 0.2rem 0;
+  }
+
+  .department {
+    font-size: 0.7rem;
+  }
+
+  .details-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    width: auto;
+  }
+}
