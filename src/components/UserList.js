@@ -1,5 +1,8 @@
 import React from 'react';
 
+                // En el import de React agrega:
+import { FaTrash, FaEdit } from 'react-icons/fa'; // Necesitarás instalar react-icons
+
 function UserList({ users, onSelectUser }) {
   // Función para obtener color según departamento
   const getDepartmentColor = (dept) => {
@@ -49,8 +52,7 @@ function UserList({ users, onSelectUser }) {
               </p>
 <p className="user-email">{user.correo}</p>
 
-                // En el import de React agrega:
-import { FaTrash, FaEdit } from 'react-icons/fa'; // Necesitarás instalar react-icons
+
 
 // Modifica el botón existente y agrega los nuevos:
 <div className="user-actions">
@@ -72,13 +74,6 @@ import { FaTrash, FaEdit } from 'react-icons/fa'; // Necesitarás instalar react
   >
     <FaTrash />
   </button>
-  <button 
-    className="details-button"
-    // ... (el código existente del botón Ver Detalles)
-  >
-    Ver Detalles
-  </button>
-</div>
 
 
                 
