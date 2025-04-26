@@ -16,6 +16,25 @@ function App() {
   const [equipment, setEquipment] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+  // App.js
+// Agrega esta función dentro del componente App antes del return
+const handleDeleteUser = async (userId) => {
+  if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
+    try {
+      await deleteDoc(doc(db, 'users', userId));
+      setUsers(users.filter(user => user.id !== userId));
+    } catch (error) {
+      console.error("Error eliminando usuario: ", error);
+    }
+  }
+};
+
+// Modifica el renderizado de UserList para pasar la función
+<UserList 
+  users={users} 
+  onSelectUser={setSelectedUserId}
+  onDeleteUser={handleDeleteUser} // Nueva prop
+/>
 
   // Cargar datos de Firestore
   useEffect(() => {
