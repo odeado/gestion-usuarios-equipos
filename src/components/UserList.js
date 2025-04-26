@@ -47,8 +47,7 @@ function UserList({ users, onSelectUser }) {
               >
                 {user.department}
               </p>
-                {user.correo}
-              </p>
+<p>{user.correo}</p>
               <button 
                 className="details-button"
                 onClick={(e) => {
