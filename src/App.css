@@ -93,13 +93,56 @@
   background: #2980b9;
 }
 
-/* Media queries para móvil */
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.delete-button, .edit-button {
+  border: none;
+  padding: 0.4rem;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.delete-button {
+  background: #e74c3c;
+  color: white;
+}
+
+.edit-button {
+  background: #f1c40f;
+  color: white;
+}
+
+.delete-button:hover {
+  background: #c0392b;
+}
+
+.edit-button:hover {
+  background: #f39c12;
+}
+
+/* Ajustes para móvil */
 @media (max-width: 768px) {
-  .cards-container {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 0;
+  .user-actions {
+    gap: 0.3rem;
   }
+  
+  .delete-button, .edit-button {
+    padding: 0.3rem;
+  }
+  
+  .delete-button svg, .edit-button svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
 
 
 .user-email {
