@@ -119,30 +119,57 @@
   color: white;
 }
 
-.delete-button:hover {
-  background: #c0392b;
-}
-
-.edit-button:hover {
-  background: #f39c12;
-}
 
 /* Ajustes para móvil */
-@media (max-width: 768px) {
-  .user-actions {
-    gap: 0.3rem;
-  }
-  
-  .delete-button, .edit-button {
-    padding: 0.3rem;
-  }
-  
-  .delete-button svg, .edit-button svg {
-    width: 12px;
-    height: 12px;
-  }
+
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
+.delete-button, .edit-button, .details-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: opacity 0.2s;
+}
+
+.delete-button {
+  background-color: #ff4444;
+  color: white;
+}
+
+.edit-button {
+  background-color: #ffbb33;
+  color: white;
+}
+
+.details-button {
+  background-color: #33b5e5;
+  color: white;
+}
+
+/* Hover effects */
+.delete-button:hover, .edit-button:hover, .details-button:hover {
+  opacity: 0.9;
+}
+
+/* Versión móvil */
+@media (max-width: 768px) {
+  .user-actions {
+    gap: 4px;
+  }
+  
+  .delete-button, .edit-button, .details-button {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    flex-grow: 1;
+  }
 
 
 .user-email {
@@ -183,10 +210,5 @@
     font-size: 0.7rem;
   }
 
-  .details-button {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.7rem;
-    margin-top: 0.3rem;
-    width: auto;
-  }
+
 }
