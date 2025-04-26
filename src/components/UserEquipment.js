@@ -18,6 +18,7 @@ function UserEquipment({ user, equipment }) {
         />
       )}
       <p><strong>Departamento:</strong> {user.department}</p>
+        <p><strong>Correo:</strong> {user.correo}</p>
       
       <h4>Equipos asignados:</h4>
       {userEquipment.length > 0 ? (
