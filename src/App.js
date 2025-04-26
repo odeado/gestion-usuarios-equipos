@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore'; // Añade updateDoc
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
@@ -13,20 +13,23 @@ function App() {
   const [equipment, setEquipment] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-// En el estado inicial agrega:
-const [editingUser, setEditingUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
 
-// Función para manejar la edición
-const handleEditUser = async (userData) => {
-  try {
-    await updateDoc(doc(db, 'users', userData.id), userData);
-    setUsers(users.map(user => user.id === userData.id ? userData : user));
-    setEditingUser(null);
-  } catch (error) {
-    console.error("Error editando usuario: ", error);
-  }
-};
-  
+  // Función de edición corregida
+  const handleEditUser = async (userData) => {
+    try {
+      await updateDoc(doc(db, 'users', userData.id), {
+        name: userData.name,
+        department: userData.department,
+        correo: userData.correo,
+        imageBase64: userData.imageBase64
+      });
+      setUsers(users.map(user => user.id === userData.id ? userData : user));
+      setEditingUser(null);
+    } catch (error) {
+      console.error("Error editando usuario: ", error);
+    }
+  };
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
@@ -78,7 +81,11 @@ const handleEditUser = async (userData) => {
         <h1>Sistema de Gestión de Equipos</h1>
 
         <div className="forms-row">
-          <AddUserForm />
+          <AddUserForm 
+            onUserAdded={setUsers}
+            userToEdit={editingUser}  // Pasa el usuario a editar
+            onEditUser={handleEditUser} // Pasa la función de edición
+          />
           <div className="form-container"></div>
           <AddEquipmentForm users={users} />
         </div>
@@ -87,20 +94,15 @@ const handleEditUser = async (userData) => {
           <UserList 
             users={users} 
             onSelectUser={setSelectedUserId}
-            onDeleteUser={handleDeleteUser} // Prop añadida aquí
+            onDeleteUser={handleDeleteUser}
+            onEditUser={setEditingUser} // Pasa la función para activar edición
           />
           
-          <EquipmentList 
-            equipment={equipment} 
-            users={users} 
-          />
+          <EquipmentList equipment={equipment} users={users} />
         </div>
 
         {selectedUser && (
-          <UserEquipment 
-            user={selectedUser} 
-            equipment={equipment} 
-          />
+          <UserEquipment user={selectedUser} equipment={equipment} />
         )}
       </div>
     </div>
