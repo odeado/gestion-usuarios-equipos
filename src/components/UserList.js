@@ -1,10 +1,7 @@
 import React from 'react';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 
-                // En el import de React agrega:
-import { FaTrash, FaEdit } from 'react-icons/fa'; // Necesitarás instalar react-icons
-
-function UserList({ users, onSelectUser }) {
-  // Función para obtener color según departamento
+function UserList({ users, onSelectUser, onDeleteUser }) { // Añade onDeleteUser en las props
   const getDepartmentColor = (dept) => {
     const colors = {
       'Ventas': '#ffeb3b',
@@ -45,47 +42,42 @@ function UserList({ users, onSelectUser }) {
                   padding: '3px 8px',
                   borderRadius: '4px',
                   display: 'inline-block',
-                  backgroundColor: `${getDepartmentColor(user.department)}20` // Añade transparencia
+                  backgroundColor: `${getDepartmentColor(user.department)}20`
                 }}
               >
                 {user.department}
               </p>
-<p className="user-email">{user.correo}</p>
+              <p className="user-email">{user.correo}</p>
 
-
-
-// Modifica el botón existente y agrega los nuevos:
-<div className="user-actions">
-  <button
-    className="edit-button"
-    onClick={(e) => {
-      e.stopPropagation();
-      // Aquí iría la lógica para editar
-    }}
-  >
-    <FaEdit />
-  </button>
-  <button
-    className="delete-button"
-    onClick={(e) => {
-      e.stopPropagation();
-      onDeleteUser(user.id);
-    }}
-  >
-    <FaTrash />
-  </button>
-
-
-                
-              <button 
-                className="details-button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectUser(user.id);
-                }}
-              >
-                Ver Detalles
-              </button>
+              <div className="user-actions">
+                <button
+                  className="edit-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Lógica de edición aquí
+                  }}
+                >
+                  <FaEdit />
+                </button>
+                <button
+                  className="delete-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteUser(user.id);
+                  }}
+                >
+                  <FaTrash />
+                </button>
+                <button 
+                  className="details-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectUser(user.id);
+                  }}
+                >
+                  Ver Detalles
+                </button>
+              </div>
             </div>
           </div>
         ))}
