@@ -16,6 +16,9 @@ function App() {
   const [equipment, setEquipment] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+
+
+  
   // App.js
 // Agrega esta función dentro del componente App antes del return
 const handleDeleteUser = async (userId) => {
@@ -35,6 +38,11 @@ const handleDeleteUser = async (userId) => {
   onSelectUser={setSelectedUserId}
   onDeleteUser={handleDeleteUser} // Nueva prop
 />
+
+
+
+
+    
 
   // Cargar datos de Firestore
   useEffect(() => {
