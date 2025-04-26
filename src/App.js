@@ -13,6 +13,20 @@ function App() {
   const [equipment, setEquipment] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
+// En el estado inicial agrega:
+const [editingUser, setEditingUser] = useState(null);
+
+// Función para manejar la edición
+const handleEditUser = async (userData) => {
+  try {
+    await updateDoc(doc(db, 'users', userData.id), userData);
+    setUsers(users.map(user => user.id === userData.id ? userData : user));
+    setEditingUser(null);
+  } catch (error) {
+    console.error("Error editando usuario: ", error);
+  }
+};
+  
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
