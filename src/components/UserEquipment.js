@@ -1,4 +1,5 @@
 function UserEquipment({ user, equipment }) {
+  console.log("Datos del usuario:", user); // Verifica si `correo` está en el objeto
   const userEquipment = equipment.filter(item => item.assignedTo === user.id);
 
   return (
