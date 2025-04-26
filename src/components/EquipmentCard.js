@@ -16,7 +16,7 @@ function EquipmentCard({ equipment, users }) {
       <p>Modelo: {equipment.model}</p>
       <p>
         Asignado a: {assignedUser 
-          ? `${assignedUser.name} (${assignedUser.department})` 
+          ? `${assignedUser.name}` 
           : 'No asignado'}
       </p>
       <p>
