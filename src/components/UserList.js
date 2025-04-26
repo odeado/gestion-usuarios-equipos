@@ -46,16 +46,15 @@ function UserList({ users, onSelectUser, onDeleteUser }) {
               <p className="user-email">{user.correo}</p>
 
               <div className="user-actions">
-                <button
-                  className="edit-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Lógica de edición aquí
-                  }}
-                >
-                  Editar
-                </button>
-                <button
+               <button
+  className="edit-button"
+  onClick={(e) => {
+    e.stopPropagation();
+    onEditUser(user); // Debe recibir setEditingUser desde App.js
+  }}
+>
+  Editar
+</button>
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
