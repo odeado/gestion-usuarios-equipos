@@ -11,6 +11,7 @@ import './App.css';
 function App() {
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [departments, setDepartments] = useState([]); // Nuevo estado para departamentos
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
@@ -56,9 +57,18 @@ function App() {
           id: doc.id,
           ...doc.data()
         }));
+
+
+          // Obtener departamentos (nuevo)
+          const departmentsSnapshot = await getDocs(collection(db, 'departments'));
+          const departmentsData = departmentsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
         
         setUsers(usersData);
         setEquipment(equipmentData);
+        setDepartments(departmentsData);
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
@@ -82,9 +92,11 @@ function App() {
 
         <div className="forms-row">
           <AddUserForm 
-            onUserAdded={setUsers}
+            onUserAdded={(newUser) => setUsers([...users, newUser])}
             userToEdit={editingUser}  // Pasa el usuario a editar
             onEditUser={handleEditUser} // Pasa la función de edición
+            onCancelEdit={() => setEditingUser(null)}
+            departments={departments} // Pasamos los departamentos como prop
           />
           <div className="form-container"></div>
           <AddEquipmentForm users={users} />
@@ -95,7 +107,7 @@ function App() {
             users={users} 
             onSelectUser={setSelectedUserId}
             onDeleteUser={handleDeleteUser}
-            onEditUser={setEditingUser} // Pasa la función para activar edición
+            onEditUser={(user) => setEditingUser(user)} // Pasamos el usuario a editar
           />
           
           <EquipmentList equipment={equipment} users={users} />

@@ -1,138 +1,118 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 
-function AddUserForm({ onUserAdded, userToEdit, onEditUser }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    correo: '',
-    department: '',
-    imageBase64: ''
-  });
-  const [isCompressing, setIsCompressing] = useState(false);
-  const fileInputRef = useRef();
+function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, departments }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [department, setDepartment] = useState('');
+  const [imageBase64, setImageBase64] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Cargar datos del usuario a editar
+  // Efecto para cargar datos del usuario a editar
   useEffect(() => {
     if (userToEdit) {
-      setFormData(userToEdit);
-      if (userToEdit.imageBase64) {
-        setImageBase64(userToEdit.imageBase64);
-      }
+      setName(userToEdit.name);
+      setEmail(userToEdit.correo);
+      setDepartment(userToEdit.department);
+      setImageBase64(userToEdit.imageBase64 || '');
+      setIsEditing(true);
+    } else {
+      resetForm();
+      setIsEditing(false);
     }
   }, [userToEdit]);
 
+  const resetForm = () => {
+    setName('');
+    setEmail('');
+    setDepartment('');
+    setImageBase64('');
+  };
+
   const handleImageChange = async (e) => {
-    // ... (mantén igual tu código actual de compresión)
+    // ... (mantén tu lógica actual de manejo de imágenes)
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.correo || !formData.department) {
-      alert('Por favor complete todos los campos');
-      return;
+    
+    const userData = {
+      name,
+      correo: email,
+      department,
+      imageBase64
+    };
+
+    if (isEditing && userToEdit) {
+      userData.id = userToEdit.id; // Añade el ID para edición
+      onEditUser(userData);
+    } else {
+      onUserAdded(userData);
     }
-
-    try {
-      if (userToEdit) {
-        // Modo Edición
-        await updateDoc(doc(db, 'users', userToEdit.id), {
-          ...formData,
-          imageBase64: formData.imageBase64 || null
-        });
-        onEditUser({ ...formData, id: userToEdit.id });
-        alert('Usuario actualizado exitosamente!');
-      } else {
-        // Modo Creación
-        const docRef = await addDoc(collection(db, 'users'), {
-          ...formData,
-          imageBase64: formData.imageBase64 || null,
-          createdAt: new Date()
-        });
-        onUserAdded(prev => [...prev, { id: docRef.id, ...formData }]);
-        alert('Usuario guardado exitosamente!');
-      }
-
-      // Resetear formulario
-      setFormData({
-        name: '',
-        correo: '',
-        department: '',
-        imageBase64: ''
-      });
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      
-    } catch (error) {
-      console.error("Error:", error);
-      alert(`Error al ${userToEdit ? 'actualizar' : 'guardar'} usuario`);
+    
+    if (!isEditing) {
+      resetForm();
     }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
   };
 
   return (
-    <div className="form-container">
-      <h3>{userToEdit ? 'Editar Usuario' : 'Agregar Usuario'}</h3>
-      <form onSubmit={handleSubmit}>
-        {isCompressing && <p>Comprimiendo imagen...</p>}
-        {formData.imageBase64 && !isCompressing && (
-          <div className="image-preview">
-            <img 
-              src={formData.imageBase64} 
-              alt="Preview" 
-              style={{
-                maxWidth: '100px', 
-                maxHeight: '100px',
-                borderRadius: '4px'
-              }}
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="user-form">
+      <h2>{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
+      
+      <input
+        type="text"
+        placeholder="Nombre"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      
+      <input
+        type="email"
+        placeholder="Correo"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      
+      <select
+        value={department}
+        onChange={(e) => setDepartment(e.target.value)}
+        required
+      >
+        <option value="">Selecciona un departamento</option>
+        {departments.map(dept => (
+          <option key={dept.id} value={dept.name}>
+            {dept.name}
+          </option>
+        ))}
+      </select>
+      
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+      />
+      
+      {imageBase64 && (
+        <img src={imageBase64} alt="Preview" className="image-preview" />
+      )}
+      
+      <div className="form-buttons">
+        {isEditing && (
+          <button 
+            type="button" 
+            onClick={onCancelEdit}
+            className="cancel-button"
+          >
+            Cancelar
+          </button>
         )}
-        <input
-          type="text"
-          name="name"
-          placeholder="Nombre completo"
-          value={formData.name}
-          onChange={handleChange}
-          required   
-        />
-        <input
-          type="email"
-          name="correo"
-          placeholder="Correo usuario"
-          value={formData.correo}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="department"
-          placeholder="Departamento"
-          value={formData.department}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          ref={fileInputRef}
-          disabled={isCompressing}
-        />
-        <button 
-          type="submit" 
-          disabled={isCompressing}
-        >
-          {isCompressing ? 'Procesando...' : (userToEdit ? 'Actualizar Usuario' : 'Guardar Usuario')}
+        <button type="submit" className="submit-button">
+          {isEditing ? 'Actualizar Usuario' : 'Agregar Usuario'}
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
 

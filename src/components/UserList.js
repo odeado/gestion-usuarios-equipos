@@ -1,6 +1,6 @@
 import React from 'react';
 
-function UserList({ users, onSelectUser, onDeleteUser }) {
+function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // ✅ Añadido onEditUser en las props
   const getDepartmentColor = (dept) => {
     const colors = {
       'Ventas': '#ffeb3b',
@@ -46,15 +46,16 @@ function UserList({ users, onSelectUser, onDeleteUser }) {
               <p className="user-email">{user.correo}</p>
 
               <div className="user-actions">
-               <button
-  className="edit-button"
-  onClick={(e) => {
-    e.stopPropagation();
-    onEditUser(user); // Debe recibir setEditingUser desde App.js
-  }}
->
-  Editar
-</button>
+                <button
+                  className="edit-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditUser(user); // ✅ Asegúrate de que App.js pase esta prop
+                  }}
+                >
+                  Editar
+                </button>
+                <button 
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
