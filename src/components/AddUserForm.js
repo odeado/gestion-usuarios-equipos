@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
+import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
 
-function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [] }) {
+function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,13 +12,17 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showAddDepartment, setShowAddDepartment] = useState(false);
+  const [newDepartment, setNewDepartment] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Efecto para cargar datos del usuario a editar
   useEffect(() => {
     if (userToEdit) {
       setFormData({
         name: userToEdit.name || '',
-        email: userToEdit.correo || '',
+        email: userToEdit.correo || '', // Mantenemos correo como viene de la DB
         department: userToEdit.department || '',
         imageBase64: userToEdit.imageBase64 || ''
       });
@@ -37,11 +42,50 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     });
     setImagePreview(null);
     setIsEditing(false);
+    setNewDepartment('');
+    setShowAddDepartment(false);
+    setErrors({});
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Limpiar error cuando el usuario escribe
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = 'Nombre es requerido';
+    if (!formData.email.trim()) newErrors.email = 'Email es requerido';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido';
+    if (!formData.department.trim()) newErrors.department = 'Departamento es requerido';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleAddNewDepartment = async () => {
+    if (!newDepartment.trim()) {
+      setErrors(prev => ({ ...prev, department: 'Nombre de departamento no puede estar vacío' }));
+      return;
+    }
+
+    try {
+      const { success, newDepartment: addedDept } = await onAddDepartment(newDepartment.trim());
+      
+      if (success) {
+        setFormData(prev => ({ ...prev, department: addedDept.name }));
+        setShowAddDepartment(false);
+        setNewDepartment('');
+        setErrors(prev => ({ ...prev, department: '' }));
+      }
+    } catch (error) {
+      console.error('Error adding department:', error);
+      setErrors(prev => ({ ...prev, department: 'Error al agregar departamento' }));
+    }
   };
 
   const handleImageChange = async (e) => {
@@ -65,29 +109,46 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       } catch (error) {
         console.error('Error comprimiendo imagen:', error);
         setIsCompressing(false);
+        setErrors(prev => ({ ...prev, image: 'Error al procesar la imagen' }));
       }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const userData = {
-      ...formData,
-      ...(isEditing && userToEdit && { id: userToEdit.id })
-    };
+    setIsSubmitting(true);
 
-    if (isEditing) {
-      onEditUser(userData);
-    } else {
-      onUserAdded(userData);
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      return;
     }
-    
-    if (!isEditing) {
-      resetForm();
+
+    try {
+      if (isEditing && userToEdit) {
+        await onEditUser({
+          id: userToEdit.id,
+          name: formData.name,
+          department: formData.department,
+          correo: formData.email, // Convertimos email a correo para la DB
+          imageBase64: formData.imageBase64
+        });
+      } else {
+        await onUserAdded({
+          name: formData.name,
+          department: formData.department,
+          correo: formData.email, // Convertimos email a correo para la DB
+          imageBase64: formData.imageBase64
+        });
+        resetForm();
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Renderizado del select de departamentos
   const renderDepartmentSelect = () => {
     const currentDept = formData.department;
     const deptExists = departments.some(d => {
@@ -96,102 +157,179 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     });
 
     return (
-      <select
-        name="department"
-        value={currentDept}
-        onChange={handleChange}
-        required
-      >
-        <option value="">Selecciona un departamento</option>
-        
-        {isEditing && !deptExists && currentDept && (
-          <option value={currentDept} style={{ fontStyle: 'italic', color: '#999' }}>
-            {currentDept} (actual)
-          </option>
-        )}
-        
-        {departments.map(dept => {
-          const deptName = dept.name || dept;
-          const deptId = dept.id || dept;
-          return (
-            <option key={deptId} value={deptName}>
-              {deptName}
+      <div className="department-select-container">
+        <select
+          name="department"
+          value={formData.department}
+          onChange={(e) => {
+            if (e.target.value === "__add__") {
+              setShowAddDepartment(true);
+              setNewDepartment(currentDept || '');
+            } else {
+              handleChange(e);
+            }
+          }}
+          required
+        >
+          <option value="">Selecciona un departamento</option>
+          
+          {currentDept && (
+            <option value={currentDept}>
+              {currentDept} {!deptExists && "(Actual)"}
             </option>
-          );
-        })}
-      </select>
+          )}
+          
+          {departments
+            .filter(dept => (dept.name || dept) !== currentDept)
+            .map(dept => (
+              <option key={dept.id || dept} value={dept.name || dept}>
+                {dept.name || dept}
+              </option>
+            ))
+          }
+          
+          <option value="__add__">+ Agregar nuevo departamento</option>
+        </select>
+
+        {showAddDepartment && (
+          <div className="add-department-form">
+            <input
+              type="text"
+              value={newDepartment}
+              onChange={(e) => setNewDepartment(e.target.value)}
+              placeholder="Nombre del nuevo departamento"
+              className="department-input"
+            />
+            <div className="department-form-buttons">
+              <button 
+                type="button" 
+                onClick={handleAddNewDepartment}
+                className="add-button"
+                disabled={isSubmitting}
+              >
+                Agregar
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setShowAddDepartment(false)}
+                className="cancel-button"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+        {errors.department && <div className="error-message">{errors.department}</div>}
+      </div>
     );
   };
 
   return (
     <form onSubmit={handleSubmit} className="user-form">
-      <h2>{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
+      <h2 className="form-title">{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
       
+      {errors.form && <div className="error-message form-error">{errors.form}</div>}
       {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
       
-      <input
-        name="name"
-        type="text"
-        placeholder="Nombre"
-        value={formData.name}
-        onChange={handleChange}
-        required
-      />
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="name" className="form-label">Nombre</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          placeholder="Nombre completo"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          className={`form-input ${errors.name ? 'input-error' : ''}`}
+        />
+        {errors.name && <div className="error-text">{errors.name}</div>}
+      </div>
       
-      <input
-        name="email"
-        type="email"
-        placeholder="Correo"
-        value={formData.email}
-        onChange={handleChange}
-        required
-      />
+      <div className="form-group">
+      <label htmlFor="email" className="form-label">Correo electrónico</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="correo@ejemplo.com"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          className={errors.email ? 'error' : ''}
+        />
+        {errors.email && <div className="error-text">{errors.email}</div>}
+      </div>
+      </div>
       
-      {renderDepartmentSelect()}
+      <div className="form-row">
+        <div className="form-group department-group">
+          <label className="form-label">Departamento</label>
+        {renderDepartmentSelect()}
+      </div>
       
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        disabled={isCompressing}
-      />
-      
+      <div className="form-group image-upload-group">
+          <label className="form-label">Imagen de perfil</label>
+          <div className="image-upload-container">
+            <label htmlFor="image-upload" className="image-upload-label">
+              Seleccionar imagen
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isCompressing}
+                className="image-upload-input"
+              />
+            </label>
+
+            
+            {errors.image && <span className="error-text">{errors.image}</span>}
+
+
+        </div>
+        </div>
+      </div>
+
       {imagePreview && (
-        <div className="image-preview" style={{
-          maxWidth: '150px',
-          maxHeight: '150px',
-          margin: '10px 0',
-          overflow: 'hidden',
-          borderRadius: '4px'
-        }}>
-          <img 
-            src={imagePreview} 
-            alt="Vista previa" 
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
-          />
+        <div className="image-preview-container">
+          <div className="image-preview-wrapper">
+            <img 
+              src={imagePreview} 
+              alt="Vista previa" 
+              className="image-preview"
+            />
+          </div>
         </div>
       )}
       
-      <div className="form-buttons">
+      <div className="form-actions">
         {isEditing && (
           <button 
             type="button" 
             onClick={onCancelEdit}
-            className="cancel-button"
+            className="btn btn-cancel"
+            disabled={isSubmitting}
           >
             Cancelar
           </button>
         )}
-        <button 
+          <button 
           type="submit" 
-          className="submit-button"
-          disabled={isCompressing}
+          className={`btn btn-submit ${isSubmitting ? 'btn-loading' : ''}`}
+          disabled={isCompressing || isSubmitting}
         >
-          {isEditing ? 'Actualizar Usuario' : 'Agregar Usuario'}
+          {isSubmitting ? (
+            <>
+              <span className="spinner"></span>
+              Procesando...
+            </>
+          ) : isEditing ? (
+            'Actualizar Usuario'
+          ) : (
+            'Agregar Usuario'
+          )}
         </button>
       </div>
     </form>

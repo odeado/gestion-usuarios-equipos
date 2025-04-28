@@ -101,3 +101,17 @@
     color: white;
     margin: 0 10px;
   }
+
+  .modal-content {
+    width: 95%; /* Reduce ligeramente en móvil */
+    max-width: 500px;
+    box-sizing: border-box;
+    margin: 10px;
+  }
+  
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 98%;
+      padding: 15px;
+    }
+  }

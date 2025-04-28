@@ -1,0 +1,57 @@
+/* UserList.css */
+
+.users-grid {
+    padding: 20px;
+  }
+  
+  .users-grid h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+  
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 0 15px;
+  }
+  
+  .user-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex; /* Cambiamos a flex para móvil */
+    flex-direction: column; /* Por defecto en columna */
+  }
+  
+  .user-card:hover {
+    transform: translateY(-3px);
+  }
+
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Asegura que las tarjetas no excedan el ancho */
+  .user-card {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 768px) {
+    .cards-container {
+      grid-template-columns: 1fr; /* Una sola columna en móvil */
+      padding: 0 5px;
+    }
+  }

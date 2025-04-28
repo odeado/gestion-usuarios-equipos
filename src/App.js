@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
@@ -7,6 +7,7 @@ import AddUserForm from './components/AddUserForm';
 import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
+import './UserList.css';
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -57,6 +58,21 @@ function App() {
     }
   };
 
+  const handleAddDepartment = async (departmentName) => {
+    try {
+      const docRef = await addDoc(collection(db, 'departments'), {
+        name: departmentName,
+        createdAt: new Date()
+      });
+      
+      setDepartments([...departments, { id: docRef.id, name: departmentName }]);
+      return true;
+    } catch (error) {
+      console.error("Error añadiendo departamento: ", error);
+      return false;
+    }
+  };
+
   const handleSelectUser = (userId) => {
     setSelectedUserId(userId);
     setShowModal(true);
@@ -102,6 +118,7 @@ function App() {
             onEditUser={handleEditUser}
             onCancelEdit={() => setEditingUser(null)}
             departments={departments}
+            onAddDepartment={handleAddDepartment}
           />
           <AddEquipmentForm users={users} />
         </div>

@@ -53,39 +53,7 @@ html, body, #root {
   border-radius: 4px;
 }
 
-/* UserList.css */
 
-.users-grid {
-  padding: 20px;
-}
-
-.users-grid h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-  padding: 0 15px;
-}
-
-.user-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 1rem;
-  cursor: pointer;
-  transition: transform 0.2s;
-  display: flex; /* Cambiamos a flex para móvil */
-  flex-direction: column; /* Por defecto en columna */
-}
-
-.user-card:hover {
-  transform: translateY(-3px);
-}
 
 .user-avatar {
   width: 100%;
@@ -110,6 +78,22 @@ html, body, #root {
   margin: 0 0 0.5rem 0;
   color: #2c3e50;
   font-size: 1.1rem;
+}
+
+.user-form {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Asegura que los inputs no causen overflow */
+.user-form input,
+.user-form select {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .user-email {
