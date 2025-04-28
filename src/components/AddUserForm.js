@@ -75,18 +75,14 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
         required
       />
       
-      <select
+      <input
+        type="department"
+        placeholder="Departamento"
         value={department}
         onChange={(e) => setDepartment(e.target.value)}
+        list="departments"
         required
-      >
-        <option value="">Selecciona un departamento</option>
-        {departments.map(dept => (
-          <option key={dept.id} value={dept.name}>
-            {dept.name}
-          </option>
-        ))}
-      </select>
+      />
       
       <input
         type="file"
