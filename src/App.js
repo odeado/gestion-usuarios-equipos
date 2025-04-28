@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore'; // Añade updateDoc
+import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
-import UserEquipment from './components/UserEquipment';
 import AddUserForm from './components/AddUserForm';
 import AddEquipmentForm from './components/AddEquipmentForm';
+import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
 
 function App() {
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
-  const [departments, setDepartments] = useState([]); // Nuevo estado para departamentos
+  const [departments, setDepartments] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Función de edición corregida
   const handleEditUser = async (userData) => {
     try {
       await updateDoc(doc(db, 'users', userData.id), {
@@ -43,32 +43,23 @@ function App() {
     }
   };
 
+  const handleSelectUser = (userId) => {
+    setSelectedUserId(userId);
+    setShowModal(true);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        const usersData = usersSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        const equipmentSnapshot = await getDocs(collection(db, 'equipment'));
-        const equipmentData = equipmentSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const [usersSnapshot, equipmentSnapshot, departmentsSnapshot] = await Promise.all([
+          getDocs(collection(db, 'users')),
+          getDocs(collection(db, 'equipment')),
+          getDocs(collection(db, 'departments'))
+        ]);
 
-
-          // Obtener departamentos (nuevo)
-          const departmentsSnapshot = await getDocs(collection(db, 'departments'));
-          const departmentsData = departmentsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-        
-        setUsers(usersData);
-        setEquipment(equipmentData);
-        setDepartments(departmentsData);
+        setUsers(usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setEquipment(equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
@@ -93,28 +84,34 @@ function App() {
         <div className="forms-row">
           <AddUserForm 
             onUserAdded={(newUser) => setUsers([...users, newUser])}
-            userToEdit={editingUser}  // Pasa el usuario a editar
-            onEditUser={handleEditUser} // Pasa la función de edición
+            userToEdit={editingUser}
+            onEditUser={handleEditUser}
             onCancelEdit={() => setEditingUser(null)}
-            departments={departments} // Pasamos los departamentos como prop
+            departments={departments}
           />
-          <div className="form-container"></div>
           <AddEquipmentForm users={users} />
         </div>
         
         <div className="content">
           <UserList 
             users={users} 
-            onSelectUser={setSelectedUserId}
+            onSelectUser={handleSelectUser}
             onDeleteUser={handleDeleteUser}
-            onEditUser={(user) => setEditingUser(user)} // Pasamos el usuario a editar
+            onEditUser={(user) => setEditingUser(user)}
           />
-          
           <EquipmentList equipment={equipment} users={users} />
         </div>
 
-        {selectedUser && (
-          <UserEquipment user={selectedUser} equipment={equipment} />
+        {showModal && selectedUser && (
+          <UserDetailsModal 
+            user={selectedUser}
+            equipment={equipment}
+            onClose={() => setShowModal(false)}
+            onEdit={(user) => {
+              setEditingUser(user);
+              setShowModal(false);
+            }}
+          />
         )}
       </div>
     </div>
