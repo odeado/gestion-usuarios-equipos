@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 
-function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, departments }) {
+function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [] }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     department: '',
     imageBase64: ''
   });
+  const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
-  // Normaliza strings para comparación
-  const normalizeString = (str) => (str || '').toString().toLowerCase().trim();
 
   // Efecto para cargar datos del usuario a editar
   useEffect(() => {
     if (userToEdit) {
-      const userDept = departments.find(dept => 
-        dept.id === userToEdit.departmentId || // Primero compara por ID si existe
-        normalizeString(dept.name) === normalizeString(userToEdit.department)
-      );
-
-      setFormData(prev => ({
-        ...prev,
-        department: userDept ? userDept.name : userToEdit.department || ''
-      }));
+      setFormData({
+        name: userToEdit.name || '',
+        email: userToEdit.correo || '',
+        department: userToEdit.department || '',
+        imageBase64: userToEdit.imageBase64 || ''
+      });
+      setImagePreview(userToEdit.imageBase64 || null);
+      setIsEditing(true);
+    } else {
+      resetForm();
     }
-  }, [userToEdit, departments]);
+  }, [userToEdit]);
 
   const resetForm = () => {
     setFormData({
@@ -36,6 +35,7 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
       department: '',
       imageBase64: ''
     });
+    setImagePreview(null);
     setIsEditing(false);
   };
 
@@ -45,22 +45,38 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
   };
 
   const handleImageChange = async (e) => {
-    // Mantén tu lógica actual de manejo de imágenes
+    if (e.target.files && e.target.files[0]) {
+      setIsCompressing(true);
+      try {
+        const file = e.target.files[0];
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 800,
+          useWebWorker: true
+        };
+        const compressedFile = await imageCompression(file, options);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, imageBase64: reader.result }));
+          setImagePreview(reader.result);
+          setIsCompressing(false);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error('Error comprimiendo imagen:', error);
+        setIsCompressing(false);
+      }
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { name, email, department, imageBase64 } = formData;
-    
     const userData = {
-      name,
-      correo: email,
-      department,
-      imageBase64
+      ...formData,
+      ...(isEditing && userToEdit && { id: userToEdit.id })
     };
 
-    if (isEditing && userToEdit) {
-      userData.id = userToEdit.id;
+    if (isEditing) {
       onEditUser(userData);
     } else {
       onUserAdded(userData);
@@ -71,18 +87,47 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
     }
   };
 
-  // Filtra departamentos válidos
-  const validDepartments = departments.filter(
-    dept => dept.name && normalizeString(dept.name)
-  );
+  // Renderizado del select de departamentos
+  const renderDepartmentSelect = () => {
+    const currentDept = formData.department;
+    const deptExists = departments.some(d => {
+      const deptName = d.name || d;
+      return deptName === currentDept;
+    });
 
-  console.log('Departamentos disponibles:', departments);
-  console.log('Departamento del usuario:', userToEdit?.department);
-  console.log('Departamento seleccionado:', formData.department);
+    return (
+      <select
+        name="department"
+        value={currentDept}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Selecciona un departamento</option>
+        
+        {isEditing && !deptExists && currentDept && (
+          <option value={currentDept} style={{ fontStyle: 'italic', color: '#999' }}>
+            {currentDept} (actual)
+          </option>
+        )}
+        
+        {departments.map(dept => {
+          const deptName = dept.name || dept;
+          const deptId = dept.id || dept;
+          return (
+            <option key={deptId} value={deptName}>
+              {deptName}
+            </option>
+          );
+        })}
+      </select>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} className="user-form">
       <h2>{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
+      
+      {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
       
       <input
         name="name"
@@ -102,27 +147,33 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
         required
       />
       
-      <select
-  value={formData.department || ''}
-  onChange={handleChange}
-  required
->
-  <option value="">Selecciona un departamento</option>
-  {departments.map(dept => (
-    <option key={dept.id} value={dept.name}>
-      {dept.name} {dept.id === userToEdit?.departmentId && '(Actual)'}
-    </option>
-  ))}
-</select>
+      {renderDepartmentSelect()}
       
       <input
         type="file"
         accept="image/*"
         onChange={handleImageChange}
+        disabled={isCompressing}
       />
       
-      {formData.imageBase64 && (
-        <img src={formData.imageBase64} alt="Preview" className="image-preview" />
+      {imagePreview && (
+        <div className="image-preview" style={{
+          maxWidth: '150px',
+          maxHeight: '150px',
+          margin: '10px 0',
+          overflow: 'hidden',
+          borderRadius: '4px'
+        }}>
+          <img 
+            src={imagePreview} 
+            alt="Vista previa" 
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
+          />
+        </div>
       )}
       
       <div className="form-buttons">
@@ -135,7 +186,11 @@ function AddUserForm({ onUserAdded, userToEdit, onEditUser, onCancelEdit, depart
             Cancelar
           </button>
         )}
-        <button type="submit" className="submit-button">
+        <button 
+          type="submit" 
+          className="submit-button"
+          disabled={isCompressing}
+        >
           {isEditing ? 'Actualizar Usuario' : 'Agregar Usuario'}
         </button>
       </div>
