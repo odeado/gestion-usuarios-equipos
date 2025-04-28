@@ -1,8 +1,30 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import './UserDetailsModal.css';
 
-function UserDetailsModal({ user, equipment, onClose, onEdit }) {
+function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onPrev }) {
+  const currentIndex = users.findIndex(u => u.id === user.id);
   const userEquipment = equipment.filter(item => item.assignedTo === user.id);
+
+
+
+useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        onPrev();
+      } else if (e.key === 'ArrowRight') {
+        onNext();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onPrev, onNext, onClose]);
+
+
 
   return (
     <div className="modal-overlay">
@@ -34,9 +56,28 @@ function UserDetailsModal({ user, equipment, onClose, onEdit }) {
         </div>
 
         <div className="modal-footer">
-          <button onClick={() => onEdit(user)} className="edit-button">
-            Editar Usuario
-          </button>
+          <div className="navigation-buttons">
+            <button 
+              onClick={onPrev} 
+              disabled={currentIndex === 0}
+              className="nav-button prev-button"
+            >
+              &larr; Anterior
+            </button>
+            <button 
+              onClick={onEdit} 
+              className="edit-button"
+            >
+              Editar Usuario
+            </button>
+            <button 
+              onClick={onNext} 
+              disabled={currentIndex === users.length - 1}
+              className="nav-button next-button"
+            >
+              Siguiente &rarr;
+            </button>
+          </div>
         </div>
       </div>
     </div>

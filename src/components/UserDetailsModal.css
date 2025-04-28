@@ -62,3 +62,42 @@
     margin-top: 20px;
     text-align: right;
   }
+
+  /* Añade al final del archivo */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .nav-button {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-button:hover:not(:disabled) {
+    background-color: #ddd;
+  }
+  
+  .nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .prev-button {
+    margin-right: auto;
+  }
+  
+  .next-button {
+    margin-left: auto;
+  }
+  
+  .edit-button {
+    background-color: #4CAF50;
+    color: white;
+    margin: 0 10px;
+  }

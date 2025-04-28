@@ -32,6 +32,20 @@ function App() {
     }
   };
 
+  const handleNextUser = () => {
+    const currentIndex = users.findIndex(u => u.id === selectedUserId);
+    if (currentIndex < users.length - 1) {
+      setSelectedUserId(users[currentIndex + 1].id);
+    }
+  };
+  
+  const handlePrevUser = () => {
+    const currentIndex = users.findIndex(u => u.id === selectedUserId);
+    if (currentIndex > 0) {
+      setSelectedUserId(users[currentIndex - 1].id);
+    }
+  };
+
   const handleDeleteUser = async (userId) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
       try {
@@ -103,15 +117,18 @@ function App() {
         </div>
 
         {showModal && selectedUser && (
-          <UserDetailsModal 
-            user={selectedUser}
-            equipment={equipment}
-            onClose={() => setShowModal(false)}
-            onEdit={(user) => {
-              setEditingUser(user);
-              setShowModal(false);
-            }}
-          />
+  <UserDetailsModal 
+    user={selectedUser}
+    users={users}  // Pasa todos los usuarios
+    equipment={equipment}
+    onClose={() => setShowModal(false)}
+    onEdit={(user) => {
+      setEditingUser(user);
+      setShowModal(false);
+    }}
+    onNext={handleNextUser}
+    onPrev={handlePrevUser}
+  />
         )}
       </div>
     </div>
