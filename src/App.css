@@ -230,10 +230,10 @@ html, body, #root {
 
 @media (max-width: 768px) {
   .app-container {
-    padding: 0 10px;
+    padding: 5px;
   }
   .users-grid {
-    padding: 10px;
+    padding: 50px;
   }
   .app {
     padding: 5px;
