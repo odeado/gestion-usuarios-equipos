@@ -204,17 +204,7 @@
     to { transform: rotate(360deg); }
   }
   
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .form-row {
-      flex-direction: column;
-      gap: 0;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-  }
+
 
 
 
@@ -457,6 +447,19 @@ html, body, #root {
 /* Versión móvil */
 
 @media (max-width: 768px) {
+
+
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+  
+
+    
   .app-container {
     padding: 5px;
   }
