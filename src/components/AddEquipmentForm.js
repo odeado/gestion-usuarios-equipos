@@ -144,7 +144,7 @@ function AddEquipmentForm({ users }) {
         <button 
           type="submit" 
           disabled={isCompressing}
-          className="submit-button"
+          className="btn btn-submit"
         >
           {isCompressing ? 'Guardando...' : 'Guardar Equipo'}
         </button>
