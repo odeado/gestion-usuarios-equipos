@@ -26,7 +26,14 @@
     transition: transform 0.2s;
     display: flex; /* Cambiamos a flex para móvil */
     flex-direction: column; /* Por defecto en columna */
+    display: flex;
+    flex-direction: row-reverse;
+  
   }
+
+
+
+
   
   .user-card:hover {
     transform: translateY(-3px);
