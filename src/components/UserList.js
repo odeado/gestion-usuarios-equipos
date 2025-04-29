@@ -44,6 +44,7 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
                 {user.department}
               </p>
               <p className="user-email">{user.correo}</p>
+                <p className="user-email">{user.tipoVpn}</p>
 
               <div className="user-actions">
                 <button
