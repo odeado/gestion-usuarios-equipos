@@ -44,6 +44,7 @@ function UserDetailsModal({
   const validateForm = () => {
     const newErrors = {};
     if (!editedUser.name?.trim()) newErrors.name = 'Nombre es requerido';
+    if (!editedUser.name?.trim()) newErrors.tipoVpn = 'Tipo de Vpn';
     if (!editedUser.correo?.trim()) newErrors.correo = 'Correo es requerido';
     else if (!/\S+@\S+\.\S+/.test(editedUser.correo)) newErrors.correo = 'Correo inválido';
     if (!editedUser.department?.trim()) newErrors.department = 'Departamento es requerido';
@@ -239,6 +240,22 @@ function UserDetailsModal({
                 />
                 {errors.correo && <div className="error-text">{errors.correo}</div>}
               </div>
+
+                  <div className="form-group">
+                <input
+                  name="tipoVpn"
+                  type="tipoVpn"
+                  value={editedUser.tipoVpn}
+                  onChange={handleInputChange}
+                  placeholder="Tipo Vpn"
+                  className={`edit-input ${errors.tipoVpn ? 'input-error' : ''}`}
+                />
+                {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
+              </div>
+
+
+
+                  
               
               <div className="form-group">
                 <label className="form-label">Departamento</label>
@@ -249,6 +266,7 @@ function UserDetailsModal({
             <div className="view-mode">
               <h2>{user.name}</h2>
               <p>{user.correo}</p>
+            <p>{user.tipoVpn}</p>
               <p className="department-badge">{user.department}</p>
             </div>
           )}
