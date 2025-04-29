@@ -24,9 +24,9 @@ function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment,
           {equipment.map(item => (
             <tr key={item.id}>
               
-              <td>{item.type}</td>
-              <td>{item.model}</td>
-              <td>{getAssignedUserName(item.assignedTo)}</td>
+              <td data-label="Tipo">{item.type}</td>
+              <td data-label="Modelo">{item.model}</td>
+              <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
               <td className="actions">
                 <button 
                   onClick={() => onEditEquipment(item)}

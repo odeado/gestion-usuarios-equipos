@@ -117,7 +117,7 @@
   }
   
   /* Versión alternativa para móviles con cards */
-  @media (max-width: 480px) {
+  @media (max-width: 780px) {
     .equipment-list table {
       display: flex;
       flex-direction: column;
