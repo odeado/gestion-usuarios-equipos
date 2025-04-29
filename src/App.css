@@ -322,15 +322,6 @@ html, body, #root {
   margin-top: 5px;
 }
 
-.equipment-list {
-  list-style: none;
-  padding: 0;
-}
-
-.equipment-list li {
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
 
 .modal-footer {
   margin-top: 20px;

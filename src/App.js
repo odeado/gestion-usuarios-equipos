@@ -8,12 +8,15 @@ import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
 import './UserList.css';
+import './components/AddEquipmentForm.css';
 
 function App() {
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState(null);
+  const [editingEquipment, setEditingEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -39,6 +42,70 @@ function App() {
     throw error; // Propaga el error
   }
 };
+
+
+/*datos de equipmento*/
+const handleEditEquipment = async (equipmentData) => {
+  try {
+    await updateDoc(doc(db, 'equipment', equipmentData.id), {
+      name: equipmentData.name,
+      type: equipmentData.type,
+      model: equipmentData.model,
+      assignedTo: equipmentData.assignedTo,
+      imageBase64: equipmentData.imageBase64,
+      updatedAt: new Date()  // Agrega campo de actualización
+    });
+
+   // Actualiza el estado local
+   setEquipment(equipment.map(equipment => 
+    equipment.id === equipmentData.id ? { ...equipmentData } : equipment
+  ));
+  
+  setEditingEquipment(null); // Limpia el usuario en edición
+} catch (error) {
+  console.error("Error editando Equipo: ", error);
+  throw error; // Propaga el error
+}
+};
+
+
+const handleAddEquipment = async (equipmentData) => {
+  try {
+    const docRef = await addDoc(collection(db, 'equipment'), {
+      name: equipmentData.name,
+      type: equipmentData.type,
+      model: equipmentData.model,
+      assignedTo: equipmentData.assignedTo,
+      imageBase64: equipmentData.imageBase64,
+      createdAt: new Date()
+    });
+
+    return { id: docRef.id, ...equipmentData };
+  } catch (error) {
+    console.error("Error añadiendo equipo: ", error);
+    throw error;
+  }
+};
+
+const handleDeleteEquipment = async (equipmentId) => {
+  if (window.confirm('¿Estás seguro de eliminar este equipo?')) {
+    try {
+      await deleteDoc(doc(db, 'equipment', equipmentId));
+      setEquipment(equipment.filter(item => item.id !== equipmentId));
+    } catch (error) {
+      console.error("Error eliminando equipo: ", error);
+    }
+  }
+};
+
+const handleSelectEquipment = (equipmentId) => {
+  setSelectedEquipmentId(equipmentId); 
+  setShowModal(true);
+};
+
+
+  /*datos de usuario*/
+
    
 const handleAddUser = async (userData) => {
   try {
@@ -148,7 +215,13 @@ const handleAddUser = async (userData) => {
             departments={departments}
             onAddDepartment={handleAddDepartment}
           />
-          <AddEquipmentForm users={users} />
+          <AddEquipmentForm 
+  users={users}
+  onEquipmentAdded={handleAddEquipment}
+  equipmentToEdit={editingEquipment}
+  onEditEquipment={handleEditEquipment}
+  onCancelEdit={() => setEditingEquipment(null)}
+/>
         </div>
         
         <div className="content">
@@ -158,7 +231,15 @@ const handleAddUser = async (userData) => {
             onDeleteUser={handleDeleteUser}
             onEditUser={(user) => setEditingUser(user)}
           />
-          <EquipmentList equipment={equipment} users={users} />
+    <EquipmentList 
+  equipment={equipment}
+  users={users}
+  onSelectEquipment={handleSelectEquipment}
+  onEditEquipment={(equipment) => setEditingEquipment(equipment)}
+  onDeleteEquipment={handleDeleteEquipment}
+/>
+
+
         </div>
 
         {showModal && selectedUser && (

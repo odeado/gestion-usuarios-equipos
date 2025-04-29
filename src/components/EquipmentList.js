@@ -1,28 +1,52 @@
-// src/components/EquipmentList.js
 import React from 'react';
-import EquipmentCard from './EquipmentCard';
 import './EquipmentList.css';
 
-function EquipmentList({ equipment, users }) {
+function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment, onEditEquipment }) {
+  const getAssignedUserName = (userId) => {
+    const user = users.find(u => u.id === userId);
+    return user ? user.name : 'No asignado';
+  };
+
   return (
-    <div className="user-list">
-      <h2>Equipos Registrados</h2>
-      <div className="user-list-grid">
-        {equipment.map(item => {
-          const assignedUser = users.find(u => u.id === item.assignedTo);
-          return (
-            <EquipmentCard 
-              key={item.id} 
-              equipment={item} 
-              assignedUser={assignedUser} 
-            />
-          );
-        })}
-      </div>
+    <div className="equipment-list">
+      <h2>Lista de Equipos</h2>
+      <table>
+        <thead>
+          <tr>
+    
+            <th>Tipo</th>
+            <th>Modelo</th>
+            <th>Asignado a</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {equipment.map(item => (
+            <tr key={item.id}>
+              
+              <td>{item.type}</td>
+              <td>{item.model}</td>
+              <td>{getAssignedUserName(item.assignedTo)}</td>
+              <td className="actions">
+                <button 
+                  onClick={() => onEditEquipment(item)}
+                  className="edit-button"
+                >
+                  Editar
+                </button>
+                <button 
+                  onClick={() => onDeleteEquipment(item.id)}
+                  className="delete-button"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
 export default EquipmentList;
-// src/components/EquipmentList.css
-// src/components/EquipmentList.css

@@ -1,0 +1,17 @@
+.equipment-list{
+  list-style: none;
+  padding: 0;
+  display: grid;
+}
+
+.equipment-list li {
+  display: grid;
+}
+.equipment-list tbody {
+  width: 100%;
+}
+
+.equipment-list tr {
+  width: 100%;
+    text-align: center;
+}

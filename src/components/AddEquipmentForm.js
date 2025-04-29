@@ -1,169 +1,215 @@
-import React, { useState, useRef } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import React, { useState, useEffect, useRef } from 'react';
 import imageCompression from 'browser-image-compression';
+import './AddEquipmentForm.css';
 
-function AddEquipmentForm({ users }) {
-  const [type, setType] = useState('');
-  const [model, setModel] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
-  const [imageBase64, setImageBase64] = useState('');
+function AddEquipmentForm({ 
+  users, 
+  onEquipmentAdded, 
+  equipmentToEdit, 
+  onEditEquipment, 
+  onCancelEdit 
+}) {
+  const [formData, setFormData] = useState({
+    name: '',
+    type: '',
+    model: '',
+    assignedTo: '',
+    imageBase64: ''
+  });
   const [isCompressing, setIsCompressing] = useState(false);
-  const fileInputRef = useRef();
+  const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef();
 
-  // Función de compresión y conversión a Base64
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.match('image.*')) {
-      alert('Por favor seleccione un archivo de imagen');
-      return;
+  // Cargar datos del equipo a editar
+  useEffect(() => {
+    if (equipmentToEdit) {
+      setFormData({
+        name: equipmentToEdit.name || '',
+        type: equipmentToEdit.type || '',
+        model: equipmentToEdit.model || '',
+        assignedTo: equipmentToEdit.assignedTo || '',
+        imageBase64: equipmentToEdit.imageBase64 || ''
+      });
+      setIsEditing(true);
+    } else {
+      resetForm();
     }
+  }, [equipmentToEdit]);
 
-    setIsCompressing(true);
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      type: '',
+      model: '',
+      assignedTo: '',
+      imageBase64: ''
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setIsEditing(false);
+    setErrors({});
+  };
 
-    try {
-      const options = {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-        fileType: 'image/webp'
-      };
-      
-      const compressedFile = await imageCompression(file, options);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageBase64(reader.result);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
+    if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleImageChange = async (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setIsCompressing(true);
+      try {
+        const file = e.target.files[0];
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+          fileType: 'image/webp'
+        };
+        
+        const compressedFile = await imageCompression(file, options);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, imageBase64: reader.result }));
+          setIsCompressing(false);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Error al comprimir:", error);
         setIsCompressing(false);
-      };
-      reader.readAsDataURL(compressedFile);
-
-    } catch (error) {
-      console.error("Error al comprimir:", error);
-      setIsCompressing(false);
-      alert('Error al procesar la imagen');
+        setErrors(prev => ({ ...prev, image: 'Error al procesar la imagen' }));
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!type || !model) {
-      alert('Por favor complete los campos obligatorios');
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
-      await addDoc(collection(db, 'equipment'), {
-        type,
-        model,
-        assignedTo: assignedTo || null,
-        imageBase64: imageBase64 || null,
-        createdAt: new Date()
-      });
-
-      // Resetear formulario
-      setType('');
-      setModel('');
-      setAssignedTo('');
-      setImageBase64('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      
-      alert('¡Equipo agregado exitosamente!');
+      if (isEditing && equipmentToEdit) {
+        await onEditEquipment({
+          id: equipmentToEdit.id,
+          ...formData
+        });
+      } else {
+        await onEquipmentAdded(formData);
+      }
+      resetForm();
     } catch (error) {
-      console.error("Error:", error);
-      alert('Error al agregar equipo: ' + error.message);
+      console.error('Error submitting form:', error);
+      setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
     }
   };
 
   return (
     <div className="form-container">
-      <h3>Agregar Nuevo Equipo</h3>
+      <h3>{isEditing ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</h3>
       <form onSubmit={handleSubmit}>
         {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
+        {errors.form && <div className="error-message">{errors.form}</div>}
         
-        {imageBase64 && !isCompressing && (
-          <div className="image-preview">
-            <img 
-              src={imageBase64} 
-              alt="Vista previa del equipo" 
-            />
+        {formData.imageBase64 && !isCompressing && (
+          <div className="image-preview-container">
+            <img src={formData.imageBase64} alt="Vista previa del equipo" />
           </div>
         )}
 
-  
-       <div className="form-row">
-        <div className="form-group">
-          
-          <label htmlFor="type" className="form-label">Tipo de Equipo</label>
-          <input
-          id="type"
-          name="type"
-            type="text"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            placeholder="Ej: Laptop, Teléfono, Monitor"
-            required
-            className={`form-input ${errors.name ? 'input-error' : ''}`}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="type" className="form-label">Tipo de Equipo</label>
+            <input
+              id="type"
+              name="type"
+              type="text"
+              value={formData.type}
+              onChange={handleChange}
+              placeholder="Ej: Laptop, Teléfono, Monitor"
+              required
+              className={`form-input ${errors.type ? 'input-error' : ''}`}
             />
-            {errors.name && <div className="error-text">{errors.name}</div>}
-        </div>
+            {errors.type && <div className="error-text">{errors.type}</div>}
+          </div>
 
-        <div className="form-group">
-        <label htmlFor="model" className="form-label">Modelo</label>
-          <input
-          id="model"
-          name="model"
-            type="text"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="Ej: Dell XPS 15, iPhone 13"
-            required
-            className={`form-input ${errors.name ? 'input-error' : ''}`}
+          <div className="form-group">
+            <label htmlFor="model" className="form-label">Modelo</label>
+            <input
+              id="model"
+              name="model"
+              type="text"
+              value={formData.model}
+              onChange={handleChange}
+              placeholder="Ej: Dell XPS 15, iPhone 13"
+              required
+              className={`form-input ${errors.model ? 'input-error' : ''}`}
             />
-            {errors.name && <div className="error-text">{errors.name}</div>}
-        </div>
+            {errors.model && <div className="error-text">{errors.model}</div>}
+          </div>
         </div>
 
         <div className="form-row">
-        <div className="form-group">
-          <label>Asignar a</label>
-          <select
-            value={assignedTo}
-            onChange={(e) => setAssignedTo(e.target.value)}
-            className="user-selector"
-          >
-            <option value="">Seleccione un usuario...</option>
-            {users.map(user => (
-              <option key={user.id} value={user.id}>
-                {user.name} - {user.department}
-              </option>
-            ))}
-          </select>
+          <div className="form-group department-group">
+            <label className="form-label">Asignar a</label>
+            <select
+              name="assignedTo"
+              value={formData.assignedTo}
+              onChange={handleChange}
+              className="user-selector"
+            >
+              <option value="">Seleccione un usuario...</option>
+              {users.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.name} - {user.department}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="image-preview-container">
+            <label>Imagen del Equipo</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              ref={fileInputRef}
+              disabled={isCompressing}
+            />
+            {errors.image && <div className="error-text">{errors.image}</div>}
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Imagen del Equipo</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            ref={fileInputRef}
+        <div className="form-actions">
+          {isEditing && (
+            <button 
+              type="button" 
+              onClick={() => {
+                onCancelEdit();
+                resetForm();
+              }}
+              className="btn btn-cancel"
+            >
+              Cancelar
+            </button>
+          )}
+          
+          <button 
+            type="submit" 
             disabled={isCompressing}
-          />
+            className="btn btn-submit"
+          >
+            {isCompressing ? 'Guardando...' : (isEditing ? 'Actualizar Equipo' : 'Guardar Equipo')}
+          </button>
         </div>
-              </div>
-
-        <button 
-          type="submit" 
-          disabled={isCompressing}
-          className="btn btn-submit"
-        >
-          {isCompressing ? 'Guardando...' : 'Guardar Equipo'}
-        </button>
       </form>
     </div>
   );
