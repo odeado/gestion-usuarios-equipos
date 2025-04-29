@@ -387,31 +387,28 @@ html, body, #root {
 
 @media (max-width: 768px) {
 
-
     .form-row {
       flex-direction: column;
       gap: 0;
     }
     
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 5px;
     }
-  
-
-    
+   
   .app-container {
     padding: 5px;
     display: grid;
   }
   .users-grid {
-    padding: 50px;
+    padding: 5px;
   }
   .app {
     padding: 5px;
   }
   
   .user-form {
-    padding: 15px;
+    padding: 5px;
   }
 
 
