@@ -65,18 +65,15 @@ useEffect(() => {
               &larr; Anterior
             </button>
 
-          <button
-                  className="edit-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditUser(user); // ✅ Asegúrate de que App.js pase esta prop
-                  }}
-                >
-                  Editar
-                </button>
+          
 
               
-
+            <button 
+               onClick={onEdit} 
+               className="edit-button"
+             >
+               Editar Usuario
+             </button>
 
 
                 
