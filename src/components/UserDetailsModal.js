@@ -266,6 +266,7 @@ function UserDetailsModal({
             <div className="view-mode">
               <h2>{user.name}</h2>
               <p>{user.correo}</p>
+            <label className="form-label">Tipo VPN</label>
             <p>{user.tipoVpn}</p>
               <p className="department-badge">{user.department}</p>
             </div>
