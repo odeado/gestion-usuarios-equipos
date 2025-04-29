@@ -6,6 +6,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    tipoVpn: '',
     department: '',
     imageBase64: ''
   });
@@ -23,6 +24,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       setFormData({
         name: userToEdit.name || '',
         email: userToEdit.correo || '', // Mantenemos correo como viene de la DB
+        tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         imageBase64: userToEdit.imageBase64 || ''
       });
@@ -37,6 +39,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     setFormData({
       name: '',
       email: '',
+      tipoVpn: '',
       department: '',
       imageBase64: ''
     });
@@ -129,6 +132,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           id: userToEdit.id,
           name: formData.name,
           department: formData.department,
+          tipoVpn: formData.tipoVpn,
           correo: formData.email, // Convertimos email a correo para la DB
           imageBase64: formData.imageBase64
         });
@@ -136,6 +140,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         await onUserAdded({
           name: formData.name,
           department: formData.department,
+          tipoVpn: formData.tipoVpn,
           correo: formData.email, // Convertimos email a correo para la DB
           imageBase64: formData.imageBase64
         });
@@ -262,6 +267,25 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         {errors.email && <div className="error-text">{errors.email}</div>}
       </div>
       </div>
+
+          <div className="form-group">
+      <label htmlFor="tipoVpn" className="form-label">Tpo de vpn</label>
+        <input
+          id="tipoVpn"
+          name="tipoVpn"
+          type="tipoVpn"
+          placeholder="correo@ejemplo.com"
+          value={formData.tipoVpn}
+          onChange={handleChange}
+          required
+          className={errors.tipoVpn ? 'error' : ''}
+        />
+        {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
+      </div>
+      </div>
+
+
+          
       
       <div className="form-row">
         <div className="form-group department-group">
