@@ -5,9 +5,11 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
   // Estados para controlar la edición
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
-  
-  // Índice actual y equipos del usuario
+
+  // Encuentra la posición del usuario actual en la lista
   const currentIndex = users.findIndex(u => u.id === user.id);
+  
+  // Filtra los equipos asignados al usuario
   const userEquipment = equipment.filter(item => item.assignedTo === user.id);
 
   // Sincroniza los datos cuando cambia el usuario
@@ -15,7 +17,7 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
     setEditedUser(user);
   }, [user]);
 
-  // Manejo de teclado
+  // Manejo de eventos del teclado
   useEffect(() => {
     const handleKeyDown = (e) => {
       if(e.key === 'ArrowLeft') onPrev();
@@ -27,15 +29,15 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onPrev, onNext, onClose]);
 
-  // Maneja cambios en los inputs de edición
+  // Actualiza los datos editados mientras se escribe
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditedUser(prev => ({ ...prev, [name]: value }));
   };
 
-  // Envía los cambios al componente padre
+  // Guarda los cambios y sale del modo edición
   const handleSave = () => {
-    onEdit(editedUser);
+    onEdit(editedUser); // Envía los datos al componente padre
     setIsEditing(false);
   };
 
@@ -43,29 +45,29 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
     <div className="modal-overlay">
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>×</button>
-        
-        {/* Encabezado del modal */}
+
+        {/* Sección de información del usuario */}
         <div className="modal-header">
           {user.imageBase64 && (
             <img src={user.imageBase64} alt={user.name} className="modal-user-image" />
           )}
           
           {isEditing ? (
-            // Campos editables
-            <>
+            // Campos editables en modo edición
+            <div className="edit-fields">
               <input
                 name="name"
                 value={editedUser.name}
                 onChange={handleInputChange}
-                className="edit-input"
                 placeholder="Nombre"
+                className="edit-input"
               />
               <input
                 name="correo"
                 value={editedUser.correo}
                 onChange={handleInputChange}
+                placeholder="Correo electrónico"
                 className="edit-input"
-                placeholder="Correo"
               />
               <select
                 name="department"
@@ -73,38 +75,38 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
                 onChange={handleInputChange}
                 className="edit-select"
               >
-                <option value="IT">IT</option>
-                <option value="HR">RRHH</option>
-                <option value="Finanzas">Finanzas</option>
+                <option value="IT">Departamento IT</option>
+                <option value="RRHH">Recursos Humanos</option>
+                <option value="Finanzas">Área Financiera</option>
               </select>
-            </>
+            </div>
           ) : (
-            // Vista normal
-            <>
+            // Visualización normal de datos
+            <div className="view-mode">
               <h2>{user.name}</h2>
               <p>{user.correo}</p>
               <p className="department-badge">{user.department}</p>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Lista de equipos */}
+        {/* Lista de equipos asignados */}
         <div className="modal-body">
-          <h3>Equipos asignados</h3>
+          <h3>Equipos en uso</h3>
           {userEquipment.length > 0 ? (
             <ul className="equipment-list">
               {userEquipment.map(item => (
                 <li key={item.id}>
-                  <strong>{item.name}</strong> - {item.type} (Serial: {item.serialNumber})
+                  <strong>{item.name}</strong> - {item.type} (N° Serie: {item.serialNumber})
                 </li>
               ))}
             </ul>
           ) : (
-            <p>No tiene equipos asignados</p>
+            <p>Sin equipos asignados actualmente</p>
           )}
         </div>
 
-        {/* Pie del modal con botones */}
+        {/* Botones de navegación y acciones */}
         <div className="modal-footer">
           <div className="navigation-buttons">
             <button 
@@ -116,25 +118,25 @@ function UserDetailsModal({ user, users, equipment, onClose, onEdit, onNext, onP
             </button>
 
             {isEditing ? (
-              // Botones durante edición
+              // Botones durante la edición
               <>
-                <button onClick={handleSave} className="save-button">
-                  Guardar
+                <button onClick={handleSave} className="action-button save-button">
+                  ✅ Guardar
                 </button>
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  className="cancel-button"
+                  className="action-button cancel-button"
                 >
-                  Cancelar
+                  ❌ Descartar
                 </button>
               </>
             ) : (
-              // Botón normal de editar
+              // Botón para iniciar edición
               <button 
                 onClick={() => setIsEditing(true)} 
-                className="edit-button"
+                className="action-button edit-button"
               >
-                Editar Usuario
+                ✏️ Editar
               </button>
             )}
 
