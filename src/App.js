@@ -20,18 +20,42 @@ function App() {
 
   const handleEditUser = async (userData) => {
     try {
+      // Debes usar updateDoc en lugar de addDoc para edición
       await updateDoc(doc(db, 'users', userData.id), {
         name: userData.name,
-        department: userData.department,
         correo: userData.correo,
-        imageBase64: userData.imageBase64
+        department: userData.department,
+        imageBase64: userData.imageBase64,
+        updatedAt: new Date()  // Agrega campo de actualización
       });
-      setUsers(users.map(user => user.id === userData.id ? userData : user));
-      setEditingUser(null);
-    } catch (error) {
-      console.error("Error editando usuario: ", error);
-    }
-  };
+            // Actualiza el estado local
+    setUsers(users.map(user => 
+      user.id === userData.id ? { ...userData } : user
+    ));
+    
+    setEditingUser(null); // Limpia el usuario en edición
+  } catch (error) {
+    console.error("Error editando usuario: ", error);
+    throw error; // Propaga el error
+  }
+};
+   
+const handleAddUser = async (userData) => {
+  try {
+    const docRef = await addDoc(collection(db, 'users'), {
+      name: userData.name,
+      correo: userData.correo,
+      department: userData.department,
+      imageBase64: userData.imageBase64,
+      createdAt: new Date()
+    });
+
+    return { id: docRef.id, ...userData };
+  } catch (error) {
+    console.error("Error añadiendo usuario: ", error);
+    throw error;
+  }
+};
 
   const handleNextUser = () => {
     const currentIndex = users.findIndex(u => u.id === selectedUserId);
@@ -65,11 +89,15 @@ function App() {
         createdAt: new Date()
       });
       
-      setDepartments([...departments, { id: docRef.id, name: departmentName }]);
-      return true;
+      // Actualiza el estado de departamentos
+      const updatedDepartments = [...departments, { id: docRef.id, name: departmentName }];
+      setDepartments(updatedDepartments);
+      
+      // Retorna el nuevo departamento además del éxito
+      return { success: true, newDepartment: { id: docRef.id, name: departmentName } };
     } catch (error) {
       console.error("Error añadiendo departamento: ", error);
-      return false;
+      return { success: false };
     }
   };
 
@@ -111,9 +139,9 @@ function App() {
       <div className="app">
         <h1>Sistema de Gestión de Equipos</h1>
 
-        <div className="forms-row">
+        <div className="forms-usuarios-equipos">
           <AddUserForm 
-            onUserAdded={(newUser) => setUsers([...users, newUser])}
+            onUserAdded={handleAddUser} 
             userToEdit={editingUser}
             onEditUser={handleEditUser}
             onCancelEdit={() => setEditingUser(null)}
@@ -136,17 +164,17 @@ function App() {
         {showModal && selectedUser && (
   <UserDetailsModal 
     user={selectedUser}
-    users={users}  // Pasa todos los usuarios
+    users={users}
     equipment={equipment}
     onClose={() => setShowModal(false)}
-    onEdit={(user) => {
-      setEditingUser(user);
-      setShowModal(false);
-    }}
+    onEdit={handleEditUser}
     onNext={handleNextUser}
     onPrev={handlePrevUser}
+    departments={departments}
+    onAddDepartment={handleAddDepartment}
   />
-        )}
+)}
+
       </div>
     </div>
   );

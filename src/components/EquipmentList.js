@@ -1,26 +1,28 @@
+// src/components/EquipmentList.js
 import React from 'react';
+import EquipmentCard from './EquipmentCard';
+import './EquipmentList.css';
 
 function EquipmentList({ equipment, users }) {
-  const getAssignedUserName = (userId) => {
-    if (!userId) return 'No asignado';
-    const user = users.find(u => u.id === userId);
-    return user ? user.name : 'Usuario desconocido';
-  };
-
   return (
-    <div className="equipment-list">
-      <h2>Equipos</h2>
-      <ul>
-        {equipment.map(item => (
-          <li key={item.id}>
-            {item.type} - {item.model}
-            <br />
-            <small>Asignado a: {getAssignedUserName(item.assignedTo)}</small>
-          </li>
-        ))}
-      </ul>
+    <div className="user-list">
+      <h2>Equipos Registrados</h2>
+      <div className="user-list-grid">
+        {equipment.map(item => {
+          const assignedUser = users.find(u => u.id === item.assignedTo);
+          return (
+            <EquipmentCard 
+              key={item.id} 
+              equipment={item} 
+              assignedUser={assignedUser} 
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export default EquipmentList;
+// src/components/EquipmentList.css
+// src/components/EquipmentList.css

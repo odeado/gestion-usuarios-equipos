@@ -54,7 +54,10 @@
     max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
+    display: grid;
   }
+
+
   
   @media (max-width: 768px) {
     .cards-container {

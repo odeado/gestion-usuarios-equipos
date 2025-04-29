@@ -10,6 +10,8 @@ function AddEquipmentForm({ users }) {
   const [imageBase64, setImageBase64] = useState('');
   const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef();
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   // Función de compresión y conversión a Base64
   const handleImageChange = async (e) => {
@@ -95,27 +97,38 @@ function AddEquipmentForm({ users }) {
   
        <div className="form-row">
         <div className="form-group">
-          <label>Tipo de Equipo*</label>
+          
+          <label htmlFor="type" className="form-label">Tipo de Equipo</label>
           <input
+          id="type"
+          name="type"
             type="text"
             value={type}
             onChange={(e) => setType(e.target.value)}
             placeholder="Ej: Laptop, Teléfono, Monitor"
             required
-          />
+            className={`form-input ${errors.name ? 'input-error' : ''}`}
+            />
+            {errors.name && <div className="error-text">{errors.name}</div>}
         </div>
 
         <div className="form-group">
-          <label>Modelo*</label>
+        <label htmlFor="model" className="form-label">Modelo</label>
           <input
+          id="model"
+          name="model"
             type="text"
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="Ej: Dell XPS 15, iPhone 13"
             required
-          />
+            className={`form-input ${errors.name ? 'input-error' : ''}`}
+            />
+            {errors.name && <div className="error-text">{errors.name}</div>}
+        </div>
         </div>
 
+        <div className="form-row">
         <div className="form-group">
           <label>Asignar a</label>
           <select
