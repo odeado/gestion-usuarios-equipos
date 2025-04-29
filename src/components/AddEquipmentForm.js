@@ -92,6 +92,8 @@ function AddEquipmentForm({ users }) {
           </div>
         )}
 
+  
+       <div className="form-row">
         <div className="form-group">
           <label>Tipo de Equipo*</label>
           <input
@@ -140,6 +142,7 @@ function AddEquipmentForm({ users }) {
             disabled={isCompressing}
           />
         </div>
+              </div>
 
         <button 
           type="submit" 
