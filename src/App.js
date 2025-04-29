@@ -27,6 +27,7 @@ function App() {
       await updateDoc(doc(db, 'users', userData.id), {
         name: userData.name,
         correo: userData.correo,
+        tipoVpn: userData.tipoVpn,
         department: userData.department,
         imageBase64: userData.imageBase64,
         updatedAt: new Date()  // Agrega campo de actualización
@@ -112,6 +113,7 @@ const handleAddUser = async (userData) => {
     const docRef = await addDoc(collection(db, 'users'), {
       name: userData.name,
       correo: userData.correo,
+      tipoVpn: userData.tipoVpn,
       department: userData.department,
       imageBase64: userData.imageBase64,
       createdAt: new Date()
