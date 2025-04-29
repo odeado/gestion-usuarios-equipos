@@ -62,7 +62,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Nombre es requerido';
-    ig (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'tipo vpn requerido';
+    if (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'tipo vpn requerido';
     if (!formData.email.trim()) newErrors.email = 'Email es requerido';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido';
     if (!formData.department.trim()) newErrors.department = 'Departamento es requerido';
