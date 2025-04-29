@@ -267,7 +267,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         />
         {errors.email && <div className="error-text">{errors.email}</div>}
       </div>
-      </div>
+    
 
           <div className="form-group">
       <label htmlFor="tipoVpn" className="form-label">Tpo de vpn</label>
