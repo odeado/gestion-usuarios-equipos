@@ -143,7 +143,7 @@ function AddEquipmentForm({
             {errors.nombre && <div className="error-text">{errors.nombre}</div>}
           </div>
 
-
+</div>
 
 
 
@@ -197,7 +197,7 @@ function AddEquipmentForm({
               ))}
             </select>
           </div>
-
+</div>
           <div className="image-preview-container">
             <label>Imagen del Equipo</label>
             <input
