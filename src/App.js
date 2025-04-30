@@ -50,7 +50,7 @@ function App() {
 const handleEditEquipment = async (equipmentData) => {
   try {
     await updateDoc(doc(db, 'equipment', equipmentData.id), {
-      name: equipmentData.name,
+      nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
       assignedTo: equipmentData.assignedTo,
@@ -74,7 +74,7 @@ const handleEditEquipment = async (equipmentData) => {
 const handleAddEquipment = async (equipmentData) => {
   try {
     const docRef = await addDoc(collection(db, 'equipment'), {
-      name: equipmentData.name,
+      nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
       assignedTo: equipmentData.assignedTo,
