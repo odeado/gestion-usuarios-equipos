@@ -6,6 +6,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    ciudad: '',
     tipoVpn: '',
     department: '',
     imageBase64: ''
@@ -23,7 +24,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     if (userToEdit) {
       setFormData({
         name: userToEdit.name || '',
-        email: userToEdit.correo || '', // Mantenemos correo como viene de la DB
+        email: userToEdit.correo || '',
+        ciudad: userToEdit.ciudad || '',
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         imageBase64: userToEdit.imageBase64 || ''
@@ -39,6 +41,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     setFormData({
       name: '',
       email: '',
+      ciudad: '',
       tipoVpn: '',
       department: '',
       imageBase64: ''
@@ -63,6 +66,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Nombre es requerido';
     if (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'tipo vpn requerido';
+    if (!formData.ciudad.trim()) newErrors.ciudad = 'ciudad';
     if (!formData.email.trim()) newErrors.email = 'Email es requerido';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido';
     if (!formData.department.trim()) newErrors.department = 'Departamento es requerido';
@@ -132,6 +136,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         await onEditUser({
           id: userToEdit.id,
           name: formData.name,
+          ciudad: formData.ciudad,
           department: formData.department,
           tipoVpn: formData.tipoVpn,
           correo: formData.email, // Convertimos email a correo para la DB
@@ -141,6 +146,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         await onUserAdded({
           name: formData.name,
           department: formData.department,
+          ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.email, // Convertimos email a correo para la DB
           imageBase64: formData.imageBase64
@@ -266,6 +272,21 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           className={errors.email ? 'error' : ''}
         />
         {errors.email && <div className="error-text">{errors.email}</div>}
+      </div>
+
+          <div className="form-group">
+      <label htmlFor="ciudad" className="form-label">Ciudad</label>
+        <input
+          id="ciudad"
+          name="ciudad"
+          type="ciudad"
+          placeholder="ciudades"
+          value={formData.ciudad}
+          onChange={handleChange}
+          required
+          className={errors.ciudad ? 'error' : ''}
+        />
+        {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
       </div>
     
 
