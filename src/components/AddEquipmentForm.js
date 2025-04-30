@@ -58,6 +58,7 @@ function AddEquipmentForm({
 
   const validateForm = () => {
     const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = 'nombre requerido';
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
     if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
     
@@ -135,7 +136,7 @@ function AddEquipmentForm({
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Ej: Laptop, Teléfono, Monitor"
+              placeholder="Ej: Nombre de equipo"
               required
               className={`form-input ${errors.name ? 'input-error' : ''}`}
             />
