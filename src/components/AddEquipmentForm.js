@@ -125,6 +125,27 @@ function AddEquipmentForm({
           </div>
         )}
 
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="name" className="form-label">Nombre de Equipo</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Ej: Laptop, Teléfono, Monitor"
+              required
+              className={`form-input ${errors.name ? 'input-error' : ''}`}
+            />
+            {errors.name && <div className="error-text">{errors.name}</div>}
+          </div>
+
+
+
+
+
         <div className="form-row">
           <div className="form-group">
             <label htmlFor="type" className="form-label">Tipo de Equipo</label>
