@@ -46,6 +46,8 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
               <p className="user-email">{user.correo}</p>
                 <p className="user-email">{user.tipoVpn}</p>
 
+
+                </div>
               <div className="user-actions">
                 <button
                   className="edit-button"
@@ -75,7 +77,7 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
                   Detalles
                 </button>
               </div>
-            </div>
+            
           </div>
         ))}
       </div>
