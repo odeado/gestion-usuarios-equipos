@@ -13,7 +13,7 @@ function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment,
       <table>
         <thead>
           <tr>
-    
+            <th>Nombre</th>
             <th>Tipo</th>
             <th>Modelo</th>
             <th>Asignado a</th>
@@ -23,7 +23,7 @@ function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment,
         <tbody>
           {equipment.map(item => (
             <tr key={item.id}>
-              
+              <td data-label="Nombre">{item.nombre}</td>
               <td data-label="Tipo">{item.type}</td>
               <td data-label="Modelo">{item.model}</td>
               <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
