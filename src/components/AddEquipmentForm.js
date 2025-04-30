@@ -178,7 +178,7 @@ function AddEquipmentForm({
             />
             {errors.model && <div className="error-text">{errors.model}</div>}
           </div>
-        </div>
+        
 
         <div className="form-row">
           <div className="form-group department-group">
