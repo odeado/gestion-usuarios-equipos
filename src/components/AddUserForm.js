@@ -258,6 +258,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         />
         {errors.name && <div className="error-text">{errors.name}</div>}
       </div>
+          </div>
       
       <div className="form-group">
       <label htmlFor="email" className="form-label">Correo electrónico</label>
@@ -304,7 +305,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         />
         {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
       </div>
-      </div>
+    
 
 
           
@@ -314,6 +315,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           <label className="form-label">Departamento</label>
         {renderDepartmentSelect()}
       </div>
+        </div>
       
       <div className="form-group image-upload-group">
           <label className="form-label">Imagen de perfil</label>
@@ -336,7 +338,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
         </div>
         </div>
-      </div>
+      
 
       {imagePreview && (
         <div className="image-preview-container">
