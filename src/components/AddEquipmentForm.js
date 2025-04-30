@@ -10,7 +10,7 @@ function AddEquipmentForm({
   onCancelEdit 
 }) {
   const [formData, setFormData] = useState({
-    name: '',
+    nombre: '',
     type: '',
     model: '',
     assignedTo: '',
@@ -25,7 +25,7 @@ function AddEquipmentForm({
   useEffect(() => {
     if (equipmentToEdit) {
       setFormData({
-        name: equipmentToEdit.name || '',
+        nombre: equipmentToEdit.nombre || '',
         type: equipmentToEdit.type || '',
         model: equipmentToEdit.model || '',
         assignedTo: equipmentToEdit.assignedTo || '',
@@ -39,7 +39,7 @@ function AddEquipmentForm({
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      nombre: '',
       type: '',
       model: '',
       assignedTo: '',
@@ -58,7 +58,7 @@ function AddEquipmentForm({
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'nombre requerido';
+    if (!formData.nombre.trim()) newErrors.nombre = 'nombre requerido';
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
     if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
     
@@ -129,18 +129,18 @@ function AddEquipmentForm({
 
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="name" className="form-label">Nombre de Equipo</label>
+            <label htmlFor="nombre" className="form-label">Nombre de Equipo</label>
             <input
-              id="name"
-              name="name"
+              id="nombre"
+              name="nombre"
               type="text"
-              value={formData.name}
+              value={formData.nombre}
               onChange={handleChange}
               placeholder="Ej: Nombre de equipo"
               required
-              className={`form-input ${errors.name ? 'input-error' : ''}`}
+              className={`form-input ${errors.nombre ? 'input-error' : ''}`}
             />
-            {errors.name && <div className="error-text">{errors.name}</div>}
+            {errors.nombre && <div className="error-text">{errors.nombre}</div>}
           </div>
 
 
