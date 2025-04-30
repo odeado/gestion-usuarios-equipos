@@ -45,15 +45,46 @@
   margin-top: 5px;
 }
 
-.image-preview {
-  max-width: 200px;
-  margin: 10px 0;
-}
-
-.image-preview img {
-  max-width: 100%;
-  border-radius: 4px;
-}
+ /* Image Upload Styles */
+  .image-upload-container {
+    margin-top: 5px;
+  }
+  
+  .image-upload-label {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .image-upload-label:hover {
+    background: #e0e0e0;
+  }
+  
+  .image-upload-input {
+    display: none;
+  }
+  
+  .image-preview-container {
+    margin: 15px 0;
+    text-align: center;
+  }
+  
+  .image-preview-wrapper {
+    display: inline-block;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .image-preview {
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+  }
 
 .form-actions {
   display: flex;
