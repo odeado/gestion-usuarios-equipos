@@ -28,6 +28,8 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
                 <img src={user.imageBase64} alt={user.name} />
               </div>
             )}
+
+              </div>
             <div className="user-info">
               <h3>{user.name}</h3>
               <p 
