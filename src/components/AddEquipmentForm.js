@@ -162,6 +162,7 @@ function AddEquipmentForm({
             />
             {errors.type && <div className="error-text">{errors.type}</div>}
           </div>
+              </div>
 
           <div className="form-group">
             <label htmlFor="model" className="form-label">Modelo</label>
