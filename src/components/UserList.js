@@ -1,4 +1,6 @@
 import React from 'react';
+import './UserList.css';
+//     if (!formData.nombre) newErrors.nombre = 'Nombre es requerido';
 
 function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ±adido onEditUser en las props
   const getDepartmentColor = (dept) => {
@@ -29,7 +31,7 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
               </div>
             )}
 
-              </div>
+              
             <div className="user-info">
               <h3>{user.name}</h3>
               <p 
@@ -47,9 +49,8 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
               </p>
               <p className="user-email">{user.correo}</p>
                 <p className="user-email">{user.tipoVpn}</p>
+                
 
-
-                </div>
               <div className="user-actions">
                 <button
                   className="edit-button"
@@ -79,7 +80,7 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // âœ… AÃ
                   Detalles
                 </button>
               </div>
-            
+              </div>
           </div>
         ))}
       </div>

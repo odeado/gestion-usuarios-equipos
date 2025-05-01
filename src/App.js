@@ -7,8 +7,8 @@ import AddUserForm from './components/AddUserForm';
 import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
-import './UserList.css';
-import './components/AddEquipmentForm.css';
+
+import './components/UserList.css';
 
 function App() {
   const [users, setUsers] = useState([]);

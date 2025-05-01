@@ -5,7 +5,7 @@ import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
 function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment }) {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    correo: '',
     ciudad: '',
     tipoVpn: '',
     department: '',
@@ -24,7 +24,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     if (userToEdit) {
       setFormData({
         name: userToEdit.name || '',
-        email: userToEdit.correo || '',
+        correo: userToEdit.correo || '',
         ciudad: userToEdit.ciudad || '',
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
@@ -40,7 +40,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const resetForm = () => {
     setFormData({
       name: '',
-      email: '',
+      correo: '',
       ciudad: '',
       tipoVpn: '',
       department: '',
@@ -67,8 +67,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     if (!formData.name.trim()) newErrors.name = 'Nombre es requerido';
     if (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'tipo vpn requerido';
     if (!formData.ciudad.trim()) newErrors.ciudad = 'ciudad';
-    if (!formData.email.trim()) newErrors.email = 'Email es requerido';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido';
+    if (!formData.correo.trim()) newErrors.correo = 'correo es requerido';
+    else if (!/\S+@\S+\.\S+/.test(formData.correo)) newErrors.correo = 'correo inválido';
     if (!formData.department.trim()) newErrors.department = 'Departamento es requerido';
 
     setErrors(newErrors);
@@ -139,7 +139,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           ciudad: formData.ciudad,
           department: formData.department,
           tipoVpn: formData.tipoVpn,
-          correo: formData.email, // Convertimos email a correo para la DB
+          correo: formData.correo, // Convertimos correo a correo para la DB
           imageBase64: formData.imageBase64
         });
       } else {
@@ -148,7 +148,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           department: formData.department,
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
-          correo: formData.email, // Convertimos email a correo para la DB
+          correo: formData.correo, // Convertimos correo a correo para la DB
           imageBase64: formData.imageBase64
         });
         resetForm();
@@ -261,18 +261,18 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           
       
       <div className="form-group">
-      <label htmlFor="email" className="form-label">Correo electrónico</label>
+      <label htmlFor="correo" className="form-label">Correo electrónico</label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id="correo"
+          name="correo"
+          type="text"
           placeholder="correo@ejemplo.com"
-          value={formData.email}
+          value={formData.correo}
           onChange={handleChange}
           required
-          className={errors.email ? 'error' : ''}
+          className={`form-input ${errors.correo ? 'input-error' : ''}`}
         />
-        {errors.email && <div className="error-text">{errors.email}</div>}
+        {errors.correo && <div className="error-text">{errors.correo}</div>}
       </div>
 
           <div className="form-group">
@@ -280,12 +280,12 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         <input
           id="ciudad"
           name="ciudad"
-          type="ciudad"
+          type="text"
           placeholder="ciudades"
           value={formData.ciudad}
           onChange={handleChange}
           required
-          className={errors.ciudad ? 'error' : ''}
+          className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
         />
         {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
       </div>
@@ -297,11 +297,11 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           id="tipoVpn"
           name="tipoVpn"
           type="tipoVpn"
-          placeholder="correo@ejemplo.com"
+          placeholder="Perfil VPN"
           value={formData.tipoVpn}
           onChange={handleChange}
           required
-          className={errors.tipoVpn ? 'error' : ''}
+          className={`form-input ${errors.tipoVpn ? 'input-error' : ''}`}
         />
         {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
       </div>

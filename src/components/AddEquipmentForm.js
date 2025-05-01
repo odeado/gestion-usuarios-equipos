@@ -162,7 +162,7 @@ function AddEquipmentForm({
             />
             {errors.type && <div className="error-text">{errors.type}</div>}
           </div>
-              </div>
+        </div>
 
           <div className="form-group">
             <label htmlFor="model" className="form-label">Modelo</label>
@@ -197,19 +197,26 @@ function AddEquipmentForm({
               ))}
             </select>
           </div>
-</div>
-          <div className="image-preview-container">
-            <label>Imagen del Equipo</label>
+        </div>
+
+          <div className="form-group image-upload-group">
+          <label className="form-label">Imagen del Equipo</label>
+          <div className="image-upload-container">
+            <label htmlFor="image-upload" className="image-upload-label">
+              Seleccionar imagen
             <input
+            id="image-upload"
               type="file"
               accept="image/*"
               onChange={handleImageChange}
               ref={fileInputRef}
               disabled={isCompressing}
+              className="image-upload-input"
             />
+            </label>
             {errors.image && <div className="error-text">{errors.image}</div>}
           </div>
-        </div>
+          </div>
 
         <div className="form-actions">
           {isEditing && (

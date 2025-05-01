@@ -14,7 +14,9 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
-    padding: 0 15px;
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .user-card {
@@ -23,16 +25,43 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     padding: 1rem;
     cursor: pointer;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     transition: transform 0.2s;
     display: flex; /* Cambiamos a flex para móvil */
-    flex-direction: column; /* Por defecto en columna */
-    display: flex;
+    
+   
     flex-direction: row-reverse;
   
   }
 
 
-
+  .user-avatar {
+    width: 20%;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .user-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .user-info {
+    flex: 1;
+    width: 80%;
+  }
+  
+  .user-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+  }
 
   
   .user-card:hover {
@@ -40,22 +69,11 @@
   }
 
 
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-    padding: 0 10px;
-    width: 100%;
-    box-sizing: border-box;
+  .user-card:active {
+    transform: translateY(0);
   }
   
-  /* Asegura que las tarjetas no excedan el ancho */
-  .user-card {
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-    display: grid;
-  }
+ 
 
 
   
