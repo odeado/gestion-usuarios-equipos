@@ -5,8 +5,8 @@ import './UserList.css';
 function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // ✅ Añadido onEditUser en las props
   const getDepartmentColor = (dept) => {
     const colors = {
-      'Ventas': '#ffeb3b',
-      'TI': '#4caf50',
+      'Gerencia': '#ffeb3b',
+      'UDG': '#4caf50',
       'Marketing': '#f44336',
       'Recursos Humanos': '#9c27b0',
       'Dirección': '#ff9800',
