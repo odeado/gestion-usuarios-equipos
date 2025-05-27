@@ -58,6 +58,7 @@ const handleEditEquipment = async (equipmentData) => {
       nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
+      serialNumber: equipmentData.serialNumber, // Asegúrate de que este campo exista en tu formulario
       IpEquipo: equipmentData.IpEquipo,
       assignedTo: equipmentData.assignedTo,
       imageBase64: equipmentData.imageBase64,
@@ -83,6 +84,7 @@ const handleAddEquipment = async (equipmentData) => {
       nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
+      serialNumber: equipmentData.serialNumber, // Asegúrate de que este campo exista en tu formulario
       IpEquipo: equipmentData.IpEquipo,
       assignedTo: equipmentData.assignedTo,
       imageBase64: equipmentData.imageBase64,

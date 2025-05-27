@@ -154,16 +154,16 @@ html, body, #root {
 }
 
 .app-container {
-  width: 100%;
-  min-height: 100vh;
+  
+  
   display: flex;
   flex-direction: column;
 }
 
 .app {
   padding: 10px;
-  width: 100%;
-  max-width: 1600px; /* Mantén este valor o ajústalo */
+width: 100%;
+  
   margin: 0 auto;
   box-sizing: border-box; /* Incluye padding en el ancho */
 }
@@ -410,6 +410,8 @@ html, body, #root {
     }
    
   .app-container {
+    
+    
     padding: 5px;
     display: grid;
   }

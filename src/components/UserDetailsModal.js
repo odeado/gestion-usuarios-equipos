@@ -185,6 +185,13 @@ function UserDetailsModal({
     );
   };
 
+     // Función para obtener el nombre del equipo basado en el ID del equipo del usuario
+   const getEquipmentName = (EquipoAsignado) => {
+    if (!EquipoAsignado || !equipment) return 'Sin equipo';
+    const foundEquipment = equipment.find(eq => eq.id === EquipoAsignado);
+    return foundEquipment ? foundEquipment.IpEquipo : 'Equipo no encontrado';
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -253,6 +260,23 @@ function UserDetailsModal({
                 {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
               </div>
 
+      <div className="form-group">
+  <select
+    name="EquipoAsignado"
+    value={editedUser.EquipoAsignado || ''}
+    onChange={handleInputChange}
+    className={`edit-input ${errors.EquipoAsignado ? 'input-error' : ''}`}
+  >
+    <option value="">Seleccione un equipo</option>
+    {equipment.map(eq => (
+      <option key={eq.id} value={eq.id}>
+        {eq.name} - {eq.ipEquipo || eq.IpEquipo || 'Sin IP'}
+      </option>
+    ))}
+  </select>
+  {errors.EquipoAsignado && <div className="error-text">{errors.EquipoAsignado}</div>}
+</div>
+
 
 
                   
@@ -266,29 +290,8 @@ function UserDetailsModal({
             <div className="view-mode">
               <h2>{user.name}</h2>
               <p>{user.correo}</p>
-            
-            <p className="form-label">{user.tipoVpn}</p>
-              <p className="department-badge">{user.department}</p>
-            </div>
-          )}
-        </div>
 
-        <div className="modal-body">
-          <h3>Equipos en uso</h3>
-          {userEquipment.length > 0 ? (
-            <ul className="equipment-list">
-              {userEquipment.map(item => (
-                <li key={item.id}>
-                  <strong>{item.name}</strong> - {item.type} (N° Serie: {item.serialNumber})
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Sin equipos asignados actualmente</p>
-          )}
-        </div>
-
-        <div className="modal-footer">
+  <div className="modal-footer">
           <div className="navigation-buttons">
             <button 
               onClick={onPrev} 
@@ -336,6 +339,38 @@ function UserDetailsModal({
             </button>
           </div>
         </div>
+
+
+
+
+            <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
+            <label className="form-label">IP Equipo Asignado:
+           <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span></label>
+<div className="caja-titulo">
+  <label className="form-label">Departamento:</label>
+  <p className="department-badge">{user.department}</p>
+</div>
+
+            </div>
+          )}
+        </div>
+
+        <div className="modal-body">
+          <h3>Equipos en uso</h3>
+          {userEquipment.length > 0 ? (
+            <ul className="equipment-list">
+              {userEquipment.map(item => (
+                <li key={item.id}>
+                  <strong>{item.name}</strong> - {item.type} (S/N: {item.serialNumber})
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sin equipos asignados actualmente</p>
+          )}
+        </div>
+
+      
       </div>
     </div>
   );

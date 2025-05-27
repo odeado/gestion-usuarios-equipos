@@ -11,12 +11,20 @@
     align-items: center;
     z-index: 1000;
   }
+
+  .caja-titulo{
+    display: flex;
+    
+    
+    align-items: center;
+  }
   
   .modal-content {
+    display: flex;
     background: white;
     border-radius: 8px;
     width: 90%;
-    max-width: 500px;
+    max-width: 800px;
     padding: 20px;
     position: relative;
   }
@@ -94,15 +102,12 @@
     margin: 0 10px;
   }
 
-  .modal-content {
-    width: 95%; /* Reduce ligeramente en móvil */
-    max-width: 500px;
-    box-sizing: border-box;
-    margin: 10px;
-  }
+ 
   
   @media (max-width: 768px) {
     .modal-content {
+      display: flex;
+      flex-wrap: wrap;
       width: 98%;
       padding: 15px;
     }

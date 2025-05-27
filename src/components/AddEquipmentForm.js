@@ -13,6 +13,7 @@ function AddEquipmentForm({
     nombre: '',
     type: '',
     model: '',
+    serialNumber: '',
     IpEquipo: '',
     assignedTo: '',
     imageBase64: ''
@@ -29,7 +30,9 @@ function AddEquipmentForm({
         nombre: equipmentToEdit.nombre || '',
         type: equipmentToEdit.type || '',
         model: equipmentToEdit.model || '',
+        serialNumber: equipmentToEdit.serialNumber || '',
         IpEquipo: equipmentToEdit.IpEquipo || '',
+
         assignedTo: equipmentToEdit.assignedTo || '',
         imageBase64: equipmentToEdit.imageBase64 || ''
       });
@@ -44,6 +47,8 @@ function AddEquipmentForm({
       nombre: '',
       type: '',
       model: '',
+      serialNumber: '',
+      IpEquipo: '',
       assignedTo: '',
       imageBase64: ''
     });
@@ -63,6 +68,13 @@ function AddEquipmentForm({
     if (!formData.nombre.trim()) newErrors.nombre = 'nombre requerido';
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
     if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
+    if (!formData.serialNumber.trim()) newErrors.serialNumber = 'Número de serie es requerido';
+    if (!formData.IpEquipo.trim()) newErrors.IpEquipo = 'IP Equipo es requerido';
+    if (!formData.assignedTo) newErrors.assignedTo = 'Debe asignar a un usuario';
+    if (!formData.imageBase64) newErrors.image = 'Imagen es requerida';
+    if (formData.IpEquipo && !/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(formData.IpEquipo)) {
+      newErrors.IpEquipo = 'IP inválida';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -179,6 +191,21 @@ function AddEquipmentForm({
               className={`form-input ${errors.model ? 'input-error' : ''}`}
             />
             {errors.model && <div className="error-text">{errors.model}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="serialNumber" className="form-label">Número de Serie</label>
+            <input
+              id="serialNumber"
+              name="serialNumber"
+              type="text"
+              value={formData.serialNumber}
+              onChange={handleChange}
+              placeholder="Ej: SN123456789"
+              required
+              className={`form-input ${errors.serialNumber ? 'input-error' : ''}`}
+            />
+            {errors.serialNumber && <div className="error-text">{errors.serialNumber}</div>}
           </div>
         
           <div className="form-group">
