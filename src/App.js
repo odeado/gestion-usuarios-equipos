@@ -19,7 +19,11 @@ function App() {
   const [editingEquipment, setEditingEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
+
   const [showModal, setShowModal] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [showEquipmentForm, setShowEquipmentForm] = useState(false);
+
 
   const handleEditUser = async (userData) => {
     try {
@@ -30,6 +34,7 @@ function App() {
         ciudad: userData.ciudad,
         tipoVpn: userData.tipoVpn,
         department: userData.department,
+        EquipoAsignado: userData.EquipoAsignado || null, // Nuevo campo
         imageBase64: userData.imageBase64,
         updatedAt: new Date()  // Agrega campo de actualización
       });
@@ -53,6 +58,7 @@ const handleEditEquipment = async (equipmentData) => {
       nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
+      IpEquipo: equipmentData.IpEquipo,
       assignedTo: equipmentData.assignedTo,
       imageBase64: equipmentData.imageBase64,
       updatedAt: new Date()  // Agrega campo de actualización
@@ -77,6 +83,7 @@ const handleAddEquipment = async (equipmentData) => {
       nombre: equipmentData.nombre,
       type: equipmentData.type,
       model: equipmentData.model,
+      IpEquipo: equipmentData.IpEquipo,
       assignedTo: equipmentData.assignedTo,
       imageBase64: equipmentData.imageBase64,
       createdAt: new Date()
@@ -117,6 +124,7 @@ const handleAddUser = async (userData) => {
       ciudad: userData.ciudad,
       tipoVpn: userData.tipoVpn,
       department: userData.department,
+      EquipoAsignado: userData.EquipoAsignado || null, // Nuevo campo
       imageBase64: userData.imageBase64,
       createdAt: new Date()
     });
@@ -209,57 +217,117 @@ const handleAddUser = async (userData) => {
     <div className="app-container">
       <div className="app">
         <h1>Sistema de Gestión de Equipos</h1>
-
-        <div className="forms-usuarios-equipos">
-          <AddUserForm 
-            onUserAdded={handleAddUser} 
-            userToEdit={editingUser}
-            onEditUser={handleEditUser}
-            onCancelEdit={() => setEditingUser(null)}
-            departments={departments}
-            onAddDepartment={handleAddDepartment}
-          />
-          <AddEquipmentForm 
-  users={users}
-  onEquipmentAdded={handleAddEquipment}
-  equipmentToEdit={editingEquipment}
-  onEditEquipment={handleEditEquipment}
-  onCancelEdit={() => setEditingEquipment(null)}
-/>
+  
+        {/* Botones para mostrar/ocultar formularios */}
+        <div className="form-toggle-buttons">
+          <button 
+            onClick={() => {
+              setShowUserForm(!showUserForm);
+              setShowEquipmentForm(false);
+              setEditingUser(null);
+            }}
+            className="toggle-form-btn"
+          >
+            {showUserForm ? 'Ocultar Formulario Usuario' : 'Mostrar Formulario Usuario'}
+          </button>
+          
+          <button 
+            onClick={() => {
+              setShowEquipmentForm(!showEquipmentForm);
+              setShowUserForm(false);
+              setEditingEquipment(null);
+            }}
+            className="toggle-form-btn"
+          >
+            {showEquipmentForm ? 'Ocultar Formulario Equipo' : 'Mostrar Formulario Equipo'}
+          </button>
         </div>
+  
+        {/* Formularios condicionales */}
+        {showUserForm && (
+          <div className="forms-usuarios-equipos">
+            <AddUserForm 
+              onUserAdded={(userData) => {
+                handleAddUser(userData);
+                setShowUserForm(false);
+              }} 
+              userToEdit={editingUser}
+              onEditUser={(userData) => {
+                handleEditUser(userData);
+                setShowUserForm(false);
+              }}
+              onCancelEdit={() => {
+                setEditingUser(null);
+                setShowUserForm(false);
+              }}
+              departments={departments}
+              onAddDepartment={handleAddDepartment}
+              equipment={equipment}
+            />
+          </div>
+        )}
+  
+        {showEquipmentForm && (
+          <div className="forms-usuarios-equipos">
+            <AddEquipmentForm 
+              users={users}
+              onEquipmentAdded={(equipData) => {
+                handleAddEquipment(equipData);
+                setShowEquipmentForm(false);
+              }}
+              equipmentToEdit={editingEquipment}
+              onEditEquipment={(equipData) => {
+                handleEditEquipment(equipData);
+                setShowEquipmentForm(false);
+              }}
+              onCancelEdit={() => {
+                setEditingEquipment(null);
+                setShowEquipmentForm(false);
+              }}
+            />
+          </div>
+        )}
         
+        {/* Listados (siempre visibles) */}
         <div className="content">
           <UserList 
             users={users} 
+            equipment={equipment}
             onSelectUser={handleSelectUser}
             onDeleteUser={handleDeleteUser}
-            onEditUser={(user) => setEditingUser(user)}
+            onEditUser={(user) => {
+              setEditingUser(user);
+              setShowUserForm(true);
+              setShowEquipmentForm(false);
+            }}
           />
-    <EquipmentList 
-  equipment={equipment}
-  users={users}
-  onSelectEquipment={handleSelectEquipment}
-  onEditEquipment={(equipment) => setEditingEquipment(equipment)}
-  onDeleteEquipment={handleDeleteEquipment}
-/>
-
-
+          <EquipmentList 
+            equipment={equipment}
+            users={users}
+            onSelectEquipment={handleSelectEquipment}
+            onEditEquipment={(equipment) => {
+              setEditingEquipment(equipment);
+              setShowEquipmentForm(true);
+              setShowUserForm(false);
+            }}
+            onDeleteEquipment={handleDeleteEquipment}
+          />
         </div>
-
+  
+        {/* Modal de detalles */}
         {showModal && selectedUser && (
-  <UserDetailsModal 
-    user={selectedUser}
-    users={users}
-    equipment={equipment}
-    onClose={() => setShowModal(false)}
-    onEdit={handleEditUser}
-    onNext={handleNextUser}
-    onPrev={handlePrevUser}
-    departments={departments}
-    onAddDepartment={handleAddDepartment}
-  />
-)}
-
+          <UserDetailsModal 
+            user={selectedUser}
+            users={users}
+            equipment={equipment}
+            onClose={() => setShowModal(false)}
+            onEdit={handleEditUser}
+            onNext={handleNextUser}
+            onPrev={handlePrevUser}
+            departments={departments}
+            onAddDepartment={handleAddDepartment}
+          />
+        )}
       </div>
     </div>
   );

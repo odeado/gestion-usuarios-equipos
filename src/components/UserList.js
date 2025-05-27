@@ -2,7 +2,7 @@ import React from 'react';
 import './UserList.css';
 //     if (!formData.nombre) newErrors.nombre = 'Nombre es requerido';
 
-function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // ✅ Añadido onEditUser en las props
+function UserList({ users, equipment, onSelectUser, onDeleteUser, onEditUser }) { // ✅ Añadido onEditUser en las props
   const getDepartmentColor = (dept) => {
     const colors = {
       'Gerencia': '#ffeb3b',
@@ -13,6 +13,14 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // ✅ A�
       'default': '#2196f3'
     };
     return colors[dept] || colors.default;
+  };
+
+
+   // Función para obtener el nombre del equipo basado en el ID del equipo del usuario
+   const getEquipmentName = (EquipoAsignado) => {
+    if (!EquipoAsignado || !equipment) return 'Sin equipo';
+    const foundEquipment = equipment.find(eq => eq.id === EquipoAsignado);
+    return foundEquipment ? foundEquipment.IpEquipo : 'Equipo no encontrado';
   };
 
   return (
@@ -49,6 +57,8 @@ function UserList({ users, onSelectUser, onDeleteUser, onEditUser }) { // ✅ A�
               </p>
               <p className="user-email">{user.correo}</p>
                 <p className="user-email">{user.tipoVpn}</p>
+                <p className="user-email">{getEquipmentName(user.EquipoAsignado)}</p>
+              
                 
 
               <div className="user-actions">

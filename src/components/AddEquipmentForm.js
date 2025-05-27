@@ -13,6 +13,7 @@ function AddEquipmentForm({
     nombre: '',
     type: '',
     model: '',
+    IpEquipo: '',
     assignedTo: '',
     imageBase64: ''
   });
@@ -28,6 +29,7 @@ function AddEquipmentForm({
         nombre: equipmentToEdit.nombre || '',
         type: equipmentToEdit.type || '',
         model: equipmentToEdit.model || '',
+        IpEquipo: equipmentToEdit.IpEquipo || '',
         assignedTo: equipmentToEdit.assignedTo || '',
         imageBase64: equipmentToEdit.imageBase64 || ''
       });
@@ -179,6 +181,21 @@ function AddEquipmentForm({
             {errors.model && <div className="error-text">{errors.model}</div>}
           </div>
         
+          <div className="form-group">
+            <label htmlFor="IpEquipo" className="form-label">IP Equipo</label>
+            <input
+              id="IpEquipo"
+              name="IpEquipo"
+              type="text"
+              value={formData.IpEquipo}
+              onChange={handleChange}
+              placeholder="Ej: Dell XPS 15, iPhone 13"
+              required
+              className={`form-input ${errors.IpEquipo ? 'input-error' : ''}`}
+            />
+            {errors.IpEquipo && <div className="error-text">{errors.IpEquipo}</div>}
+          </div>
+
 
         <div className="form-row">
           <div className="form-group department-group">

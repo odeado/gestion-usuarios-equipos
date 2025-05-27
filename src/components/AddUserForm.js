@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
 
-function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment }) {
+function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment, equipment = [] }) {
   const [formData, setFormData] = useState({
     name: '',
     correo: '',
     ciudad: '',
     tipoVpn: '',
     department: '',
+    EquipoAsignado: '',
     imageBase64: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -28,6 +29,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         ciudad: userToEdit.ciudad || '',
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
+        EquipoAsignado: userToEdit.EquipoAsignado || '',
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -44,6 +46,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       ciudad: '',
       tipoVpn: '',
       department: '',
+      EquipoAsignado: '',
       imageBase64: ''
     });
     setImagePreview(null);
@@ -140,6 +143,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           department: formData.department,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
+          EquipoAsignado: formData.EquipoAsignado || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
       } else {
@@ -149,6 +153,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
+          EquipoAsignado: formData.EquipoAsignado || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
         resetForm();
@@ -236,6 +241,27 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     );
   };
 
+
+  const renderEquipmentSelect = () => {
+    return (
+      <div className="form-group">
+        <label htmlFor="EquipoAsignado" className="form-label">Equipo Asignado</label>
+        <select
+          id="EquipoAsignado"
+          name="EquipoAsignado"
+          value={formData.EquipoAsignado}
+          onChange={handleChange}
+          className="form-input"
+        >
+          <option value="">Seleccione un equipo</option>
+          {equipment.map(eq => (
+            <option key={eq.id} value={eq.id}>{eq.nombre}</option>
+          ))}
+        </select>
+      </div>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit} className="user-form">
       <h2 className="form-title">{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
@@ -315,7 +341,15 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           <label className="form-label">Departamento</label>
         {renderDepartmentSelect()}
       </div>
+
+      <div className="form-group">
+    {renderEquipmentSelect()}
+  </div>
         </div>
+
+
+     
+
       
       <div className="form-group image-upload-group">
           <label className="form-label">Imagen de perfil</label>

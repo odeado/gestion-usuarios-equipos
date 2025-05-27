@@ -16,6 +16,8 @@ function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment,
             <th>Nombre</th>
             <th>Tipo</th>
             <th>Modelo</th>
+            <th>IP Equipo</th>
+            <th>Serie</th>
             <th>Asignado a</th>
             <th>Acciones</th>
           </tr>
@@ -26,6 +28,8 @@ function EquipmentList({ equipment, users, onSelectEquipment, onDeleteEquipment,
               <td data-label="Nombre">{item.nombre}</td>
               <td data-label="Tipo">{item.type}</td>
               <td data-label="Modelo">{item.model}</td>
+              <td data-label="IP Equipo">{item.IpEquipo}</td>
+              <td data-label="Serie">{item.MacEquipo}</td>
               <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
               <td className="actions">
                 <button 
