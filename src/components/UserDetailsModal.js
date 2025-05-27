@@ -288,8 +288,7 @@ function UserDetailsModal({
             </div>
           ) : (
             <div className="view-mode">
-              <h2>{user.name}</h2>
-              <p>{user.correo}</p>
+              
 
   <div className="modal-footer">
           <div className="navigation-buttons">
@@ -341,11 +340,11 @@ function UserDetailsModal({
         </div>
 
 
-
+<h2>{user.name}</h2>
+              <p>{user.correo}</p>
 
             <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
-            <label className="form-label">IP Equipo Asignado:
-           <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span></label>
+           
 <div className="caja-titulo">
   <label className="form-label">Departamento:</label>
   <p className="department-badge">{user.department}</p>
@@ -368,6 +367,10 @@ function UserDetailsModal({
           ) : (
             <p>Sin equipos asignados actualmente</p>
           )}
+
+ <label className="form-label">IP Equipo Asignado:
+           <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span></label>
+
         </div>
 
       

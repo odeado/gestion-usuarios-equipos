@@ -18,6 +18,50 @@
     
     align-items: center;
   }
+
+  .modal-user{
+    position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 45%; /* Un cuarto del ancho */
+  height: 100%; /* Toda la altura */
+  margin: 0;
+  z-index: 1;
+  }
+
+  .modal-user-image {
+    width: 30%;
+  height: 100%;
+  border-radius: 0; /* Quitamos el border-radius circular */
+  object-fit: cover;
+  border: none;
+  box-shadow: none;
+  /* Efecto difuminado vertical completo */
+  -webkit-mask-image: linear-gradient(to left, 
+    rgba(0,0,0,0) 0%, 
+    rgba(0,0,0,0.3) 30%, 
+    rgba(0,0,0,0.8) 100%);
+  mask-image: linear-gradient(to left, 
+    rgba(0,0,0,0) 0%, 
+    rgba(0,0,0,0.3) 30%, 
+    rgba(0,0,0,0.8) 100%);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .modal-body {
+    padding: 20px;
+    text-align: center;
+  } 
   
   .modal-content {
     display: flex;
@@ -39,14 +83,7 @@
     cursor: pointer;
   }
   
-  .modal-user-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin: 0 auto 15px;
-    display: block;
-  }
+
   
   .department-badge {
     background: #e0e0e0;

@@ -7,7 +7,6 @@ import AddUserForm from './components/AddUserForm';
 import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
-
 import './components/UserList.css';
 
 function App() {
@@ -19,125 +18,221 @@ function App() {
   const [editingEquipment, setEditingEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
-
   const [showModal, setShowModal] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
   const [showEquipmentForm, setShowEquipmentForm] = useState(false);
 
+  // Función para actualizar el equipo asignado en el usuario
+  const updateUserEquipment = async (userId, equipmentId) => {
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        EquipoAsignado: equipmentId || null,
+        updatedAt: new Date()
+      });
+      
+      // Actualiza el estado local
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, EquipoAsignado: equipmentId || null }
+          : user
+      ));
+    } catch (error) {
+      console.error("Error actualizando equipo de usuario:", error);
+      throw error;
+    }
+  };
 
+  // Función para actualizar el usuario asignado en el equipo
+  const updateEquipmentAssignment = async (equipmentId, userId) => {
+    try {
+      await updateDoc(doc(db, 'equipment', equipmentId), {
+        assignedTo: userId || null,
+        updatedAt: new Date()
+      });
+      
+      // Actualiza el estado local
+      setEquipment(equipment.map(equip => 
+        equip.id === equipmentId 
+          ? { ...equip, assignedTo: userId || null }
+          : equip
+      ));
+    } catch (error) {
+      console.error("Error actualizando asignación de equipo:", error);
+      throw error;
+    }
+  };
+
+  // Edición de usuario con sincronización de equipo
   const handleEditUser = async (userData) => {
     try {
-      // Debes usar updateDoc en lugar de addDoc para edición
+      const oldUser = users.find(u => u.id === userData.id);
+      const equipmentChanged = oldUser?.EquipoAsignado !== userData.EquipoAsignado;
+
+      // Si cambió el equipo asignado, actualiza ambos registros
+      if (equipmentChanged) {
+        // Limpia la asignación anterior (si existía)
+        if (oldUser?.EquipoAsignado) {
+          await updateEquipmentAssignment(oldUser.EquipoAsignado, null);
+        }
+
+        // Asigna el nuevo equipo (si existe)
+        if (userData.EquipoAsignado) {
+          await updateEquipmentAssignment(userData.EquipoAsignado, userData.id);
+        }
+      }
+
+      // Actualiza el usuario en Firestore
       await updateDoc(doc(db, 'users', userData.id), {
         name: userData.name,
         correo: userData.correo,
         ciudad: userData.ciudad,
         tipoVpn: userData.tipoVpn,
         department: userData.department,
-        EquipoAsignado: userData.EquipoAsignado || null, // Nuevo campo
+        EquipoAsignado: userData.EquipoAsignado || null,
         imageBase64: userData.imageBase64,
-        updatedAt: new Date()  // Agrega campo de actualización
+        updatedAt: new Date()
       });
-            // Actualiza el estado local
-    setUsers(users.map(user => 
-      user.id === userData.id ? { ...userData } : user
-    ));
-    
-    setEditingUser(null); // Limpia el usuario en edición
-  } catch (error) {
-    console.error("Error editando usuario: ", error);
-    throw error; // Propaga el error
-  }
-};
 
-
-/*datos de equipmento*/
-const handleEditEquipment = async (equipmentData) => {
-  try {
-    await updateDoc(doc(db, 'equipment', equipmentData.id), {
-      nombre: equipmentData.nombre,
-      type: equipmentData.type,
-      model: equipmentData.model,
-      serialNumber: equipmentData.serialNumber, // Asegúrate de que este campo exista en tu formulario
-      IpEquipo: equipmentData.IpEquipo,
-      assignedTo: equipmentData.assignedTo,
-      imageBase64: equipmentData.imageBase64,
-      updatedAt: new Date()  // Agrega campo de actualización
-    });
-
-   // Actualiza el estado local
-   setEquipment(equipment.map(equipment => 
-    equipment.id === equipmentData.id ? { ...equipmentData } : equipment
-  ));
-  
-  setEditingEquipment(null); // Limpia el usuario en edición
-} catch (error) {
-  console.error("Error editando Equipo: ", error);
-  throw error; // Propaga el error
-}
-};
-
-
-const handleAddEquipment = async (equipmentData) => {
-  try {
-    const docRef = await addDoc(collection(db, 'equipment'), {
-      nombre: equipmentData.nombre,
-      type: equipmentData.type,
-      model: equipmentData.model,
-      serialNumber: equipmentData.serialNumber, // Asegúrate de que este campo exista en tu formulario
-      IpEquipo: equipmentData.IpEquipo,
-      assignedTo: equipmentData.assignedTo,
-      imageBase64: equipmentData.imageBase64,
-      createdAt: new Date()
-    });
-
-    return { id: docRef.id, ...equipmentData };
-  } catch (error) {
-    console.error("Error añadiendo equipo: ", error);
-    throw error;
-  }
-};
-
-const handleDeleteEquipment = async (equipmentId) => {
-  if (window.confirm('¿Estás seguro de eliminar este equipo?')) {
-    try {
-      await deleteDoc(doc(db, 'equipment', equipmentId));
-      setEquipment(equipment.filter(item => item.id !== equipmentId));
+      // Actualiza el estado local
+      setUsers(users.map(user => 
+        user.id === userData.id ? { ...userData } : user
+      ));
+      
+      setEditingUser(null);
     } catch (error) {
-      console.error("Error eliminando equipo: ", error);
+      console.error("Error editando usuario:", error);
+      throw error;
     }
-  }
-};
+  };
 
-const handleSelectEquipment = (equipmentId) => {
-  setSelectedEquipmentId(equipmentId); 
-  setShowModal(true);
-};
+  // Edición de equipo con sincronización de usuario
+  const handleEditEquipment = async (equipmentData) => {
+    try {
+      const oldEquipment = equipment.find(e => e.id === equipmentData.id);
+      const assignmentChanged = oldEquipment?.assignedTo !== equipmentData.assignedTo;
 
+      // Si cambió la asignación, actualiza ambos registros
+      if (assignmentChanged) {
+        // Limpia la asignación anterior (si existía)
+        if (oldEquipment?.assignedTo) {
+          await updateUserEquipment(oldEquipment.assignedTo, null);
+        }
 
-  /*datos de usuario*/
+        // Asigna el nuevo usuario (si existe)
+        if (equipmentData.assignedTo) {
+          await updateUserEquipment(equipmentData.assignedTo, equipmentData.id);
+        }
+      }
 
-   
-const handleAddUser = async (userData) => {
-  try {
-    const docRef = await addDoc(collection(db, 'users'), {
-      name: userData.name,
-      correo: userData.correo,
-      ciudad: userData.ciudad,
-      tipoVpn: userData.tipoVpn,
-      department: userData.department,
-      EquipoAsignado: userData.EquipoAsignado || null, // Nuevo campo
-      imageBase64: userData.imageBase64,
-      createdAt: new Date()
-    });
+      // Actualiza el equipo en Firestore
+      await updateDoc(doc(db, 'equipment', equipmentData.id), {
+        nombre: equipmentData.nombre,
+        type: equipmentData.type,
+        model: equipmentData.model,
+        serialNumber: equipmentData.serialNumber,
+        IpEquipo: equipmentData.IpEquipo,
+        assignedTo: equipmentData.assignedTo,
+        imageBase64: equipmentData.imageBase64,
+        updatedAt: new Date()
+      });
 
-    return { id: docRef.id, ...userData };
-  } catch (error) {
-    console.error("Error añadiendo usuario: ", error);
-    throw error;
-  }
-};
+      // Actualiza el estado local
+      setEquipment(equipment.map(equip => 
+        equip.id === equipmentData.id ? { ...equipmentData } : equip
+      ));
+      
+      setEditingEquipment(null);
+    } catch (error) {
+      console.error("Error editando equipo:", error);
+      throw error;
+    }
+  };
 
+  // Agregar nuevo equipo con sincronización
+  const handleAddEquipment = async (equipmentData) => {
+    try {
+      // Primero crea el equipo
+      const docRef = await addDoc(collection(db, 'equipment'), {
+        ...equipmentData,
+        createdAt: new Date()
+      });
+
+      const newEquipment = { id: docRef.id, ...equipmentData };
+
+      // Si se asignó a un usuario, actualiza su registro
+      if (equipmentData.assignedTo) {
+        await updateUserEquipment(equipmentData.assignedTo, docRef.id);
+      }
+
+      return newEquipment;
+    } catch (error) {
+      console.error("Error añadiendo equipo:", error);
+      throw error;
+    }
+  };
+
+  // Eliminar equipo con limpieza de asignación
+  const handleDeleteEquipment = async (equipmentId) => {
+    if (window.confirm('¿Estás seguro de eliminar este equipo?')) {
+      try {
+        const equipmentToDelete = equipment.find(e => e.id === equipmentId);
+        
+        // Si el equipo estaba asignado, limpia la asignación del usuario
+        if (equipmentToDelete?.assignedTo) {
+          await updateUserEquipment(equipmentToDelete.assignedTo, null);
+        }
+
+        await deleteDoc(doc(db, 'equipment', equipmentId));
+        setEquipment(equipment.filter(item => item.id !== equipmentId));
+      } catch (error) {
+        console.error("Error eliminando equipo:", error);
+      }
+    }
+  };
+
+  // Agregar nuevo usuario
+  const handleAddUser = async (userData) => {
+    try {
+      const docRef = await addDoc(collection(db, 'users'), {
+        ...userData,
+        EquipoAsignado: userData.EquipoAsignado || null,
+        createdAt: new Date()
+      });
+
+      const newUser = { id: docRef.id, ...userData };
+
+      // Si se asignó un equipo, actualiza su registro
+      if (userData.EquipoAsignado) {
+        await updateEquipmentAssignment(userData.EquipoAsignado, docRef.id);
+      }
+
+      return newUser;
+    } catch (error) {
+      console.error("Error añadiendo usuario:", error);
+      throw error;
+    }
+  };
+
+  // Eliminar usuario con limpieza de asignación
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
+      try {
+        const userToDelete = users.find(u => u.id === userId);
+        
+        // Si el usuario tenía equipo asignado, limpia la asignación
+        if (userToDelete?.EquipoAsignado) {
+          await updateEquipmentAssignment(userToDelete.EquipoAsignado, null);
+        }
+
+        await deleteDoc(doc(db, 'users', userId));
+        setUsers(users.filter(user => user.id !== userId));
+      } catch (error) {
+        console.error("Error eliminando usuario:", error);
+      }
+    }
+  };
+
+  // Resto de funciones auxiliares
   const handleNextUser = () => {
     const currentIndex = users.findIndex(u => u.id === selectedUserId);
     if (currentIndex < users.length - 1) {
@@ -152,17 +247,6 @@ const handleAddUser = async (userData) => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
-      try {
-        await deleteDoc(doc(db, 'users', userId));
-        setUsers(users.filter(user => user.id !== userId));
-      } catch (error) {
-        console.error("Error eliminando usuario: ", error);
-      }
-    }
-  };
-
   const handleAddDepartment = async (departmentName) => {
     try {
       const docRef = await addDoc(collection(db, 'departments'), {
@@ -170,14 +254,12 @@ const handleAddUser = async (userData) => {
         createdAt: new Date()
       });
       
-      // Actualiza el estado de departamentos
       const updatedDepartments = [...departments, { id: docRef.id, name: departmentName }];
       setDepartments(updatedDepartments);
       
-      // Retorna el nuevo departamento además del éxito
       return { success: true, newDepartment: { id: docRef.id, name: departmentName } };
     } catch (error) {
-      console.error("Error añadiendo departamento: ", error);
+      console.error("Error añadiendo departamento:", error);
       return { success: false };
     }
   };
@@ -187,6 +269,12 @@ const handleAddUser = async (userData) => {
     setShowModal(true);
   };
 
+  const handleSelectEquipment = (equipmentId) => {
+    setSelectedEquipmentId(equipmentId); 
+    setShowModal(true);
+  };
+
+  // Carga inicial de datos
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -200,7 +288,7 @@ const handleAddUser = async (userData) => {
         setEquipment(equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -220,7 +308,6 @@ const handleAddUser = async (userData) => {
       <div className="app">
         <h1>Sistema de Gestión de Equipos</h1>
   
-        {/* Botones para mostrar/ocultar formularios */}
         <div className="form-toggle-buttons">
           <button 
             onClick={() => {
@@ -245,7 +332,6 @@ const handleAddUser = async (userData) => {
           </button>
         </div>
   
-        {/* Formularios condicionales */}
         {showUserForm && (
           <div className="forms-usuarios-equipos">
             <AddUserForm 
@@ -290,7 +376,6 @@ const handleAddUser = async (userData) => {
           </div>
         )}
         
-        {/* Listados (siempre visibles) */}
         <div className="content">
           <UserList 
             users={users} 
@@ -316,7 +401,6 @@ const handleAddUser = async (userData) => {
           />
         </div>
   
-        {/* Modal de detalles */}
         {showModal && selectedUser && (
           <UserDetailsModal 
             user={selectedUser}

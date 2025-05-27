@@ -250,11 +250,10 @@ width: 100%;
   background: #3498db;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+ 
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 0.5rem;
-  width: 100%;
+  
   font-size: 0.8rem;
 }
 
@@ -269,14 +268,7 @@ width: 100%;
   margin-top: 0.8rem;
 }
 
-.delete-button, .edit-button {
-  border: none;
-  padding: 0.4rem;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
+
 
 .delete-button {
   background: #e74c3c;
@@ -360,14 +352,7 @@ width: 100%;
   flex-wrap: wrap;
 }
 
-.delete-button, .edit-button, .details-button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: opacity 0.2s;
-}
+
 
 .delete-button {
   background-color: #ff4444;
@@ -379,10 +364,7 @@ width: 100%;
   color: white;
 }
 
-.details-button {
-  background-color: #33b5e5;
-  color: white;
-}
+
 
 /* Hover effects */
 .delete-button:hover, .edit-button:hover, .details-button:hover {
@@ -424,14 +406,40 @@ width: 100%;
   
   .user-form {
     padding: 5px;
+    width: 90%;
+    margin: 0 auto; /* Centrar el formulario */
   }
 
 
-.user-actions {
-  gap: 4px;
+
+  .user-actions {
+    display: flex;
+    flex-direction: column; /* Cambia a columna en móvil */
+    align-items: center; /* Centra los botones */
+    gap: 8px;
+  }
+
+  .user-card {
+    display: flex;
+    flex-direction: column; /* Cambia a columna en móvil */
+    align-items: center; /* Centra el contenido */
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .user-avatar img {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+  }
+
+.image-preview-container img {
+  
+  max-width: 100px;
+    max-height: 100px;
+    margin-top: 10px;
+    border-radius: 4px;
 }
-
-
 
   .delete-button, .edit-button, .details-button {
     padding: 5px 8px;
