@@ -21,6 +21,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
   const [showEquipmentForm, setShowEquipmentForm] = useState(false);
+  const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
   // Función para actualizar el equipo asignado en el usuario
   const updateUserEquipment = async (userId, equipmentId) => {
@@ -88,6 +89,7 @@ function App() {
         ciudad: userData.ciudad,
         tipoVpn: userData.tipoVpn,
         department: userData.department,
+        estado: userData.estado,
         EquipoAsignado: userData.EquipoAsignado || null,
         imageBase64: userData.imageBase64,
         updatedAt: new Date()
@@ -306,7 +308,12 @@ function App() {
   return (
     <div className="app-container">
       <div className="app">
+
         <h1>Sistema de Gestión de Equipos</h1>
+
+ 
+
+        
   
         <div className="form-toggle-buttons">
           <button 
@@ -375,11 +382,22 @@ function App() {
             />
           </div>
         )}
+
+
+          <div className="global-search">
+        <input
+          type="text"
+          placeholder="Buscar en usuarios y equipos..."
+          value={globalSearchTerm}
+          onChange={(e) => setGlobalSearchTerm(e.target.value)}
+        />
+      </div>
         
         <div className="content">
           <UserList 
             users={users} 
             equipment={equipment}
+            searchTerm={globalSearchTerm}
             onSelectUser={handleSelectUser}
             onDeleteUser={handleDeleteUser}
             onEditUser={(user) => {
@@ -391,6 +409,7 @@ function App() {
           <EquipmentList 
             equipment={equipment}
             users={users}
+            searchTerm={globalSearchTerm}
             onSelectEquipment={handleSelectEquipment}
             onEditEquipment={(equipment) => {
               setEditingEquipment(equipment);

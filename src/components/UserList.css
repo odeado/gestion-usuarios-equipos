@@ -1,5 +1,33 @@
 /* UserList.css */
 
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  margin-left: 20px;
+}
+
+.search-box input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 250px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  width: 100%;
+  font-size: 1.2em;
+}
+
 .users-grid {
     padding: 20px;
   }
@@ -71,7 +99,7 @@
   
   .user-info {
     flex: 1;
-    width: 80%;
+    width: 100%;
   }
   
   .user-info h3 {
@@ -79,6 +107,32 @@
     color: #2c3e50;
     font-size: 1.1rem;
   }
+
+  .user-id {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    
+  }
+
+  .estado {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+  }
+
+  .user-email {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 0.3rem 0;
+  word-break: break-all;
+  width: max-content; /* Ajusta el ancho al contenido */
+}
+
+.department {
+  font-size: 0.75rem;
+  margin: 0.2rem 0;
+}
 
   
   .user-card:hover {
@@ -95,124 +149,112 @@
   padding: 8px 12px;
  }
 
+   .user-card {
+    overflow: hidden; /* Evita que el contenido se desborde */
+    flex-direction: row; /* Cambiamos a fila en móvil */
+    align-items: center;
+    padding: 0.8rem;
+    gap: 1rem;
+  }
+
+ .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
 
   
   @media (max-width: 768px) {
 
 
 
-  .user-avatar {
-    width: 30%; /* Un poco más ancho en móvil */
-  }
-  
-  .user-info {
-    width: 70%;
-    padding-right: 30%; /* o padding-left según la versión */
-  }
-  
-  .user-avatar img {
-    -webkit-mask-image: linear-gradient(to right, 
-      rgba(0,0,0,0) 0%, 
-      rgba(0,0,0,0.2) 20%, 
-      rgba(0,0,0,0.7) 100%);
-    mask-image: linear-gradient(to right, 
-      rgba(0,0,0,0) 0%, 
-      rgba(0,0,0,0.2) 20%, 
-      rgba(0,0,0,0.7) 100%);
-  }
-
-
-
-    .cards-container {
-      grid-template-columns: 1fr; /* Una sola columna en móvil */
-      padding: 5px;
-    }
-.app-container {
-    padding: 1px;
-    display: grid;
-  }
-
-  .toggle-form-btn {
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 10px;
-  }
-  .toggle-form-btn:hover {
-    background-color: #0056b3;
-  }
-
-  .app h1 {
-    text-align: center;
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 13px;
-  }
-
-
-
-
-  .users-grid {
-    padding: 10px;
-  }
-  .app {
-    padding: 5px;
-  }
-  
-  .user-form {
-    padding: 15px;
-  }
-
-
-.user-actions {
-  gap: 4px;
+/* Ocultar elementos no esenciales en móvil */
+.user-email,
+.department,
+.user-actions,
+.details-button,
+.edit-button,
+.delete-button {
+ 
+  display: none;
 }
 
-
-
-  .delete-button, .edit-button, .details-button {
-    padding: 5px 8px;
-    font-size: 0.75rem;
-    flex-grow: 1;
+  .users-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .search-box {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+  }
+  
+  .search-box input {
+    width: 100%;
   }
 
-
-.user-email {
-  font-size: 0.75rem;
-  margin: 0.2rem 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Efecto al tocar */
+.user-card:active {
+  transform: scale(0.98);
 }
 
-  .user-card {
-    display: flex; /* Cambiamos a flex para móvil */
+.cards-container {
+     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 2fr));
+    gap: 1rem;
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
+
+
+  }
+
+    .user-card {
     overflow: hidden; /* Evita que el contenido se desborde */
-    flex-direction: column; /* Cambiamos a fila en móvil */
+    flex-direction: row; /* Cambiamos a fila en móvil */
     align-items: center;
-    flex-wrap: wrap; /* Permite que los elementos se ajusten en varias líneas si es necesario */
     padding: 0.8rem;
+    border: solid 1px #f1eeee;
     gap: 1rem;
   }
 
- 
+  .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  box-sizing: border-box; /* Incluye padding en el ancho */
+}
 
-  .user-info h3 {
-    font-size: 0.95rem;
+  .users-grid{
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+    .user-info h3 {
+    font-size: 12px;
     margin-bottom: 0.3rem;
     min-width: 0; /* Permite que el texto se ajuste */
   }
 
+ .user-avatar img {
+  width: 50px;
+  height: 100%;
+ 
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
-  .department {
-    font-size: 0.7rem;
+  .content {
+    padding: 10px;
+
+
   }
 
-
-
-
-  }
+}

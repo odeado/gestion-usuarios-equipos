@@ -9,6 +9,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     ciudad: '',
     tipoVpn: '',
     department: '',
+    estado: 'Teletrabajo', // Estado por defecto
     EquipoAsignado: '',
     imageBase64: ''
   });
@@ -29,6 +30,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         ciudad: userToEdit.ciudad || '',
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
+        estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
         EquipoAsignado: userToEdit.EquipoAsignado || '',
         imageBase64: userToEdit.imageBase64 || ''
       });
@@ -46,6 +48,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       ciudad: '',
       tipoVpn: '',
       department: '',
+      estado: 'Teletrabajo', // Estado por defecto
       EquipoAsignado: '',
       imageBase64: ''
     });
@@ -141,6 +144,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           name: formData.name,
           ciudad: formData.ciudad,
           department: formData.department,
+          estado: formData.estado,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
           EquipoAsignado: formData.EquipoAsignado || null, // Asegúrate de que este campo exista en tu DB
@@ -150,6 +154,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         await onUserAdded({
           name: formData.name,
           department: formData.department,
+          estado: formData.estado,
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
@@ -314,6 +319,21 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
         />
         {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
+      </div>
+
+           <div className="form-group">
+      <label htmlFor="estado" className="form-label">Estado</label>
+        <input
+          id="estado"
+          name="estado"
+          type="text"
+          placeholder="estados"
+          value={formData.estado}
+          onChange={handleChange}
+          required
+          className={`form-input ${errors.estado ? 'input-error' : ''}`}
+        />
+        {errors.estado && <div className="error-text">{errors.estado}</div>}
       </div>
     
 
