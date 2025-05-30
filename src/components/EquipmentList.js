@@ -31,13 +31,13 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
   });
 
   return (
-    <div className="equipment-list">
+    <div className="equipment-list-container">
       <div className="equipment-header">
         <h2>Lista de Equipos</h2>
         
         
       </div>
-      <table>
+      <table className="equipment-table">
         <thead>
           <tr>
             <th>Nombre</th>
@@ -86,19 +86,13 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
                 <td data-label="Serie">{item.serialNumber}</td>
                 <td data-label="Descripcion">{item.descripcion}</td>
                 <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
-                <td className="actions">
-                  <button 
-                    onClick={() => onEditEquipment(item)}
-                    className="edit-button"
-                  >
-                    Editar
-                  </button>
-                  <button 
-                    onClick={() => onDeleteEquipment(item.id)}
-                    className="delete-button"
-                  >
-                    Eliminar
-                  </button>
+                <td className="actions-buttons">
+                  <button className="edit-btn" onClick={() => onEditEquipment(item)}>
+                  Editar
+                </button>
+                <button className="delete-btn" onClick={() => onDeleteEquipment(item.id)}>
+                  Eliminar
+                </button>
                 </td>
               </tr>
             ))
@@ -109,6 +103,41 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
           )}
         </tbody>
       </table>
+
+
+
+ {/* Cards para móviles */}
+      <div className="mobile-equipment-cards">
+        {filteredEquipment.map(item => (
+          <div key={item.id} className="equipment-card">
+            <div className="card-row">
+              <span className="card-label">Nombre:</span>
+              <span>{item.nombre}</span>
+            </div>
+            <div className="card-row">
+              <span className="card-label">Tipo:</span>
+              <span>{item.type}</span>
+            </div>
+            {/* Añade más campos según necesites */}
+            <div className="card-actions">
+              <button className="edit-btn" onClick={() => onEditEquipment(item)}>
+                Editar
+              </button>
+              <button className="delete-btn" onClick={() => onDeleteEquipment(item.id)}>
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filteredEquipment.length === 0 && (
+        <div className="no-results">No se encontraron equipos</div>
+      )}
+
+
+
+
     </div>
   );
 }
