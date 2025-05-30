@@ -84,7 +84,7 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
                 <td data-label="Modelo">{item.model}</td>
                 <td data-label="IP Equipo">{item.IpEquipo}</td>
                 <td data-label="Serie">{item.serialNumber}</td>
-                <td data-label="Descripcion">{item.descripcion}</td>
+                <td data-label="Descripcion" style={{color: 'rgb(20 20 20)', backgroundColor: 'rgb(249 251 188 / 94%)'}}>{item.descripcion}</td>
                 <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
                 <td className="actions-buttons">
                   <button className="edit-btn" onClick={() => onEditEquipment(item)}>
@@ -115,8 +115,8 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
               <span>{item.nombre}</span>
             </div>
             <div className="card-row">
-              <span className="card-label">Tipo:</span>
-              <span>{item.type}</span>
+              <span className="card-label">IP Equipo:</span>
+              <span>{item.IpEquipo}</span>
             </div>
             {/* Añade más campos según necesites */}
             <div className="card-actions">

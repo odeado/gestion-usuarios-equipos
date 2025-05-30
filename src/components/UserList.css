@@ -134,33 +134,30 @@
   background: #f44336;
   color: white;
   border: none;
- 
-  
   cursor: pointer;
-  
   font-size: 0.8rem;
+  width: 80px;
+  height: 40px;
 }
 
 .edit-button {
   background: #4CAF50;
   color: white;
   border: none;
- 
- 
   cursor: pointer;
-  
   font-size: 0.8rem;
+   width: 80px;
+  height: 40px;
 }
 
 .details-button {
   background: #3498db;
   color: white;
   border: none;
- 
-  
   cursor: pointer;
-  
   font-size: 0.8rem;
+   width: 80px;
+  height: 40px;
 }
 
 .details-button:hover {
