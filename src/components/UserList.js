@@ -44,6 +44,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
       String(user.correo || '').toLowerCase().includes(searchLower) ||
       String(user.tipoVpn || '').toLowerCase().includes(searchLower) ||
       String(user.estado || '').toLowerCase().includes(searchLower) ||
+      String(user.ciudad || '').toLowerCase().includes(searchLower) ||
       String(userEquipment || '').toLowerCase().includes(searchLower)
     );
   });

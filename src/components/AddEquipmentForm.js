@@ -12,6 +12,11 @@ function AddEquipmentForm({
   const [formData, setFormData] = useState({
     nombre: '',
     type: '',
+    ciudad: '',
+    estado: '',
+    lugar: '',
+    descripcion: '',
+    marca: '',
     model: '',
     serialNumber: '',
     IpEquipo: '',
@@ -29,6 +34,11 @@ function AddEquipmentForm({
       setFormData({
         nombre: equipmentToEdit.nombre || '',
         type: equipmentToEdit.type || '',
+        ciudad: equipmentToEdit.ciudad || '',
+        estado: equipmentToEdit.estado || '',
+        lugar: equipmentToEdit.lugar || '',
+        descripcion: equipmentToEdit.descripcion || '',
+        marca: equipmentToEdit.marca || '',
         model: equipmentToEdit.model || '',
         serialNumber: equipmentToEdit.serialNumber || '',
         IpEquipo: equipmentToEdit.IpEquipo || '',
@@ -46,6 +56,11 @@ function AddEquipmentForm({
     setFormData({
       nombre: '',
       type: '',
+      ciudad: '',
+      estado: '',
+      lugar: '',
+      descripcion: '',
+      marca: '',
       model: '',
       serialNumber: '',
       IpEquipo: '',
@@ -176,6 +191,96 @@ function AddEquipmentForm({
             {errors.type && <div className="error-text">{errors.type}</div>}
           </div>
         </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="ciudad" className="form-label">Ciudad</label>
+            <input
+              id="ciudad"
+              name="ciudad"
+              type="text"
+              value={formData.ciudad}
+              onChange={handleChange}
+              placeholder="Ej: Ciudad de México, Bogotá"
+              required
+              className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
+            />
+            {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
+          </div>
+            </div>
+
+        <div className="form-row">
+          <div className="form-group department-group">
+            <label htmlFor="estado" className="form-label">Estado</label>
+            <select
+              id="estado"
+              name="estado"
+              value={formData.estado}
+              onChange={handleChange}
+             
+              required
+              className={`user-selector ${errors.estado ? 'input-error' : ''}`}
+              >
+            <option value="">Seleccione un estado...</option> 
+            <option value="Disponible">Disponible</option>
+            <option value="En uso">En uso</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Eliminado">Eliminado</option>
+            </select>
+            
+            {errors.estado && <div className="error-text">{errors.estado}</div>}
+          </div>
+          </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="lugar" className="form-label">Lugar</label>
+            <input
+              id="lugar"
+              name="lugar"
+              type="text"
+              value={formData.lugar}
+              onChange={handleChange}
+              placeholder="Ej: Oficina, Casa"
+              required
+              className={`form-input ${errors.lugar ? 'input-error' : ''}`}
+            />
+            {errors.lugar && <div className="error-text">{errors.lugar}</div>}
+          </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="descripcion" className="form-label">Descripción</label>
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleChange}
+              placeholder="Descripción del equipo"
+              className={`form-textarea ${errors.descripcion ? 'input-error' : ''}`}
+            />
+            {errors.descripcion && <div className="error-text">{errors.descripcion}</div>}
+          </div>
+
+
+          <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="marca" className="form-label">Marca</label>
+            <input
+              id="marca"
+              name="marca"
+              type="text"
+              value={formData.marca}
+              onChange={handleChange}
+              placeholder="Ej: Dell, Apple, Samsung"
+              required
+              className={`form-input ${errors.marca ? 'input-error' : ''}`}
+            />
+            {errors.marca && <div className="error-text">{errors.marca}</div>}
+          </div>
+          </div>
+          
+
 
           <div className="form-group">
             <label htmlFor="model" className="form-label">Modelo</label>

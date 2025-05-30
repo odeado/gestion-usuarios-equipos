@@ -280,15 +280,7 @@ width: 100%;
 
 
 
-.delete-button {
-  background: #e74c3c;
-  color: white;
-}
 
-.edit-button {
-  background: #f1c40f;
-  color: white;
-}
 
 
 
@@ -304,14 +296,7 @@ width: 100%;
 
 
 
-.edit-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
+
 
 
 .forms-usuarios-equipos {
@@ -361,15 +346,7 @@ width: 100%;
 
 
 
-.delete-button {
-  background-color: #ff4444;
-  color: white;
-}
 
-.edit-button {
-  background-color: #ffbb33;
-  color: white;
-}
 
 
 

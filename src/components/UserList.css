@@ -35,7 +35,7 @@
   .users-grid h2 {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: #a7a6a6;
   }
   
   .cards-container {
@@ -47,11 +47,7 @@
     box-sizing: border-box;
   }
   
-.user-card {
-  /* Mantén tus estilos actuales */
-  position: relative; /* Necesario para posicionar la imagen absoluta */
-  overflow: hidden; /* Para que no se salga del contenedor */
-}
+
 
 .user-avatar {
   position: absolute;
@@ -150,11 +146,16 @@
  }
 
    .user-card {
+    position: relative; /* Necesario para posicionar la imagen absoluta */
+ 
     overflow: hidden; /* Evita que el contenido se desborde */
     flex-direction: row; /* Cambiamos a fila en móvil */
     align-items: center;
     padding: 0.8rem;
     gap: 1rem;
+    border-radius: 5px;
+    border: solid 1px #f1eeee;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
  .content {

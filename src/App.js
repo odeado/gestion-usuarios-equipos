@@ -131,8 +131,13 @@ function App() {
         nombre: equipmentData.nombre,
         type: equipmentData.type,
         model: equipmentData.model,
+        marca: equipmentData.marca,
         serialNumber: equipmentData.serialNumber,
         IpEquipo: equipmentData.IpEquipo,
+        ciudad: equipmentData.ciudad,
+        estado: equipmentData.estado,
+        lugar: equipmentData.lugar,
+        descripcion: equipmentData.descripcion,
         assignedTo: equipmentData.assignedTo,
         imageBase64: equipmentData.imageBase64,
         updatedAt: new Date()
