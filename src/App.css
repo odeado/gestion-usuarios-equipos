@@ -372,12 +372,7 @@ width: 100%;
     
   }
 
-  .user-card {
-    flex-direction: column; /* Cambiar a columna en móvil */
-    align-items: center; /* Centrar contenido */
-    padding: 10px;
-    gap: 10px; /* Espacio entre elementos */
-  }
+  
 
   .user-info h3 {
     font-size: 14px; /* Ajustar tamaño de fuente */

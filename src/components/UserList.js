@@ -71,11 +71,30 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
 
               <div className="user-info">
                 <h3>{user.name}</h3>
+                
+
+<p className="user-equipo">{getEquipmentName(user.EquipoAsignado)}</p>
+<p 
+                  className="user-estado" 
+                  style={{ 
+                    color: getEstadoColor(user.estado),
+                    fontWeight: 'bold',
+                    padding: '3px 8px',
+                    borderRadius: '4px',
+                    width: 'fit-content',
+                    display: 'inline-block',
+                    backgroundColor: `${getEstadoColor(user.estado)}20`
+                  }}
+                >
+                  {user.estado}
+                </p>
+
                 <p 
                   className="department" 
                   style={{ 
                     color: getDepartmentColor(user.department),
                     fontWeight: 'bold',
+                    width: 'fit-content',
                     padding: '3px 8px',
                     borderRadius: '4px',
                     display: 'inline-block',
@@ -85,24 +104,9 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                   {user.department}
                 </p>
 
-
-<p 
-                  className="user-email" 
-                  style={{ 
-                    color: getEstadoColor(user.estado),
-                    fontWeight: 'bold',
-                    padding: '3px 8px',
-                    borderRadius: '4px',
-                    
-                    backgroundColor: `${getEstadoColor(user.estado)}20`
-                  }}
-                >
-                  {user.estado}
-                </p>
-
                 <p className="user-email">{user.correo}</p>
-                <p className="user-email">{user.tipoVpn}</p>
-                <p className="user-email">{getEquipmentName(user.EquipoAsignado)}</p>
+                <p className="user-tipo">{user.tipoVpn}</p>
+               
 
                 <div className="user-actions">
                   <button
