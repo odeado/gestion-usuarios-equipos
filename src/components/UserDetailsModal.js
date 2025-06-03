@@ -6,14 +6,16 @@ function UserDetailsModal({
   users, 
   equipment, 
   onClose, 
-  onEdit, 
   onNext,
   imageCompression,
   onDelete, 
   onPrev, 
   onAddDepartment,
-  departments = [] 
-}) {
+  departments = [],
+  onEquipmentSelect, 
+  onEdit, 
+  onEditEquipment
+}) { 
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
   const [showAddDepartment, setShowAddDepartment] = useState(false);
@@ -21,6 +23,12 @@ function UserDetailsModal({
   const [errors, setErrors] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
+
+  const getAssignedUserName = (userId) => {
+    if (!userId || !users) return 'Sin asignar';
+    const foundUser = users.find(u => u.id === userId);
+    return foundUser ? foundUser.name : 'Usuario no encontrado';
+  };
 
   const currentIndex = users.findIndex(u => u.id === user.id);
   const userEquipment = equipment.filter(item => item.assignedTo === user.id);
@@ -51,6 +59,15 @@ function UserDetailsModal({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEquipmentClick = (equipmentItem) => {
+    // Cierra el modal de usuario primero
+    onClose();
+    // Luego notifica al componente padre para abrir el modal de equipo
+    if (onEquipmentSelect) {
+      onEquipmentSelect(equipmentItem.id);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -108,10 +125,9 @@ function UserDetailsModal({
 
   const handleSave = async () => {
     if (!validateForm()) return;
-    await onEdit(editedUser);  // <-- Espera que se actualice
+    await onEdit(editedUser);
     setIsEditing(false);
   };
-  
 
   const renderDepartmentSelect = () => {
     const currentDept = editedUser.department;
@@ -185,8 +201,7 @@ function UserDetailsModal({
     );
   };
 
-     // Función para obtener el nombre del equipo basado en el ID del equipo del usuario
-   const getEquipmentName = (EquipoAsignado) => {
+  const getEquipmentName = (EquipoAsignado) => {
     if (!EquipoAsignado || !equipment) return 'Sin equipo';
     const foundEquipment = equipment.find(eq => eq.id === EquipoAsignado);
     return foundEquipment ? foundEquipment.IpEquipo : 'Equipo no encontrado';
@@ -248,7 +263,7 @@ function UserDetailsModal({
                 {errors.correo && <div className="error-text">{errors.correo}</div>}
               </div>
 
-                  <div className="form-group">
+              <div className="form-group">
                 <input
                   name="tipoVpn"
                   type="tipoVpn"
@@ -260,26 +275,22 @@ function UserDetailsModal({
                 {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
               </div>
 
-      <div className="form-group">
-  <select
-    name="EquipoAsignado"
-    value={editedUser.EquipoAsignado || ''}
-    onChange={handleInputChange}
-    className={`edit-input ${errors.EquipoAsignado ? 'input-error' : ''}`}
-  >
-    <option value="">Seleccione un equipo</option>
-    {equipment.map(eq => (
-      <option key={eq.id} value={eq.id}>
-        {eq.name} - {eq.ipEquipo || eq.IpEquipo || 'Sin IP'}
-      </option>
-    ))}
-  </select>
-  {errors.EquipoAsignado && <div className="error-text">{errors.EquipoAsignado}</div>}
-</div>
-
-
-
-                  
+              <div className="form-group">
+                <select
+                  name="EquipoAsignado"
+                  value={editedUser.EquipoAsignado || ''}
+                  onChange={handleInputChange}
+                  className={`edit-input ${errors.EquipoAsignado ? 'input-error' : ''}`}
+                >
+                  <option value="">Seleccione un equipo</option>
+                  {equipment.map(eq => (
+                    <option key={eq.id} value={eq.id}>
+                      {eq.name} - {eq.ipEquipo || eq.IpEquipo || 'Sin IP'}
+                    </option>
+                  ))}
+                </select>
+                {errors.EquipoAsignado && <div className="error-text">{errors.EquipoAsignado}</div>}
+              </div>
               
               <div className="form-group">
                 <label className="form-label">Departamento</label>
@@ -288,103 +299,95 @@ function UserDetailsModal({
             </div>
           ) : (
             <div className="view-mode">
-              
+              <div className="modal-footer">
+                <div className="navigation-buttons">
+                  <button 
+                    onClick={onPrev} 
+                    disabled={currentIndex === 0}
+                    className="nav-button prev-button"
+                  >
+                    &larr; Anterior
+                  </button>
 
-  <div className="modal-footer">
-          <div className="navigation-buttons">
-            <button 
-              onClick={onPrev} 
-              disabled={currentIndex === 0}
-              className="nav-button prev-button"
-            >
-              &larr; Anterior
-            </button>
+                  {isEditing ? (
+                    <>
+                      <button 
+                        onClick={handleSave} 
+                        className="action-button save-button"
+                        disabled={isCompressing}
+                      >
+                        {isCompressing ? 'Guardando...' : '✅ Guardar'}
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditedUser({ ...user });
+                          setErrors({});
+                        }} 
+                        className="action-button cancel-button"
+                      >
+                        ❌ Cancelar
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditing(true)} 
+                      className="action-button edit-button"
+                    >
+                      ✏️ Editar
+                    </button>
+                  )}
 
-            {isEditing ? (
-              <>
-                <button 
-                  onClick={handleSave} 
-                  className="action-button save-button"
-                  disabled={isCompressing}
-                >
-                  {isCompressing ? 'Guardando...' : '✅ Guardar'}
-                </button>
-                <button 
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditedUser({ ...user });
-                    setErrors({});
-                  }} 
-                  className="action-button cancel-button"
-                >
-                  ❌ Cancelar
-                </button>
-              </>
-            ) : (
-              <button 
-                onClick={() => setIsEditing(true)} 
-                className="action-button edit-button"
-              >
-                ✏️ Editar
-              </button>
-            )}
+                  <button 
+                    onClick={onNext} 
+                    disabled={currentIndex === users.length - 1}
+                    className="nav-button next-button"
+                  >
+                    Siguiente &rarr;
+                  </button>
+                </div>
+              </div>
 
-            <button 
-              onClick={onNext} 
-              disabled={currentIndex === users.length - 1}
-              className="nav-button next-button"
-            >
-              Siguiente &rarr;
-            </button>
-          </div>
-        </div>
-
-
-
-             <div className="texto-container">
-              <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
-
-            
-           
-<div className="caja-titulo">
-  <label className="form-label">Departamento:</label>
-  <p className="department-badge">{user.department}</p>
-  
-</div>
- <p>{user.correo}</p>
-
-            </div>
-            <h2>{user.name}</h2>
+              <div className="texto-container">
+                <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
+                <div className="caja-titulo">
+                  <label className="form-label">Departamento:</label>
+                  <p className="department-badge">{user.department}</p>
+                </div>
+                <p>{user.correo}</p>
+              </div>
+              <h2>{user.name}</h2>
             </div>
           )}
         </div>
 
-       <div className="modal-body">
-  <h3>Equipos en uso</h3>
-  {userEquipment.length > 0 ? (
-    <ul className="equipment-list">
-      {userEquipment.map(item => (
-        <li 
-          className={`equipment-item ${item.type.toLowerCase()}`} 
-          key={item.id}
-        >
-          <span className="equipo-lugar">{item.lugar}</span>:
-          <span className="equipo-nombre">{item.nombre}</span>/ 
-          <span className="equipo-type">{item.type}</span>
-          <span className="equipo-serial">({item.serialNumber})</span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p>Sin equipos asignados actualmente</p>
-  )}
+        <div className="modal-body">
+          <h3>Equipos en uso</h3>
+          {userEquipment.length > 0 ? (
+            <ul className="equipment-list">
+              {userEquipment.map(item => (
+                <li 
+                  className={`equipment-item ${item.type.toLowerCase()}`} 
+                  key={item.id}
+                  onClick={() => handleEquipmentClick(item)}
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="equipo-lugar">{item.lugar}</span>:
+                  <span className="equipo-nombre">{item.nombre}</span>/ 
+                  <span className="equipo-type">{item.type}</span>
+                  <span className="equipo-serial">({item.serialNumber})</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sin equipos asignados actualmente</p>
+          )}
 
-  <label className="form-label">
-    IP Equipo Asignado:
-    <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
-  </label>
-</div>
-      
+          <label className="form-label">
+            IP Equipo Asignado:
+            <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
+          </label>
+        </div>
       </div>
     </div>
   );

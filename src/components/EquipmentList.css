@@ -1,5 +1,15 @@
 /* EquipmentList.css - Versión optimizada para móviles */
 
+
+
+/* Para evitar que los clicks en los botones de acciones activen el modal */
+.actions-buttons {
+  pointer-events: auto;
+}
+
+
+
+
 /* Estilos generales */
 .equipment-header {
   display: flex;

@@ -1,14 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import imageCompression from 'browser-image-compression';
 import './AddEquipmentForm.css';
+// Eliminé esta línea que causaba conflicto
+import { ref } from 'firebase/storage';
 
-function AddEquipmentForm({ 
-  users, 
-  onEquipmentAdded, 
-  equipmentToEdit, 
-  onEditEquipment, 
-  onCancelEdit 
-}) {
+
+const AddEquipmentForm = forwardRef((props, ref) => {
+  const { 
+    users, 
+    onEquipmentAdded, 
+    equipmentToEdit, 
+    onEditEquipment, 
+    onCancelEdit 
+  } = props;
+
   const [formData, setFormData] = useState({
     nombre: '',
     type: '',
@@ -23,6 +28,7 @@ function AddEquipmentForm({
     assignedTo: '',
     imageBase64: ''
   });
+
   const [isCompressing, setIsCompressing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({});
@@ -42,7 +48,6 @@ function AddEquipmentForm({
         model: equipmentToEdit.model || '',
         serialNumber: equipmentToEdit.serialNumber || '',
         IpEquipo: equipmentToEdit.IpEquipo || '',
-
         assignedTo: equipmentToEdit.assignedTo || '',
         imageBase64: equipmentToEdit.imageBase64 || ''
       });
@@ -80,15 +85,12 @@ function AddEquipmentForm({
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.nombre.trim()) newErrors.nombre = 'nombre requerido';
+    if (!formData.nombre.trim()) newErrors.nombre = 'Nombre requerido';
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
     if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
     if (!formData.serialNumber.trim()) newErrors.serialNumber = 'Número de serie es requerido';
-    
     if (!formData.assignedTo) newErrors.assignedTo = 'Debe asignar a un usuario';
     if (!formData.imageBase64) newErrors.image = 'Imagen es requerida';
-   
-    
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -142,7 +144,7 @@ function AddEquipmentForm({
   };
 
   return (
-    <div className="form-container">
+    <div className="form-container" ref={ref}>
       <h3>{isEditing ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</h3>
       <form onSubmit={handleSubmit}>
         {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
@@ -391,6 +393,6 @@ function AddEquipmentForm({
       </form>
     </div>
   );
-}
+});
 
 export default AddEquipmentForm;

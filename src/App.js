@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useRef } from 'react';
+import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
@@ -8,8 +8,10 @@ import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import './App.css';
 import './components/UserList.css';
+import EquipDetailsModal from './components/EquipDetailsModal';
 
 function App() {
+  const formRef = useRef(null);
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -18,7 +20,8 @@ function App() {
   const [editingEquipment, setEditingEquipment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
   const [showEquipmentForm, setShowEquipmentForm] = useState(false);
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
@@ -108,52 +111,73 @@ function App() {
   };
 
   // Edición de equipo con sincronización de usuario
-  const handleEditEquipment = async (equipmentData) => {
-    try {
-      const oldEquipment = equipment.find(e => e.id === equipmentData.id);
-      const assignmentChanged = oldEquipment?.assignedTo !== equipmentData.assignedTo;
+ const handleEditEquipment = async (equipmentData) => {
+  try {
+    console.log("Iniciando actualización de equipo:", equipmentData);
+    
+    if (!equipmentData.id) {
+      throw new Error("ID de equipo no proporcionado");
+    }
 
-      // Si cambió la asignación, actualiza ambos registros
-      if (assignmentChanged) {
-        // Limpia la asignación anterior (si existía)
-        if (oldEquipment?.assignedTo) {
-          await updateUserEquipment(oldEquipment.assignedTo, null);
-        }
+    // Verificar que el equipo existe
+    const equipmentRef = doc(db, 'equipment', equipmentData.id);
+    const equipmentSnap = await getDoc(equipmentRef);
+    
+    if (!equipmentSnap.exists()) {
+      throw new Error("El equipo no existe en la base de datos");
+    }
 
-        // Asigna el nuevo usuario (si existe)
-        if (equipmentData.assignedTo) {
-          await updateUserEquipment(equipmentData.assignedTo, equipmentData.id);
-        }
+      // Preparar datos para actualización
+    const updateData = {
+      nombre: equipmentData.nombre,
+      type: equipmentData.type,
+      model: equipmentData.model,
+      marca: equipmentData.marca,
+      serialNumber: equipmentData.serialNumber,
+      IpEquipo: equipmentData.IpEquipo,
+      ciudad: equipmentData.ciudad,
+      estado: equipmentData.estado,
+      lugar: equipmentData.lugar,
+      descripcion: equipmentData.descripcion,
+      assignedTo: equipmentData.assignedTo || null,
+      updatedAt: new Date()
+    };
+  // Si hay imagen, incluirla en la actualización
+    if (equipmentData.imageBase64) {
+      updateData.imageBase64 = equipmentData.imageBase64;
+    }
+
+    console.log("Actualizando equipo con:", updateData);
+    await updateDoc(equipmentRef, updateData);
+
+    // Manejar cambios en asignación
+    const oldEquipment = equipment.find(e => e.id === equipmentData.id);
+    const assignmentChanged = oldEquipment?.assignedTo !== equipmentData.assignedTo;
+
+    if (assignmentChanged) {
+      // Limpiar asignación anterior
+      if (oldEquipment?.assignedTo) {
+        await updateUserEquipment(oldEquipment.assignedTo, null);
       }
 
-      // Actualiza el equipo en Firestore
-      await updateDoc(doc(db, 'equipment', equipmentData.id), {
-        nombre: equipmentData.nombre,
-        type: equipmentData.type,
-        model: equipmentData.model,
-        marca: equipmentData.marca,
-        serialNumber: equipmentData.serialNumber,
-        IpEquipo: equipmentData.IpEquipo,
-        ciudad: equipmentData.ciudad,
-        estado: equipmentData.estado,
-        lugar: equipmentData.lugar,
-        descripcion: equipmentData.descripcion,
-        assignedTo: equipmentData.assignedTo,
-        imageBase64: equipmentData.imageBase64,
-        updatedAt: new Date()
-      });
-
-      // Actualiza el estado local
-      setEquipment(equipment.map(equip => 
-        equip.id === equipmentData.id ? { ...equipmentData } : equip
-      ));
-      
-      setEditingEquipment(null);
-    } catch (error) {
-      console.error("Error editando equipo:", error);
-      throw error;
+      // Asignar nuevo usuario
+      if (equipmentData.assignedTo) {
+        await updateUserEquipment(equipmentData.assignedTo, equipmentData.id);
+      }
     }
-  };
+
+    // Actualizar estado local
+    setEquipment(prev => prev.map(eq => 
+      eq.id === equipmentData.id ? { ...eq, ...updateData } : eq
+    ));
+
+    console.log("Equipo actualizado con éxito");
+    return true;
+  } catch (error) {
+    console.error("Error en handleEditEquipment:", error);
+    throw error; // Re-lanzar el error para que el modal lo maneje
+  }
+};
 
   // Agregar nuevo equipo con sincronización
   const handleAddEquipment = async (equipmentData) => {
@@ -273,12 +297,14 @@ function App() {
 
   const handleSelectUser = (userId) => {
     setSelectedUserId(userId);
-    setShowModal(true);
+    setShowUserModal(true);
+    setShowEquipmentModal(false);
   };
 
   const handleSelectEquipment = (equipmentId) => {
     setSelectedEquipmentId(equipmentId); 
-    setShowModal(true);
+    setShowEquipmentModal(true);
+    setShowEquipmentModal(true);
   };
 
   // Carga inicial de datos
@@ -313,12 +339,9 @@ function App() {
   return (
     <div className="app-container">
       <div className="app">
-
         <h1>Sistema de Gestión de Equipos</h1>
 
- 
 
-        
   
         <div className="form-toggle-buttons">
           <button 
@@ -370,6 +393,7 @@ function App() {
         {showEquipmentForm && (
           <div className="forms-usuarios-equipos">
             <AddEquipmentForm 
+              ref={formRef}
               users={users}
               onEquipmentAdded={(equipData) => {
                 handleAddEquipment(equipData);
@@ -411,36 +435,57 @@ function App() {
               setShowEquipmentForm(false);
             }}
           />
-          <EquipmentList 
-            equipment={equipment}
-            users={users}
-            searchTerm={globalSearchTerm}
-            onSelectEquipment={handleSelectEquipment}
-            onEditEquipment={(equipment) => {
-              setEditingEquipment(equipment);
-              setShowEquipmentForm(true);
-              setShowUserForm(false);
-            }}
-            onDeleteEquipment={handleDeleteEquipment}
-          />
+         <EquipmentList 
+  equipment={equipment}
+  users={users}
+  searchTerm={globalSearchTerm}
+  onSelectEquipment={handleSelectEquipment}
+  onEditEquipment={(equipment) => {
+    setEditingEquipment(equipment);
+    setShowEquipmentForm(true);
+    setShowUserForm(false);
+    formRef.current?.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }}
+  onDeleteEquipment={handleDeleteEquipment}
+/>
         </div>
   
-        {showModal && selectedUser && (
+        {showUserModal && selectedUserId && (
           <UserDetailsModal 
-            user={selectedUser}
+            user={users.find(u => u.id === selectedUserId)}
             users={users}
             equipment={equipment}
-            onClose={() => setShowModal(false)}
+            onClose={() => setShowUserModal(false)}
             onEdit={handleEditUser}
+            onEditEquipment={handleEditEquipment}
+            onEquipmentSelect={handleSelectEquipment}
+            onDelete={handleDeleteUser}
             onNext={handleNextUser}
             onPrev={handlePrevUser}
             departments={departments}
             onAddDepartment={handleAddDepartment}
+            />
+              )}
+
+              {showEquipmentModal && selectedEquipmentId && (
+             <EquipDetailsModal 
+    equipment={equipment.find(e => e.id === selectedEquipmentId)}
+    users={users}
+    onEdit={handleEditEquipment}
+    onClose={() => setShowEquipmentModal(false)}
+    
+            
           />
+          
         )}
-      </div>
+      
     </div>
+      </div>
   );
 }
+  
 
 export default App;

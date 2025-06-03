@@ -1,13 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './EquipmentList.css';
+import EquipDetailsModal from './EquipDetailsModal';
 
 function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment }) {
-  
+
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
   
   const getAssignedUserName = (userId) => {
     const user = users.find(u => u.id === userId);
     return user ? user.name : 'No asignado';
   };
+
+
+
+ 
+
+  // En EquipmentList.js
+const handleEquipmentClick = (item) => {
+  onSelectEquipment(item.id); // Esto debería llamar a handleSelectEquipment en App.js
+  setSelectedEquipment(item);
+};
+
+  const closeModal = () => {
+    setSelectedEquipment(null);
+  };
+
+
+
 
    const filteredEquipment = equipment.filter(item => {
     if (!searchTerm) return true;
@@ -57,7 +76,7 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
         <tbody>
           {filteredEquipment.length > 0 ? (
             filteredEquipment.map(item => (
-              <tr key={item.id}>
+              <tr key={item.id} onClick={() => handleEquipmentClick(item)} style={{cursor: 'pointer'}}>
                 <td data-label="Nombre">{item.nombre}</td>
                 <td data-label="Tipo">{item.type}</td>
                 <td data-label="Marca">{item.marca}</td>
@@ -86,11 +105,23 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
                 <td data-label="Serie">{item.serialNumber}</td>
                 <td data-label="Descripcion" style={{color: 'rgb(20 20 20)', backgroundColor: 'rgb(249 251 188 / 94%)'}}>{item.descripcion}</td>
                 <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
-                <td className="actions-buttons">
-                  <button className="edit-btn" onClick={() => onEditEquipment(item)}>
+                <td className="actions-buttons" onClick={(e) => e.stopPropagation()}>
+                  <button 
+                  className="edit-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditEquipment(item);
+                  }}
+                >
                   Editar
                 </button>
-                <button className="delete-btn" onClick={() => onDeleteEquipment(item.id)}>
+                <button 
+                  className="delete-btn" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteEquipment(item.id);
+                  }}
+                >
                   Eliminar
                 </button>
                 </td>
@@ -98,7 +129,7 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="no-results">No se encontraron equipos</td>
+              <td colSpan="12" className="no-results">No se encontraron equipos</td>
             </tr>
           )}
         </tbody>
@@ -109,7 +140,7 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
  {/* Cards para móviles */}
       <div className="mobile-equipment-cards">
         {filteredEquipment.map(item => (
-          <div key={item.id} className="equipment-card">
+          <div key={item.id} className="equipment-card" onClick={() => handleEquipmentClick(item)}>
             <div className="card-row">
               <span className="card-label">Nombre:</span>
               <span>{item.nombre}</span>
@@ -137,7 +168,20 @@ function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDele
 
 
 
+ 
+        
+    
 
+
+{/* Modal de detalles del equipo */}
+      {selectedEquipment && (
+        <EquipDetailsModal
+         equipment={selectedEquipment}
+    onClose={closeModal}
+          onEdit={onEditEquipment}
+          getAssignedUserName={getAssignedUserName}
+        />
+      )}
     </div>
   );
 }
