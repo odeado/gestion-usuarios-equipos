@@ -91,7 +91,8 @@ const handleSave = async () => {
                   name="nombre"
                   value={editedEquipment.nombre}
                   onChange={handleInputChange}
-                  className={errors?.nombre ? 'error' : ''}
+                  className={`form-inputE ${errors.nombre ? 'error' : ''}`}
+                  
                 />
                 {errors?.nombre && <span className="error-message">{errors.nombre}</span>}    
               </div>
@@ -102,7 +103,8 @@ const handleSave = async () => {
                   name="type"
                   value={editedEquipment.type}
                   onChange={handleInputChange}
-                  className={errors?.type ? 'error' : ''}
+                  className={'form-inputE ' + (errors?.type ? 'error' : '')}
+                  
                 />
                 {errors?.type && <span className="error-message">{errors.type}</span>}
               </div>
@@ -113,7 +115,7 @@ const handleSave = async () => {
     name="marca"
     value={editedEquipment.marca}
     onChange={handleInputChange}
-    className={errors?.marca ? 'error' : ''}
+    className={'form-inputE ' + (errors?.marca ? 'error' : '')}
   />
   {errors?.marca && <span className="error-message">{errors.marca}</span>}
 </div>
@@ -124,7 +126,7 @@ const handleSave = async () => {
     name="model"
     value={editedEquipment.model}
     onChange={handleInputChange}
-    className={errors?.model ? 'error' : ''}
+    className={'form-inputE' + (errors?.model ? 'error' : '')}
   />
   {errors?.model && <span className="error-message">{errors.model}</span>}
 </div>
@@ -135,7 +137,7 @@ const handleSave = async () => {
     name="serialNumber"
     value={editedEquipment.serialNumber}
     onChange={handleInputChange}
-    className={errors?.serialNumber ? 'error' : ''}
+    className={'form-inputE' + (errors?.serialNumber ? 'error' : '')}
   />
   {errors?.serialNumber && <span className="error-message">{errors.serialNumber}</span>}
 </div>
@@ -146,7 +148,7 @@ const handleSave = async () => {
     name="assignedTo"
     value={editedEquipment.assignedTo}
     onChange={handleInputChange}
-    className={errors?.assignedTo ? 'error' : ''}
+    className={'form-inputE' + (errors?.assignedTo ? 'error' : '')}
   >
     <option value="">Seleccione un usuario...</option>
     {users.map(user => (
@@ -164,7 +166,7 @@ const handleSave = async () => {
                   name="estado"
                   value={editedEquipment.estado}
                   onChange={handleInputChange}
-                  className={errors?.estado ? 'error' : ''}
+                  className={'form-inputE' + (errors?.estado ? 'error' : '')}
               />
                 {errors?.estado && <span className="error-message">{errors.estado}</span>}
               </div>
@@ -175,7 +177,7 @@ const handleSave = async () => {
                   name="IpEquipo"
                   value={editedEquipment.IpEquipo}
                   onChange={handleInputChange}
-                    className={errors?.IpEquipo ? 'error' : ''}
+                    className={'form-inputE' + (errors?.IpEquipo ? 'error' : '')}
                 />
                 {errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
               </div>
@@ -186,12 +188,12 @@ const handleSave = async () => {
                   name="lugar"
                   value={editedEquipment.lugar}
                   onChange={handleInputChange}
-                    className={errors?.lugar ? 'error' : ''}
+                    className={'form-inputE' + (errors?.lugar ? 'error' : '')}
                 />
                 {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
               </div>
               
-               <div className="modal-actions">
+               <div className="modal-actionsE">
                 <button 
                   className="save-btn" 
                   onClick={handleSave}
@@ -233,7 +235,7 @@ const handleSave = async () => {
                 </div>
               {/* ... otros campos ... */}
               
-              <div className="modal-actions">
+              <div className="modal-actionsE">
                 <button 
                   onClick={() => setIsEditing(true)} 
                   className="edit-btn"
