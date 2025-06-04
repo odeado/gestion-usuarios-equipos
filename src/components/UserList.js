@@ -64,6 +64,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
               onClick={() => onSelectUser(user.id)}
             >
               {user.imageBase64 && (
+                
                 <div className="user-avatar">
                   <img src={user.imageBase64} alt={user.name} />
                 </div>
@@ -106,7 +107,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
 
                 <p className="user-email">{user.correo}</p>
                 <p className="user-tipo">{user.tipoVpn}</p>
-               
+               </div>
 
                 <div className="user-actions">
                   <button
@@ -137,7 +138,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                     Detalles
                   </button>
                 </div>
-              </div>
+              
             </div>
           ))
         ) : (
