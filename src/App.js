@@ -327,6 +327,17 @@ function App() {
           </div>
 
           <div className="form-toggle-buttons">
+
+
+  <div className="global-search">
+            <input
+              type="text"
+              placeholder="Buscar en usuarios y equipos..."
+              value={globalSearchTerm}
+              onChange={(e) => setGlobalSearchTerm(e.target.value)}
+            />
+          </div>
+
             <button 
               onClick={() => {
                 setShowUserForm(!showUserForm);
@@ -389,14 +400,7 @@ function App() {
             </div>
           )}
 
-          <div className="global-search">
-            <input
-              type="text"
-              placeholder="Buscar en usuarios y equipos..."
-              value={globalSearchTerm}
-              onChange={(e) => setGlobalSearchTerm(e.target.value)}
-            />
-          </div>
+        
           
           <div className="content">
           <div className="listsUser-container">

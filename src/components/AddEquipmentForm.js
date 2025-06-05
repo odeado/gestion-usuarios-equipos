@@ -144,7 +144,7 @@ const AddEquipmentForm = forwardRef((props, ref) => {
   };
 
   return (
-    <div className="form-container" ref={ref}>
+    <div className="eqipment-form" ref={ref}>
       <h3>{isEditing ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</h3>
       <form onSubmit={handleSubmit}>
         {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}

@@ -6,9 +6,32 @@
   
 }
 
-/* Estilos para la aplicación */
+/* Añade esto al inicio de tu App.css */
+html, body, #root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Previene scroll horizontal */
+}
+
+/* Contenedor principal */
+.app-container {
+  max-width: 1800px;
+  margin: 0 auto; /* Centrado horizontal */
+  padding: 20px;
+  background-color: rgba(39, 39, 39, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 95%; /* Para que no toque los bordes en pantallas grandes */
+}
+
 .app {
-  padding: 0px;
+  padding: 20px;
+  color: #ffffff;
+  font-family: 'Arial', sans-serif;
+  
+  
 }
 
 /* Título principal */
@@ -30,7 +53,7 @@
   
 }
 
-/* General Styles */
+
 .app-header {
   text-align: center;
   
@@ -42,125 +65,16 @@
 /* Contenido principal */
 .content {
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  
+  grid-template-columns: 1fr; /* Una sola columna */
+  gap: 20px;
+  justify-items: center; /* Centrar elementos horizontalmente */
 }
   
-  /* Department Select Styles */
-  .department-select-container {
-    position: relative;
-  }
   
-  .department-select-container select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: white;
-    font-size: 14px;
-  }
   
-  .add-department-form {
-    margin-top: 10px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    border: 1px dashed #ddd;
-  }
   
-  .department-input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
   
-  .department-form-buttons {
-    display: flex;
-    gap: 10px;
-  }
   
-  /* Image Upload Styles */
-  .image-upload-container {
-    margin-top: 5px;
-  }
-  
-  .image-upload-label {
-    display: inline-block;
-    padding: 8px 12px;
-    background: #f0f0f0;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  
-  .image-upload-label:hover {
-    background: #e0e0e0;
-  }
-  
-  .image-upload-input {
-    display: none;
-  }
-  
-  .image-preview-container {
-    margin: 15px 0;
-    text-align: center;
-  }
-  
-  .image-preview-wrapper {
-    display: inline-block;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .image-preview {
-    display: block;
-    max-width: 200px;
-    max-height: 200px;
-  }
-  
-  /* Button Styles */
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  
-  .btn-submit {
-    background-color: #4a90e2;
-    color: white;
-  }
-  
-  .btn-submit:hover {
-    background-color: #357abd;
-  }
-  
-  .btn-submit:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  
-  .btn-cancel {
-    background-color: #f0f0f0;
-    color: #333;
-  }
-  
-  .btn-cancel:hover {
-    background-color: #e0e0e0;
-  }
 
 /* ==================== LOADING SCREEN ==================== */
 .loading-screen {
@@ -242,63 +156,19 @@
 
 
 
-/* Añade esto al inicio de tu App.css */
-html, body, #root {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* Previene scroll horizontal */
-}
-
-/* Contenedor principal */
-.app-container {
-  max-width: 1800px;
-  margin: 0 auto;
-  background-color: rgba(39, 39, 39, 0.9);
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
 
 
 
 
 
-/* En tu App.css */
-.user-form {
-  background: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
 
-.form-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
 
-.cancel-button {
-  background-color: #f44336;
-  color: white;
-}
 
-.submit-button {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.image-preview {
-  max-width: 100px;
-  max-height: 100px;
-  margin-top: 10px;
-  border-radius: 4px;
-}
 
 
 /* Búsqueda global */
 .global-search {
-  margin: 20px 0;
+  margin: 0px 0;
 }
 
 .global-search input {
@@ -323,41 +193,29 @@ html, body, #root {
 }
 
 
-.user-form {
-  background: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  width: 50%;
-  box-sizing: border-box;
-}
-
-/* Asegura que los inputs no causen overflow */
-.user-form input,
-.user-form select {
-  max-width: 100%;
-  box-sizing: border-box;
-}
 
 
 
-.department-badge {
-  display: inline-block;
-  background: #f0f0f0;
-  padding: 5px 10px;
-  border-radius: 20px;
-  margin-top: 5px;
-}
+
+
+
 
 
 
 /* Botones de alternar formulario */
+
+.form-toggle-buttons {
+  display: flex;
+  justify-content: space-evenly;
+  
+}
+
 .toggle-form-btn {
   background-color: #3498db;
   color: white;
   border: none;
   padding: 10px 15px;
-  margin: 0 10px 20px 0;
+  
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -369,14 +227,8 @@ html, body, #root {
   transform: translateY(-2px);
 }
 
-/* Formularios */
-.forms-usuarios-equipos {
-  background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
+
+
 
 
 .listUser-container {

@@ -28,8 +28,15 @@
   font-size: 1.2em;
 }
 
+.listsUser-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .users-grid {
     padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .users-grid h2 {
@@ -207,7 +214,6 @@
   margin-top: 10px;
   flex-wrap: wrap;
 }
-
 
 
 

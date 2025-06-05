@@ -36,14 +36,14 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background-color: #eee;
+  background-color: #202020;
 }
 
 /* Estilos de la tabla para desktop */
 .equipment-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   background-color: #a7a6a6;
 }
 
@@ -112,7 +112,19 @@
   .mobile-equipment-cards {
     display: block;
   }
+
+ 
   
+
+.listsEquipment-container {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+  }
+
   .equipment-card {
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -120,12 +132,14 @@
     margin-bottom: 15px;
     background-color: #f9f9f9;
     font-size: 14px;
+    color: #202020;
   }
   
   .card-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
+    color: #302f2f;
   }
   
   .card-label {
