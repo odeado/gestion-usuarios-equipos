@@ -111,6 +111,7 @@
   /* Mostrar cards en móviles */
   .mobile-equipment-cards {
     display: block;
+    padding: 15px;
   }
 
  
@@ -119,9 +120,17 @@
 .listsEquipment-container {
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 0px;
     width: 100%;
     box-sizing: border-box;
+    background-color: #f0f0f0;
+  }
+
+  .equipment-list-container {
+    width: 100%;
+    overflow-x: auto;
+    padding: 15px;
+    -webkit-overflow-scrolling: touch;
     background-color: #f0f0f0;
   }
 
