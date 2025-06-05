@@ -302,13 +302,20 @@ function App() {
   }, []);
 
   // ==================== RENDER ====================
-  if (loading) {
-    return (
-      <div className="app-background">
-        <div className="loading">Cargando datos...</div>
+ if (loading) {
+  return (
+    <div className="loading-screen">
+      <div className="loading-content">
+        <div className="loading-spinner"></div>
+        <h2>Cargando Sistema de Gestión</h2>
+        <p>Por favor espere mientras cargamos todos los recursos...</p>
+        <div className="loading-progress">
+          <div className="progress-bar"></div>
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="app-background">
