@@ -242,12 +242,7 @@ const handleSave = async () => {
                 >
                   Editar
                 </button>
-                <button 
-                  onClick={onClose} 
-                  className="cancel-btn"
-                >
-                  Cerrar
-                </button>
+              
               </div>
             </>
           )}

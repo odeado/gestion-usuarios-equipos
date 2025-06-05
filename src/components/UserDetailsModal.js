@@ -210,7 +210,7 @@ function UserDetailsModal({
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button className="modal-close" onClick={onClose}>Cerrar</button>
 
         <div className="modal-header">
           {isEditing ? (
@@ -299,8 +299,52 @@ function UserDetailsModal({
             </div>
           ) : (
             <div className="view-mode">
-              <div className="modal-footer">
-                <div className="navigation-buttons">
+              
+
+              <div className="texto-container">
+                <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
+                <div className="caja-titulo">
+                  <label className="form-label">Departamento:</label>
+                  <p className="department-badge">{user.department}</p>
+                </div>
+                <p>{user.correo}</p>
+              </div>
+              <h2>{user.name}</h2>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-body">
+          <h3>Equipos en uso</h3>
+          {userEquipment.length > 0 ? (
+            <ul className="equipment-list">
+              {userEquipment.map(item => (
+                <li 
+                  className={`equipment-item ${item.type.toLowerCase()}`} 
+                  key={item.id}
+                  onClick={() => handleEquipmentClick(item)}
+                  style={{cursor: 'pointer'}}
+                >
+                  <span className="equipo-lugar">{item.lugar}</span>:
+                  <span className="equipo-nombre">{item.nombre}</span>/ 
+                  <span className="equipo-type">{item.type}</span>
+                  <span className="equipo-serial">({item.serialNumber})</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Sin equipos asignados actualmente</p>
+          )}
+
+          <label className="form-label">
+            IP Equipo Asignado:
+            <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
+          </label>
+        </div>
+<div className="modal-footer">
+               
+              
+ <div className="navigation-buttons">
                   <button 
                     onClick={onPrev} 
                     disabled={currentIndex === 0}
@@ -346,48 +390,8 @@ function UserDetailsModal({
                     Siguiente &rarr;
                   </button>
                 </div>
-              </div>
 
-              <div className="texto-container">
-                <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
-                <div className="caja-titulo">
-                  <label className="form-label">Departamento:</label>
-                  <p className="department-badge">{user.department}</p>
-                </div>
-                <p>{user.correo}</p>
-              </div>
-              <h2>{user.name}</h2>
-            </div>
-          )}
-        </div>
-
-        <div className="modal-body">
-          <h3>Equipos en uso</h3>
-          {userEquipment.length > 0 ? (
-            <ul className="equipment-list">
-              {userEquipment.map(item => (
-                <li 
-                  className={`equipment-item ${item.type.toLowerCase()}`} 
-                  key={item.id}
-                  onClick={() => handleEquipmentClick(item)}
-                  style={{cursor: 'pointer'}}
-                >
-                  <span className="equipo-lugar">{item.lugar}</span>:
-                  <span className="equipo-nombre">{item.nombre}</span>/ 
-                  <span className="equipo-type">{item.type}</span>
-                  <span className="equipo-serial">({item.serialNumber})</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Sin equipos asignados actualmente</p>
-          )}
-
-          <label className="form-label">
-            IP Equipo Asignado:
-            <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
-          </label>
-        </div>
+</div>
       </div>
     </div>
   );

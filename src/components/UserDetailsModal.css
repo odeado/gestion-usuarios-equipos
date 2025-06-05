@@ -83,8 +83,8 @@
     justify-content: space-between;
     align-items: center;
     
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #ddd;
+    background-color: #260a36;
+    
     border-radius: 8px 8px 0 0;
     width: 50%;
   }
@@ -97,7 +97,7 @@
   
   .modal-content {
     display: flex;
-    background: white;
+    background: rgb(0, 0, 0);
     border-radius: 8px;
     width: 100%;
     max-width: 900px;
@@ -150,14 +150,14 @@
 .navigation-buttons {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    
   }
   
   .nav-button {
-    background-color: #f0f0f0;
+    background-color: #2c2c2c;
     border: none;
     padding: 8px 16px;
-    border-radius: 4px;
+    color: white;
     cursor: pointer;
     transition: background-color 0.3s;
   }
@@ -179,7 +179,10 @@
     margin-left: auto;
   }
   
-
+.edit-button {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+  }
 
  
   
@@ -234,6 +237,7 @@
   .modal-header {
     display: grid;
     flex-direction: row;
+    padding-top: 20px;
     
   }
   
@@ -242,9 +246,6 @@
     padding: 15px;
   }
   
-  .modal-user-image {
-    max-height: 150px;
-  }
   
   .nav-button {
     padding: 8px 15px;
@@ -283,8 +284,8 @@
   }
 
   .modal-user-image {
-    width: 100%;
-    height: auto;
+    width: 100px;
+    height: 100px;
     border-radius: 0;
     -webkit-mask-image: none; /* Quitamos el efecto difuminado en móvil */
     mask-image: none; /* Quitamos el efecto difuminado en móvil */
@@ -341,6 +342,7 @@
 
   .view-mode {
     width: 100%;
+    padding-left: 10px;
     
   }
   
