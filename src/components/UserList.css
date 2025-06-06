@@ -1,5 +1,34 @@
 /* UserList.css */
 
+.nombre-apellidoList {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    padding-bottom: 15px;
+    
+    position: relative;
+}
+
+.nombre-apellidoList::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 250px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
+}
+
+.nombreList, .apellidoList {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #f0f0f0, #d1a0d1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
 .users-header {
   display: flex;
@@ -58,60 +87,79 @@
 
 
 .user-avatar {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 45%; /* Un cuarto del ancho */
-  height: 100%; /* Toda la altura */
-  margin: 0;
-  z-index: 1;
+    
+    right: 0;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    z-index: 1;
 }
 
 .user-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 0; /* Quitamos el border-radius circular */
-  object-fit: cover;
-  border: none;
-  box-shadow: none;
-  /* Efecto difuminado vertical completo */
-  -webkit-mask-image: linear-gradient(to right, 
-    rgba(0,0,0,0) 0%, 
-    rgba(0,0,0,0.3) 30%, 
-    rgba(0,0,0,0.8) 100%);
-  mask-image: linear-gradient(to right, 
-    rgba(0,0,0,0) 0%, 
-    rgba(0,0,0,0.3) 30%, 
-    rgba(0,0,0,0.8) 100%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-mask-image: linear-gradient(to left, 
+        rgba(0,0,0,0) 0%, 
+        rgba(0,0,0,0.3) 30%, 
+        rgba(0,0,0,0.8) 100%);
+    mask-image: linear-gradient(to left, 
+        rgba(0,0,0,0) 0%, 
+        rgba(0,0,0,0.3) 30%, 
+        rgba(0,0,0,0.8) 100%);
 }
 
-
-
-.user-avatar::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: inherit;
-  filter: blur(5px);
-  border-radius: 0 0 50% 50%;
-  opacity: 0.7;
+.user-avatar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, 
+        rgba(0,0,0,0) 0%, 
+        rgba(59, 9, 59, 0.5) 50%, 
+        rgba(29, 2, 29, 0.9) 100%);
+    z-index: 2;
 }
   
-  .user-info {
-    flex: 1;
-    width: 100%;
-    padding-left: 10px;
-  }
+.user-info {
+   flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    gap: 2px; /* Espacio mínimo entre elementos */
+    z-index: 2;
+}
   
   .user-info h3 {
-    margin: 0 0 0.5rem 0;
-    color: #2c3e50;
-    font-size: 1.1rem;
+   font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #f0f0f0, #d1a0d1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0;
+    line-height: 1.1;
   }
+
+  .user-info p {
+    margin: 0;
+    padding: 0;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+  .user-info::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 2px;
+}
 
   .user-id {
     display: flex;
@@ -126,12 +174,18 @@
     margin-bottom: 0.5rem;
   }
 
-  .user-email {
-  color: #666;
-  font-size: 0.85rem;
-  margin: 0.3rem 0;
-  word-break: break-all;
-  width: max-content; /* Ajusta el ancho al contenido */
+.user-equipo {
+    color: #ccc;
+}
+
+.user-email {
+    color: #aaa;
+    font-size: 0.7rem;
+}
+
+.user-tipo {
+    color: #999;
+    font-size: 0.65rem;
 }
 
 .department {
@@ -139,81 +193,57 @@
   margin: 0.2rem 0;
 }
 
+.user-actions {
+    display: flex;
+    flex-direction: column-reverse;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+    text-align: center;
+}
+
 .delete-button {
-  background: #f44336;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  width: 80px;
-  height: 40px;
+ background: linear-gradient(to right, #4c1010, #6c1c1c);
+    color: white;
 }
 
 .edit-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-   width: 80px;
-  height: 40px;
+  background: linear-gradient(to right, #2c2c2c, #3c3c3c);
+    color: white;
 }
 
 .details-button {
-  background: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-   width: 80px;
-  height: 40px;
+   background: linear-gradient(to right, #260a36, #3a1b4a);
+    color: white;
+    border: 1px solid rgba(235, 46, 209, 0.3);
 }
 
-.details-button:hover {
-  background: #2980b9;
+
+.user-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Hover effects */
-.delete-button:hover, .edit-button:hover, .details-button:hover {
-  opacity: 0.9;
+
+.user-card {
+    position: relative;
+    display: flex;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 180px;
 }
-
-  
-  .user-card:hover {
-    transform: translateY(-3px);
-  }
-
-
-  .user-card:active {
-    transform: translateY(0);
-  }
-  
- .details-button {
-  width: 100px; /* Ancho fijo para el botón */
-  padding: 8px 12px;
- }
-
-   .user-card {
-    position: relative; /* Necesario para posicionar la imagen absoluta */
- 
-    overflow: hidden; /* Evita que el contenido se desborde */
-    flex-direction: row; /* Cambiamos a fila en móvil */
-    align-items: center;
-    background-color: #e2e2e2;
-    gap: 1rem;
-    border-radius: 5px;
-    border: solid 1px #f1eeee;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
 
  
 
-.user-actions {
-  display: flex;
-  
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
+
 
 
 

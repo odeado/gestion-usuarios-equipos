@@ -28,27 +28,45 @@
 
 .equipment-modalE {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px); /* Efecto de desenfoque del fondo */
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-contentE {
-  background-color: #764ba2;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+   display: flex;
+   flex-wrap: wrap;
+   flex-direction: column;
+    background: linear-gradient(135deg, #29062c 0%, #0d0d0d 50%);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 900px;
+    
+    height: max-content;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes scaleUp {
+    to { transform: scale(1); }
 }
 
 .modal-headerE {
@@ -73,7 +91,10 @@
 }
 
 .modal-bodyE {
-  margin-bottom: 20px;
+  flex: 1;
+  
+  overflow: hidden; /* Necesario para el scroll interno */
+  position: relative;
 }
 
 .detail-rowE {

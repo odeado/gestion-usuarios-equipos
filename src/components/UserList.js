@@ -71,7 +71,10 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
               )}
 
               <div className="user-info">
-                <h3>{user.name}</h3>
+               <div className='nombre-apellidoList'>
+                  <div className="nombreList">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
+                  <div className="apellidoList">{user.name.split(' ').slice(1).join(' ')}</div>
+                 </div>
                 
 
 <p className="user-equipo">{getEquipmentName(user.EquipoAsignado)}</p>

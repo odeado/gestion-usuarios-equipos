@@ -293,7 +293,7 @@ function UserDetailsModal({
               </div>
               
               <div className="form-group">
-                <label className="form-label">Departamento</label>
+                <label className="form-label-modal">Departamento</label>
                 {renderDepartmentSelect()}
               </div>
             </div>
@@ -302,19 +302,24 @@ function UserDetailsModal({
               
 
               <div className="texto-container">
-                <label className="form-label">Tipo VPN: {user.tipoVpn}</label>
+                <div className='nombre-apellido'>
+                  <div className="nombre">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
+                  <div className="apellido">{user.name.split(' ').slice(1).join(' ')}</div>
+                 </div>
+                <label className="form-label-modal">Tipo VPN: {user.tipoVpn}</label>
                 <div className="caja-titulo">
-                  <label className="form-label">Departamento:</label>
+                  <label className="form-label-modal">Departamento:</label>
                   <p className="department-badge">{user.department}</p>
                 </div>
                 <p>{user.correo}</p>
               </div>
-              <h2>{user.name}</h2>
+              
             </div>
           )}
         </div>
 
         <div className="modal-body">
+          <div className="user-details">
           <h3>Equipos en uso</h3>
           {userEquipment.length > 0 ? (
             <ul className="equipment-list">
@@ -341,6 +346,7 @@ function UserDetailsModal({
             <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
           </label>
         </div>
+        
 <div className="modal-footer">
                
               
@@ -376,7 +382,7 @@ function UserDetailsModal({
                   ) : (
                     <button 
                       onClick={() => setIsEditing(true)} 
-                      className="action-button edit-button"
+                      className="action-button edit-buttonM"
                     >
                       ✏️ Editar
                     </button>
@@ -392,6 +398,8 @@ function UserDetailsModal({
                 </div>
 
 </div>
+</div>
+      
       </div>
     </div>
   );
