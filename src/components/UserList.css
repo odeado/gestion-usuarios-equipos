@@ -295,7 +295,7 @@
 .cards-container {
      display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100%, 2fr));
-   
+   padding-bottom: 20px;
     width: 100%;
     box-sizing: border-box;
 
@@ -306,17 +306,39 @@
     overflow: hidden; /* Evita que el contenido se desborde */
     flex-direction: row; /* Cambiamos a fila en móvil */
     align-items: center;
-   
+   height: 100px; /* Ajusta la altura para móvil */
     border: solid 1px #f1eeee;
     
   }
 
-  .content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 5px;
-  box-sizing: border-box; /* Incluye padding en el ancho */
+.nombre-apellidoList {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    
+    
+    position: relative;
+}
+
+.nombre-apellidoList::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 250px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
+}
+
+.nombreList, .apellidoList {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #f0f0f0, #d1a0d1);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
   .users-grid{
@@ -327,7 +349,7 @@
 
     .user-info h3 {
     font-size: 12px;
-    margin-bottom: 0.3rem;
+   
     min-width: 0; /* Permite que el texto se ajuste */
   }
 
@@ -340,8 +362,8 @@
   }
 
   .user-info p {
-    font-size: 10px;
-    margin: 0.2rem 0;
+    font-size: 6px;
+    
     color: #666;
   }
 

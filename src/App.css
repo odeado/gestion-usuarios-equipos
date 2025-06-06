@@ -211,7 +211,7 @@ html, body, #root {
 }
 
 .toggle-form-btn {
-  background-color: #3498db;
+  background-color: #3f0a3c;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -223,7 +223,7 @@ html, body, #root {
 }
 
 .toggle-form-btn:hover {
-  background-color: #2980b9;
+  background-color: #070406;
   transform: translateY(-2px);
 }
 
@@ -251,12 +251,10 @@ html, body, #root {
 
 @media (max-width: 768px) {
 
-   .content {
-    grid-template-columns: 1fr;
-  }
+
 
 .global-search {
-  margin: 0px 0;
+  margin: 10px 0;
   
 }
 
