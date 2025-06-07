@@ -179,7 +179,7 @@ const handleSave = async () => {
           <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
           </div>
-          <button className="close-btn" onClick={handleClose}>×</button>
+          <button className="close-btn" onClick={handleClose}>Cerrar</button>
         </div>
         
         <div className="modal-bodyE">
@@ -310,7 +310,7 @@ const handleSave = async () => {
               name="assignedTo"
               value={editedEquipment.assignedTo}
               onChange={handleInputChange}
-              className={'form-inputE' + (errors?.assignedTo ? 'error' : '')}
+              className={'form-group-select' + (errors?.assignedTo ? 'error' : '')}
   >
                 <option value="">Seleccione un usuario...</option>
                 {users.map(user => (

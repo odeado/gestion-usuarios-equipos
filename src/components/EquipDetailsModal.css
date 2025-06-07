@@ -373,7 +373,7 @@
   .modal-contentE {
     width: 100%;
     height: 100vh;
-    max-height: 100vh;
+    padding: 10px;
     margin: 0;
     border-radius: 0;
     display: flex;
@@ -383,20 +383,22 @@
   .image-previewE {
      max-width: 100%;
     margin: 0 auto;
+    
   }
 
   .image-upload-container {
-    margin-bottom: 20px;
-    width: 100%;
+    padding: 10px;
+    width: 90%;
+    border: 1px solid rgba(235, 46, 209, 0.3);
   }
 
   .form-groupE {
     width: 100%;
-    margin-bottom: 15px;
+    gap: 10px;
   }
 
   .form-groupDatosE {
-    width: 50%;
+    width: 100%;
     height: 100%;
   }
 
@@ -410,6 +412,10 @@
   .modal-headerE {
     display: flex;
     color: #f1f1f1;
+    padding-bottom: 0%;
+    margin-bottom: 10px;
+    align-items: center;
+    gap: 10px;
     
   }
 
@@ -422,12 +428,37 @@
 }
 
 .form-inputE {
-  width: 100%;
+  width: 90%;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
 }
+
+/* Estilo para opciones */
+  .form-group-select option {
+    padding: 15px;
+    font-size: 15px;
+  }
+
+
+.form-group-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px; /* Tamaño aumentado para mejor legibilidad */
+    background-color: white;
+    appearance: none; /* Elimina el estilo nativo del navegador */
+    -webkit-appearance: none; /* Para Safari/iOS */
+    -moz-appearance: none; /* Para Firefox */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 35px; /* Espacio para la flecha */
+    margin-bottom: 15px;
+  }
 
 .modal-actionsE {
  flex-direction: column;
@@ -439,6 +470,18 @@
     width: 100%;
     margin: 5px 0;
     padding: 12px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    
+    font-size: 12px;
+    cursor: pointer;
+    color: #f1f1f1;
+    border-radius: 5px;
+    background-color: tomato;
   }
 
 }
