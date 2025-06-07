@@ -191,7 +191,7 @@ const handleSave = async () => {
                 {errors.form && <div className="error-message">{errors.form}</div>}
 
 
-                  <div className="form-groupE image-upload-container">
+                  <div className="image-upload-container">
                   <label>Imagen del Equipo:</label>
                   {editedEquipment.imageBase64 ? (
                    <div className="image-previewE">

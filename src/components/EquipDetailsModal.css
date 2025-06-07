@@ -30,14 +30,11 @@
 }
 
 
-/* Estilos para modo edición */
-.image-upload-container {
-  margin-bottom: 20px;
-}
+
 
 .image-previewE {
   display: flex;
-  flex-direction: column-reverse;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
   margin-top: 10px;
@@ -337,7 +334,17 @@
   cursor: pointer;
 }
 
+  .modal-headerE {
+    display: flex;
+    color: #f1f1f1;
+    
+  }
+
 @media (max-width: 768px) {
+
+
+
+
   .equipment-data-section {
     width: 100%;
     padding: 10px;
@@ -356,18 +363,18 @@
   .edit-form {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 5px;
   width: 100%;
 }
 
   .modal-contentE {
     display: flex;
     flex-direction: column;
-    max-width: 100%;
+    
     flex-wrap: nowrap;
-    width: 90%;
-    height: auto;
-    max-height: 100vh;
+    
+    
+    height: 100vh;
     overflow-y: auto;
   }
 
@@ -376,6 +383,32 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .image-upload-container {
+    margin-bottom: 10px;
+    width: 50%;
+  }
+
+  .form-groupE {
+    width: max-content;
+    margin-bottom: 15px;
+  }
+
+  .form-groupDatosE {
+    width: 50%;
+  }
+
+  .modal-bodyE {
+    padding: 10px;
+    overflow-y: auto; /* Permite el scroll interno */
+    flex: 1;
+  }
+
+  .modal-headerE {
+    display: flex;
+    color: #f1f1f1;
+    
   }
 
 .form-groupE label {
@@ -393,4 +426,12 @@
   font-size: 12px;
 }
 
+.modal-actionsE {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+
+}
 }

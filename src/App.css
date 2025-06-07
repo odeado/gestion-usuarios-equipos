@@ -43,7 +43,7 @@ html, body, #root {
 
 .app-header {
   text-align: center;
-  
+  color: #ffffff;
   padding: 0px;
   margin: 0px;
   
@@ -246,7 +246,7 @@ html, body, #root {
   background-color: #3f0a3c;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 30px 35px;
   
   border-radius: 5px;
   cursor: pointer;
@@ -401,13 +401,26 @@ html, body, #root {
 
    .form-toggle-buttons {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: 10px;
   }
   
-  .toggle-form-btn {
-    margin-bottom: 10px;
-    width: 100%;
-  }
+ .toggle-form-btn {
+  background-color: #3f0a3c;
+  color: white;
+  border: none;
+  padding: 20px 20px;
+  
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.toggle-form-btn:hover {
+  background-color: #070406;
+  transform: translateY(-2px);
+}
 
   
 
