@@ -191,7 +191,7 @@ const handleSave = async () => {
                 {errors.form && <div className="error-message">{errors.form}</div>}
 
 
-                  <div className="image-upload-container">
+                  <div className="image-upload-containerE">
                   <label>Imagen del Equipo:</label>
                   {editedEquipment.imageBase64 ? (
                    <div className="image-previewE">
@@ -231,8 +231,8 @@ const handleSave = async () => {
                   </div>
                   </div>
                 ) : (
-                   <div className="upload-image-container">
-                    <label className="upload-image-label">
+                   <div className="upload-image-containerE">
+                    <label className="upload-image-labelE">
                       <span>+ Seleccionar imagen</span>
                       <input
                         type="file"
