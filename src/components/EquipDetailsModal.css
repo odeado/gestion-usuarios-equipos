@@ -35,7 +35,7 @@
   margin-bottom: 20px;
 }
 
-.image-preview {
+.image-previewE {
   display: flex;
   flex-direction: column-reverse;
   flex-wrap: wrap;
@@ -309,6 +309,20 @@
   color: white;
 }
 
+.edit-form {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+}
+
+.form-groupDatosE {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
 .save-btn :hover {
   background-color: #95f098;
   color: white;
@@ -335,14 +349,32 @@
     margin-bottom: 20px;
   }
 
-  .equipment-image-view {
-    max-height: 150px;
+  .equipment-image-preview {
+    max-height: 100px;
   }
 
+  .edit-form {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+}
+
   .modal-contentE {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    flex-wrap: nowrap;
     width: 90%;
     height: auto;
-    max-height: 90vh;
+    max-height: 100vh;
     overflow-y: auto;
+  }
+
+  .image-previewE {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 }

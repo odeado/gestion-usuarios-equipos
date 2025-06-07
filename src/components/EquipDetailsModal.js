@@ -2,10 +2,68 @@ import React, { useState, useEffect } from 'react';
 import './EquipDetailsModal.css';
 
 function EquipDetailsModal({ equipment = {}, onEdit, onClose, users = [], currentIndex, totalEquipment, onNext, onPrev, user }) {
+  
+
+  const [isMobile, setIsMobile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedEquipment, setEditedEquipment] = useState({...equipment});
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
+
+
+ // Función para touch events
+
+   const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+
+
+
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+  // No permitir gestos durante la edición
+  if (isEditing) return;
+  
+  if (!touchStart || !touchEnd) return;
+  
+  const distance = touchStart - touchEnd;
+  const isLeftSwipe = distance > 50; // Umbral para "siguiente"
+  const isRightSwipe = distance < -50; // Umbral para "anterior"
+
+  if (isLeftSwipe && currentIndex < users.length - 1) {
+    onNext();
+  } else if (isRightSwipe && currentIndex > 0) {
+    onPrev();
+  }
+
+  setTouchStart(null);
+  setTouchEnd(null);
+};
+
+
+  // fin Manejo de eventos táctiles
+
+
+
+ // Efecto para detectar si es móvil
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // 768px es un breakpoint común para móviles
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+
+
 
 
 const handleNext = () => {
@@ -133,23 +191,23 @@ const handleSave = async () => {
                 {errors.form && <div className="error-message">{errors.form}</div>}
 
 
- <div className="form-groupE image-upload-container">
-                <label>Imagen del Equipo:</label>
-                {editedEquipment.imageBase64 ? (
-                   <div className="image-preview">
-      {editedEquipment.imageBase64.startsWith('data:image/') ? (
-        <img 
-          src={editedEquipment.imageBase64}
-          alt="Vista previa" 
-          className="equipment-image-preview"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = 'ruta/a/imagen/por/defecto.jpg';
-          }}
-        />
-      ) : (
-        <p className="image-error">Formato de imagen no válido</p>
-      )}
+                  <div className="form-groupE image-upload-container">
+                  <label>Imagen del Equipo:</label>
+                  {editedEquipment.imageBase64 ? (
+                   <div className="image-previewE">
+                  {editedEquipment.imageBase64.startsWith('data:image/') ? (
+                  <img 
+                  src={editedEquipment.imageBase64}
+                  alt="Vista previa" 
+                  className="equipment-image-preview"
+                  onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'ruta/a/imagen/por/defecto.jpg';
+                }}
+                />
+                ) : (
+                <p className="image-error">Formato de imagen no válido</p>
+              )}
 
 
                     <div className="image-actions">
@@ -188,7 +246,7 @@ const handleSave = async () => {
               </div>
 
 
-
+<div className="form-groupDatosE">
               <div className="form-groupE">
                 <label>Nombre:</label>
                 <input
@@ -214,95 +272,95 @@ const handleSave = async () => {
               </div>
 
               <div className="form-groupE">
-  <label>Marca:</label>
-  <input
-    name="marca"
-    value={editedEquipment.marca}
-    onChange={handleInputChange}
-    className={'form-inputE ' + (errors?.marca ? 'error' : '')}
-  />
-  {errors?.marca && <span className="error-message">{errors.marca}</span>}
-</div>
+          <label>Marca:</label>
+            <input
+          name="marca"
+         value={editedEquipment.marca}
+          onChange={handleInputChange}
+          className={'form-inputE ' + (errors?.marca ? 'error' : '')}
+            />
+            {errors?.marca && <span className="error-message">{errors.marca}</span>}
+          </div>
 
-<div className="form-groupE">
-  <label>Modelo:</label>
-  <input
-    name="model"
-    value={editedEquipment.model}
-    onChange={handleInputChange}
-    className={'form-inputE' + (errors?.model ? 'error' : '')}
-  />
-  {errors?.model && <span className="error-message">{errors.model}</span>}
-</div>
+          <div className="form-groupE">
+            <label>Modelo:</label>
+            <input
+              name="model"
+              value={editedEquipment.model}
+              onChange={handleInputChange}
+              className={'form-inputE' + (errors?.model ? 'error' : '')}
+            />
+            {errors?.model && <span className="error-message">{errors.model}</span>}
+          </div>
 
-<div className="form-groupE">
-  <label>Número de Serie:</label>
-  <input
-    name="serialNumber"
-    value={editedEquipment.serialNumber}
-    onChange={handleInputChange}
-    className={'form-inputE' + (errors?.serialNumber ? 'error' : '')}
-  />
-  {errors?.serialNumber && <span className="error-message">{errors.serialNumber}</span>}
-</div>
+          <div className="form-groupE">
+            <label>Número de Serie:</label>
+            <input
+              name="serialNumber"
+              value={editedEquipment.serialNumber}
+              onChange={handleInputChange}
+              className={'form-inputE' + (errors?.serialNumber ? 'error' : '')}
+            />
+            {errors?.serialNumber && <span className="error-message">{errors.serialNumber}</span>}
+          </div>
 
-<div className="form-groupE">
-  <label>Asignado a:</label>
-  <select
-    name="assignedTo"
-    value={editedEquipment.assignedTo}
-    onChange={handleInputChange}
-    className={'form-inputE' + (errors?.assignedTo ? 'error' : '')}
+          <div className="form-groupE">
+            <label>Asignado a:</label>
+            <select
+              name="assignedTo"
+              value={editedEquipment.assignedTo}
+              onChange={handleInputChange}
+              className={'form-inputE' + (errors?.assignedTo ? 'error' : '')}
   >
-    <option value="">Seleccione un usuario...</option>
-    {users.map(user => (
-      <option key={user.id} value={user.id}>
-        {user.name}
-      </option>
-    ))}
-  </select>
-  {errors?.assignedTo && <span className="error-message">{errors.assignedTo}</span>}
-</div>
+                <option value="">Seleccione un usuario...</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+              {errors?.assignedTo && <span className="error-message">{errors.assignedTo}</span>}
+            </div>
+                          
+                          <div className="form-groupE">
+                            <label>Estado:</label>
+                            <input
+                              name="estado"
+                              value={editedEquipment.estado}
+                              onChange={handleInputChange}
+                              className={'form-inputE' + (errors?.estado ? 'error' : '')}
+                          />
+                            {errors?.estado && <span className="error-message">{errors.estado}</span>}
+                          </div>
               
-              <div className="form-groupE">
-                <label>Estado:</label>
-                <input
-                  name="estado"
-                  value={editedEquipment.estado}
-                  onChange={handleInputChange}
-                  className={'form-inputE' + (errors?.estado ? 'error' : '')}
-              />
-                {errors?.estado && <span className="error-message">{errors.estado}</span>}
-              </div>
-              
-              <div className="form-groupE">
-                <label>IP Equipo:</label>
-                <input
-                  name="IpEquipo"
-                  value={editedEquipment.IpEquipo}
-                  onChange={handleInputChange}
-                    className={'form-inputE' + (errors?.IpEquipo ? 'error' : '')}
-                />
-                {errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
-              </div>
-              
-              <div className="form-groupE">
-                <label>Lugar:</label>
-                <input
-                  name="lugar"
-                  value={editedEquipment.lugar}
-                  onChange={handleInputChange}
-                    className={'form-inputE' + (errors?.lugar ? 'error' : '')}
-                />
-                {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
-              </div>
-              
-               <div className="modal-actionsE">
-                <button 
-                  className="save-btn" 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
+                        <div className="form-groupE">
+                          <label>IP Equipo:</label>
+                          <input
+                            name="IpEquipo"
+                            value={editedEquipment.IpEquipo}
+                            onChange={handleInputChange}
+                              className={'form-inputE' + (errors?.IpEquipo ? 'error' : '')}
+                          />
+                          {errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
+                        </div>
+                        
+                        <div className="form-groupE">
+                          <label>Lugar:</label>
+                          <input
+                            name="lugar"
+                            value={editedEquipment.lugar}
+                            onChange={handleInputChange}
+                              className={'form-inputE' + (errors?.lugar ? 'error' : '')}
+                          />
+                          {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
+                        </div>
+                        
+                        <div className="modal-actionsE">
+                          <button 
+                            className="save-btn" 
+                            onClick={handleSave}
+                            disabled={isSaving}
+                          >
                   {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
            <button 
@@ -317,11 +375,16 @@ const handleSave = async () => {
 </button>
               </div>
             </div>
+            </div>
           ) : (
             
              
 
-  <div className="view-mode-container">
+  <div className="view-mode-container"
+   onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+  >
               
               <div className="equipment-details-container">
                {equipment.imageBase64 && equipment.imageBase64.startsWith('data:image/') && (
@@ -375,8 +438,8 @@ const handleSave = async () => {
                 <div className="navigation-buttons">
                    <button 
                     onClick={handlePrev} 
-                     disabled={currentIndex === 0}
-  className="nav-button prev-button"
+                    disabled={currentIndex === 0}
+                    className="nav-button prev-button"
                   >
                     &larr; Anterior
                   </button>
@@ -390,8 +453,8 @@ const handleSave = async () => {
 
                 <button 
                     onClick={handleNext} 
-                    disabled={currentIndex === users.length - 1}
-  className="nav-button next-button"
+                    disabled={currentIndex === totalEquipment - 1}
+                  className="nav-button next-button"
                   >
                     Siguiente &rarr;
                   </button>
