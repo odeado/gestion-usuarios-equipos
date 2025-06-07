@@ -24,7 +24,44 @@ function UserDetailsModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
+  // Función para touch events
+
+   const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+
+
+
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+  // No permitir gestos durante la edición
+  if (isEditing) return;
   
+  if (!touchStart || !touchEnd) return;
+  
+  const distance = touchStart - touchEnd;
+  const isLeftSwipe = distance > 50; // Umbral para "siguiente"
+  const isRightSwipe = distance < -50; // Umbral para "anterior"
+
+  if (isLeftSwipe && currentIndex < users.length - 1) {
+    onNext();
+  } else if (isRightSwipe && currentIndex > 0) {
+    onPrev();
+  }
+
+  setTouchStart(null);
+  setTouchEnd(null);
+};
+
+
+  // fin Manejo de eventos táctiles
 
   const getAssignedUserName = (userId) => {
     if (!userId || !users) return 'Sin asignar';
@@ -210,7 +247,11 @@ function UserDetailsModal({
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      >
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>Cerrar</button>
 

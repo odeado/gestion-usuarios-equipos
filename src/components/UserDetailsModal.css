@@ -381,12 +381,12 @@
     display: flex;
     flex-wrap: wrap;
     width: 100%;
-    max-height: 95vh;
+    max-height: 100vh;
   }
   
   .modal-header {
     display: flex;
-    
+    height: 50%;
     width: 100%;
     
   }
@@ -394,8 +394,28 @@
   .modal-body {
     width: 100%;
     padding: 15px;
+    height: 50%;
   }
-  
+
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    height: 50%;
+    width: 100%;
+    padding: 20px;
+    color: #f0f0f0;
+    flex-grow: 1; /* Ocupa el espacio disponible */
+  }
+
+
+ .modal-footer {
+    width: 100%;
+    justify-content: space-evenly;
+    display: flex;
+    text-align: center;
+    height: 50px;
+  }
+
  .nombre-apellido {
     display: flex;
     flex-direction: column;
@@ -483,13 +503,7 @@
     rgba(0,0,0,0.8) 100%);
   }
 
-  .modal-footer {
-    width: 100%;
-    justify-content: space-evenly;
-    display: flex;
-    text-align: center;
-    
-  }
+ 
 
 .texto-container{
     width: 100%;
@@ -529,4 +543,15 @@
 
 
 
+.modal-content {
+  transition: transform 0.3s ease;
+}
+
+.swiping-left {
+  transform: translateX(-20px);
+}
+
+.swiping-right {
+  transform: translateX(20px);
+}
 
