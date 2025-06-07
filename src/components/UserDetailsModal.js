@@ -27,6 +27,17 @@ function UserDetailsModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
+ 
+ useEffect(() => {
+  console.log('Equipos del usuario:', {
+    userId: user.id,
+    equipment: userEquipment,
+    allEquipment: equipment
+  });
+}, [user.id, equipment]);
+ 
+ 
+ 
   // Función para touch events
 
    const [touchStart, setTouchStart] = useState(null);
@@ -73,7 +84,9 @@ function UserDetailsModal({
   };
 
   const currentIndex = users.findIndex(u => u.id === user.id);
-  const userEquipment = equipment.filter(item => item.assignedTo === user.id);
+  const userEquipment = equipment.filter(item => 
+  item.assignedTo && item.assignedTo === user.id
+);
 
     // Efecto para detectar si es móvil
   useEffect(() => {
@@ -178,11 +191,25 @@ function UserDetailsModal({
     }
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
-    await onEdit(editedUser);
-    setIsEditing(false);
-  };
+ const handleSave = async () => {
+  if (!validateForm()) return;
+  
+  // Verificar duplicados antes de guardar
+  const currentAssignedEquipment = equipment.find(
+    item => item.assignedTo === editedUser.id && item.id !== editedUser.EquipoAsignado
+  );
+  
+  if (currentAssignedEquipment) {
+    setErrors(prev => ({
+      ...prev,
+      EquipoAsignado: `El usuario ya tiene asignado el equipo ${currentAssignedEquipment.nombre}`
+    }));
+    return;
+  }
+
+  await onEdit(editedUser);
+  setIsEditing(false);
+};
 
   const renderDepartmentSelect = () => {
     const currentDept = editedUser.department;
@@ -379,20 +406,26 @@ function UserDetailsModal({
 
         <div className="modal-body">
           <div className="user-details">
-          <h3>Equipos en uso</h3>
+          <h3>Equipos en uso ({userEquipment.length})</h3>
           {userEquipment.length > 0 ? (
             <ul className="equipment-list">
               {userEquipment.map(item => (
                 <li 
-                  className={`equipment-item ${item.type.toLowerCase()}`} 
-                  key={item.id}
-                  onClick={() => handleEquipmentClick(item)}
-                  style={{cursor: 'pointer'}}
+                  key={`${item.id}-${item.assignedTo}`} // Key única
+            className={`equipment-item ${item.type.toLowerCase()}`}
+            onClick={() => handleEquipmentClick(item)}
                 >
-                  <span className="equipo-lugar">{item.lugar}</span>:
+
+                  <div className="equipo-info">
+                  
                   <span className="equipo-nombre">{item.nombre}</span>/ 
                   <span className="equipo-type">{item.type}</span>
                   <span className="equipo-serial">({item.serialNumber})</span>
+ </div>
+            <div className="equipo-meta">
+                  <span className="equipo-lugar">{item.lugar}</span>:
+                  <span className="equipo-ip">{item.IpEquipo}</span>
+                  </div>
                 </li>
               ))}
             </ul>

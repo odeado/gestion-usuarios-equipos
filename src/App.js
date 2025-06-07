@@ -70,23 +70,29 @@ function App() {
     }
   };
 
-  const updateEquipmentAssignment = async (equipmentId, userId) => {
-    try {
-      await updateDoc(doc(db, 'equipment', equipmentId), {
-        assignedTo: userId || null,
-        updatedAt: new Date()
-      });
-      
-      setEquipment(equipment.map(equip => 
-        equip.id === equipmentId 
-          ? { ...equip, assignedTo: userId || null }
-          : equip
-      ));
-    } catch (error) {
-      console.error("Error actualizando asignación de equipo:", error);
-      throw error;
-    }
-  };
+ const updateEquipmentAssignment = async (equipmentId, userId) => {
+  try {
+    await updateDoc(doc(db, 'equipment', equipmentId), {
+      assignedTo: userId || null,
+      updatedAt: new Date()
+    });
+    
+    // Actualización más completa del estado
+    setEquipment(prevEquipment => prevEquipment.map(equip => {
+      if (equip.id === equipmentId) {
+        return { ...equip, assignedTo: userId || null };
+      }
+      // Limpiar asignación si este equipo estaba asignado al usuario
+      if (userId && equip.assignedTo === userId && equip.id !== equipmentId) {
+        return { ...equip, assignedTo: null };
+      }
+      return equip;
+    }));
+  } catch (error) {
+    console.error("Error actualizando asignación de equipo:", error);
+    throw error;
+  }
+};
 
   // ==================== MANEJO DE USUARIOS ====================
   const handleEditUser = async (userData) => {
