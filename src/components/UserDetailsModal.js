@@ -24,6 +24,8 @@ function UserDetailsModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
+  
+
   const getAssignedUserName = (userId) => {
     if (!userId || !users) return 'Sin asignar';
     const foundUser = users.find(u => u.id === userId);

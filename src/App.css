@@ -251,16 +251,49 @@ html, body, #root {
 
 @media (max-width: 768px) {
 
+  /* Contenedor del buscador fijo */
+  .global-search-container {
+    position: sticky;
+    top: 60px; /* Ajusta según altura del header */
+    background: rgba(39, 39, 39, 0.95);
+    z-index: 99;
+    padding: 10px 0;
+  }
+
+
+  /* Contenedor de contenido con scroll */
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  /* Ajustes para los contenedores de listas */
+  .listsUser-container, 
+  .listsEquipment-container {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Ajustes específicos para la lista de usuarios */
+  .listUser-container {
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 20px; /* Espacio al final */
+  }
 
 
 .global-search {
   margin: 10px 0;
-  
+  width: 100%;
+  display: flex;
 }
 
 .global-search input {
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   
   border: 2px solid #ddd;
   border-radius: 25px;
@@ -292,7 +325,20 @@ html, body, #root {
   }
 
   .app {
-    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ocupa toda la altura visible */
+    padding: 0;
+  }
+
+    /* Encabezado fijo */
+  .app-header {
+    position: sticky;
+    top: 0;
+    background: rgba(39, 39, 39, 0.95);
+    z-index: 100;
+    padding: 10px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .app h1 {
@@ -305,11 +351,12 @@ html, body, #root {
 
    .app h2 {
     padding: 5px;
-    color: #9b9b9b;
+    color: #8b8b8b;
     width: 100%;
     display: flex;
-    font-size: 16px;
+    font-size: 26px;
     justify-content: center;
+    
   }
   
   .user-form {

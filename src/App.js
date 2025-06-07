@@ -27,6 +27,30 @@ function App() {
   const [showEquipmentForm, setShowEquipmentForm] = useState(false);
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
 
+  
+  const [currentEquipmentIndex, setCurrentEquipmentIndex] = useState(0);
+
+
+  // ==================== FUNCIONES DE NAVEGACIÓN PARA EQUIPOS ====================
+  const handleNextEquipment = () => {
+    if (currentEquipmentIndex < equipment.length - 1) {
+      setCurrentEquipmentIndex(currentEquipmentIndex + 1);
+      setSelectedEquipmentId(equipment[currentEquipmentIndex + 1].id);
+    }
+  };
+
+  const handlePrevEquipment = () => {
+    if (currentEquipmentIndex > 0) {
+      setCurrentEquipmentIndex(currentEquipmentIndex - 1);
+      setSelectedEquipmentId(equipment[currentEquipmentIndex - 1].id);
+    }
+  };
+
+  const closeModal = () => {
+    setShowEquipmentModal(false);
+    setSelectedEquipmentId(null);
+  };
+
   // ==================== FUNCIONES DE ASIGNACIÓN ====================
   const updateUserEquipment = async (userId, equipmentId) => {
     try {
@@ -326,9 +350,9 @@ function App() {
             <h2>Gestión de Usuarios y Equipos</h2>
           </div>
 
-          <div className="form-toggle-buttons">
+          
 
-
+<div className="global-search-container">
   <div className="global-search">
             <input
               type="text"
@@ -337,6 +361,11 @@ function App() {
               onChange={(e) => setGlobalSearchTerm(e.target.value)}
             />
           </div>
+</div>
+
+{/* Contenido con scroll */}
+<div className="scrollable-content">
+          <div className="form-toggle-buttons">
 
             <button 
               onClick={() => {
@@ -436,6 +465,7 @@ function App() {
             />
           </div>
 </div>
+</div>
           {showUserModal && selectedUserId && (
             <UserDetailsModal 
               user={users.find(u => u.id === selectedUserId)}
@@ -456,14 +486,19 @@ function App() {
           {showEquipmentModal && selectedEquipmentId && (
             <EquipDetailsModal 
               equipment={equipment.find(e => e.id === selectedEquipmentId)}
-              users={users}
-              onEdit={handleEditEquipment}
-              onClose={() => setShowEquipmentModal(false)}
+      onEdit={handleEditEquipment}
+       onClose={closeModal}
+      users={users}
+      currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}
+      totalEquipment={equipment.length}
+      onNext={handleNextEquipment}  
+      onPrev={handlePrevEquipment}  
             />
           )}
-        </div>
-      </div>
-    </div>
+        
+      </div> {/* Cierra div.app */}
+    </div>  {/* Cierra div.app-container */}
+    </div> /* Cierra div.app-background */
   );
 }
 
