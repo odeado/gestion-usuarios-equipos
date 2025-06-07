@@ -16,6 +16,9 @@ function UserDetailsModal({
   onEdit, 
   onEditEquipment
 }) { 
+
+
+  const [isMobile, setIsMobile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
   const [showAddDepartment, setShowAddDepartment] = useState(false);
@@ -72,6 +75,19 @@ function UserDetailsModal({
   const currentIndex = users.findIndex(u => u.id === user.id);
   const userEquipment = equipment.filter(item => item.assignedTo === user.id);
 
+    // Efecto para detectar si es móvil
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // 768px es un breakpoint común para móviles
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+  
+  // Efecto para inicializar el usuario editado y la imagen previa
+  
   useEffect(() => {
     setEditedUser({ ...user });
     setImagePreview(user.imageBase64 || null);
@@ -394,6 +410,9 @@ function UserDetailsModal({
                
               
  <div className="navigation-buttons">
+{!isMobile && (
+              <>
+
                   <button 
                     onClick={onPrev} 
                     disabled={currentIndex === 0}
@@ -402,8 +421,20 @@ function UserDetailsModal({
                     &larr; Anterior
                   </button>
 
-                  {isEditing ? (
-                    <>
+                   <button 
+                    onClick={onNext} 
+                    disabled={currentIndex === users.length - 1}
+                    className="nav-button next-button"
+                  >
+                    Siguiente &rarr;
+                  </button>
+
+                 
+                    </>
+)}
+
+ {isEditing ? (
+<>
                       <button 
                         onClick={handleSave} 
                         className="action-button save-button"
@@ -411,6 +442,7 @@ function UserDetailsModal({
                       >
                         {isCompressing ? 'Guardando...' : '✅ Guardar'}
                       </button>
+
                       <button 
                         onClick={() => {
                           setIsEditing(false);
@@ -431,20 +463,12 @@ function UserDetailsModal({
                     </button>
                   )}
 
-                  <button 
-                    onClick={onNext} 
-                    disabled={currentIndex === users.length - 1}
-                    className="nav-button next-button"
-                  >
-                    Siguiente &rarr;
-                  </button>
+                 
                 </div>
-
-</div>
-</div>
-      
-      </div>
-    </div>
+              </div>
+            </div>
+        </div>
+        </div>
   );
 }
 
