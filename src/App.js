@@ -194,6 +194,13 @@ function App() {
         ciudad: equipmentData.ciudad,
         estado: equipmentData.estado,
         lugar: equipmentData.lugar,
+
+        procesador: equipmentData.procesador,
+        ram: equipmentData.ram,
+        discoDuro: equipmentData.discoDuro,
+        tarjetaGrafica: equipmentData.tarjetaGrafica,
+
+
         descripcion: equipmentData.descripcion,
         assignedTo: equipmentData.assignedTo || null,
         updatedAt: new Date()
@@ -493,6 +500,7 @@ function App() {
             <EquipDetailsModal 
               equipment={equipment.find(e => e.id === selectedEquipmentId)}
       onEdit={handleEditEquipment}
+      
        onClose={closeModal}
       users={users}
       currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}

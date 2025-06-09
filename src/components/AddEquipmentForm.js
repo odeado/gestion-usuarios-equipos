@@ -24,6 +24,12 @@ const AddEquipmentForm = forwardRef((props, ref) => {
     marca: '',
     model: '',
     serialNumber: '',
+
+procesador: '',
+ram: '',
+discoDuro: '',
+tarjetaGrafica: '',
+
     IpEquipo: '',
     assignedTo: '',
     imageBase64: ''
@@ -47,6 +53,13 @@ const AddEquipmentForm = forwardRef((props, ref) => {
         marca: equipmentToEdit.marca || '',
         model: equipmentToEdit.model || '',
         serialNumber: equipmentToEdit.serialNumber || '',
+
+
+procesador: equipmentToEdit.procesador || '',
+        ram: equipmentToEdit.ram || '',
+        discoDuro: equipmentToEdit.discoDuro || '',
+        tarjetaGrafica: equipmentToEdit.tarjetaGrafica || '',
+
         IpEquipo: equipmentToEdit.IpEquipo || '',
         assignedTo: equipmentToEdit.assignedTo || '',
         imageBase64: equipmentToEdit.imageBase64 || ''
@@ -68,6 +81,12 @@ const AddEquipmentForm = forwardRef((props, ref) => {
       marca: '',
       model: '',
       serialNumber: '',
+
+procesador: '',
+      ram: '',
+      discoDuro: '',
+      tarjetaGrafica: '',
+
       IpEquipo: '',
       assignedTo: '',
       imageBase64: ''
@@ -348,6 +367,63 @@ const AddEquipmentForm = forwardRef((props, ref) => {
             </select>
           </div>
         </div>
+
+
+<div className="form-row">
+          <div className="form-group">
+            <label htmlFor="procesador" className="form-label">Procesador</label>
+            <input
+              id="procesador"
+              name="procesador"
+              type="text"
+              value={formData.procesador}
+              onChange={handleChange}
+              placeholder="Ej: Intel i7, AMD Ryzen 5"
+              className={`form-input ${errors.procesador ? 'input-error' : ''}`}
+            />
+            {errors.procesador && <div className="error-text">{errors.procesador}</div>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="ram" className="form-label">RAM</label>
+            <input
+              id="ram"
+              name="ram"
+              type="text"
+              value={formData.ram}
+              onChange={handleChange}
+              placeholder="Ej: 16GB, 32GB"
+              className={`form-input ${errors.ram ? 'input-error' : ''}`}
+            />
+            {errors.ram && <div className="error-text">{errors.ram}</div>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="discoDuro" className="form-label">Disco Duro</label>
+            <input
+              id="discoDuro"
+              name="discoDuro"
+              type="text"
+              value={formData.discoDuro}
+              onChange={handleChange}
+              placeholder="Ej: 512GB SSD, 1TB HDD"
+              className={`form-input ${errors.discoDuro ? 'input-error' : ''}`}
+            />
+            {errors.discoDuro && <div className="error-text">{errors.discoDuro}</div>}
+          </div>
+          <div className="form-group">
+            <label htmlFor="tarjetaGrafica" className="form-label">Tarjeta Gráfica</label>
+            <input
+              id="tarjetaGrafica"
+              name="tarjetaGrafica"
+              type="text"
+              value={formData.tarjetaGrafica}
+              onChange={handleChange}
+              placeholder="Ej: NVIDIA GTX 1660, AMD Radeon RX 580"
+              className={`form-input ${errors.tarjetaGrafica ? 'input-error' : ''}`}
+            />
+            {errors.tarjetaGrafica && <div className="error-text">{errors.tarjetaGrafica}</div>}
+          </div>
+        </div>
+
 
           <div className="form-group image-upload-group">
           <label className="form-label">Imagen del Equipo</label>

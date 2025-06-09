@@ -1,11 +1,90 @@
 
+
+/* Estilos para la sección de usuario asignado */
+.assigned-user-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: linear-gradient(to right, #2e0b29, transparent);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.assigned-user-section h4 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 14px;
+}
+
+.user-infoE {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.user-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.user-photo-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.equipment-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.user-email, .user-department {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Estilos para el modal de detalles del equipos */
+
 .equipment-data-section {
   display: flex;
   flex-direction: column;
   width: 70%;
   padding: 20px;
+  font-size: 14px;
 }
 
+.equipment-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: linear-gradient(to right, #29062c, #0d0d0d);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
 
 /* Contenedor principal de la imagen */
@@ -164,7 +243,7 @@
     width: 100%;
     max-width: 1000px;
     
-    height: 1000px;
+    height: 800px;
     padding: 10px;
     position: relative;
     overflow: hidden;
@@ -342,18 +421,80 @@
 
 @media (max-width: 768px) {
 
+/* Estilos para la sección de usuario asignado */
+.assigned-user-section {
+  margin: 10px 0;
+  padding: 10px;
+  background: linear-gradient(to right, #2e0b29, transparent);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.assigned-user-section h4 {
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 14px;
+}
+
+.user-infoE {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.user-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.user-photo-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
 
 
+
+
+.equipment-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: linear-gradient(to right, #29062c, #0d0d0d);
+  padding: 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 
   .equipment-data-section {
     width: 100%;
-    padding: 10px;
+    padding: 5px;
+    font-size: 14px;
+    gap: 1px;
+    margin-left: 10px;
+  }
+
+  .detail-rowE {
+    flex-direction: column;
+    margin-bottom: 5px;
+    font-size: 12px;
   }
 
   .equipment-image-section {
     width: 100%;
     padding-right: 0;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
   }
 
   .equipment-image-preview {
@@ -394,7 +535,8 @@
 
   .form-groupE {
     width: 100%;
-    gap: 10px;
+    gap: 5px;
+    margin-bottom: 5px;
   }
 
   .form-groupDatosE {
@@ -441,9 +583,19 @@
     font-size: 15px;
   }
 
+  .form-textareaE {
+    width: 90%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px; /* Tamaño aumentado para mejor legibilidad */
+    resize: vertical; /* Permite redimensionar verticalmente */
+    height: 100px; /* Altura inicial */
+  }
+
 
 .form-group-select {
-    width: 100%;
+    width: 50%;
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -482,6 +634,13 @@
     color: #f1f1f1;
     border-radius: 5px;
     background-color: tomato;
+  }
+
+  .titulo-datos {
+    font-size: 18px;
+    color: #f1f1f1;
+    padding: 10px;
+    text-align: center;
   }
 
 }

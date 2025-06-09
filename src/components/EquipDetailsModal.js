@@ -51,6 +51,10 @@ function EquipDetailsModal({ equipment = {}, onEdit, onClose, users = [], curren
   // fin Manejo de eventos táctiles
 
 
+  // Obtener información del usuario asignado
+  const assignedUser = users.find(user => user.id === equipment.assignedTo);
+
+
 
  // Efecto para detectar si es móvil
   useEffect(() => {
@@ -96,6 +100,12 @@ useEffect(() => {
       marca: equipment.marca || '',
       model: equipment.model || '',
       serialNumber: equipment.serialNumber || '',
+
+      procesador: equipment.procesador || '',
+      ram: equipment.ram || '',
+      discoDuro: equipment.discoDuro || '',
+      tarjetaGrafica: equipment.tarjetaGrafica || '',
+
       IpEquipo: equipment.IpEquipo || '',
       assignedTo: equipment.assignedTo || '',
       imageBase64: equipment.imageBase64 || ''
@@ -175,7 +185,7 @@ const handleSave = async () => {
     <div className="equipment-modalE" onClick={handleClose}>
     <div className="modal-contentE" onClick={e => e.stopPropagation()}>
         <div className="modal-headerE">
-          <h3>{isEditing ? 'Editar Equipo' : 'Detalles del Equipo'}</h3>
+          <h3>{isEditing ? 'Editar Equipo' : 'Datos Equipo'}</h3>
           <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
           </div>
@@ -354,6 +364,59 @@ const handleSave = async () => {
                           />
                           {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
                         </div>
+
+                        <div className="form-groupE">
+                          <label>Descripción:</label>
+                          <textarea
+                            name="descripcion"
+                            value={editedEquipment.descripcion}
+                            onChange={handleInputChange}
+                            className={'form-textareaE' + (errors?.descripcion ? 'error' : '')}
+                          />
+                          {errors?.descripcion && <span className="error-message">{errors.descripcion}</span>}
+                        </div>
+<label className='titulo-datos'>Hardware</label>
+                        <div className="form-groupE">
+                          <label>Procesador:</label>
+                          <input
+                            name="procesador"
+                            value={editedEquipment.procesador}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.procesador ? 'error' : '')}
+                          />
+                          {errors?.procesador && <span className="error-message">{errors.procesador}</span>}
+                        </div>
+                        <div className="form-groupE">
+                          <label>RAM:</label>
+                          <input
+                            name="ram"
+                            value={editedEquipment.ram}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.ram ? 'error' : '')}
+                          />
+                          {errors?.ram && <span className="error-message">{errors.ram}</span>}
+                        </div>
+                        <div className="form-groupE">
+                          <label>Disco Duro:</label>
+                          <input
+                            name="discoDuro"
+                            value={editedEquipment.discoDuro}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.discoDuro ? 'error' : '')}
+                          />
+                          {errors?.discoDuro && <span className="error-message">{errors.discoDuro}</span>}
+                        </div>
+                        <div className="form-groupE">
+                          <label>Tarjeta Gráfica:</label>
+                          <input
+                            name="tarjetaGrafica"
+                            value={editedEquipment.tarjetaGrafica}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.tarjetaGrafica ? 'error' : '')}
+                          />
+                          {errors?.tarjetaGrafica && <span className="error-message">{errors.tarjetaGrafica}</span>}
+                        </div>
+                      
                         
                         <div className="modal-actionsE">
                           <button 
@@ -387,17 +450,22 @@ const handleSave = async () => {
   >
               
               <div className="equipment-details-container">
+                <div className="equipment-header">
+            
                {equipment.imageBase64 && equipment.imageBase64.startsWith('data:image/') && (
+                 
                   <div className="equipment-image-section">
                     <img
-    src={equipment.imageBase64} 
-    alt={equipment.nombre}
-    className="equipment-image-view"
-  />
-  </div>
-)}
+                    src={equipment.imageBase64} 
+                    alt={equipment.nombre}
+                    className="equipment-image-view"
+                    />
+              </div>
+            )}
 
-<div className="equipment-data-section">
+
+
+              <div className="equipment-data-section">
               <div className="detail-rowE">
                 <span className="detail-labelE">Nombre:</span>
                 <span>{equipment.nombre}</span>
@@ -432,6 +500,63 @@ const handleSave = async () => {
                 </div>
                 </div>
                 </div>
+                <div className="equipment-data-section">
+
+                <div className="detail-rowE">
+                <span className="detail-labelE">Procesador:</span>
+                <span>{equipment.procesador}</span>
+                </div>
+                <div className="detail-rowE">
+                <span className="detail-labelE">Ram:</span>
+                <span>{equipment.ram}</span>
+                </div>
+                <div className="detail-rowE">
+                <span className="detail-labelE">Disco Duro:</span>
+                <span>{equipment.discoDuro}</span>
+                </div>
+                <div className="detail-rowE">
+                <span className="detail-labelE">Tarjeta Gráfica:</span>
+                <span>{equipment.tarjetaGrafica}</span>
+                </div>
+
+
+</div>
+                
+
+                
+
+</div>
+
+     {/* Sección de información del usuario asignado */}
+                {assignedUser && (
+                  <div className="assigned-user-section">
+                    <h4>Usuario Asignado</h4>
+                    <div className="user-infoE">
+                      {assignedUser.imageBase64 ? (
+                        <img 
+                          src={assignedUser.imageBase64} 
+                          alt={assignedUser.name}
+                          className="user-photo"
+                        />
+                      ) : (
+                        <div className="user-photo-placeholder">
+                          {assignedUser.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="user-details">
+                        <div className="user-name">{assignedUser.name}</div>
+                        <div className="user-email">{assignedUser.email}</div>
+                        {assignedUser.department && (
+                          <div className="user-department">{assignedUser.department}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
+
+                
               {/* ... otros campos ... */}
               
               <div className="modal-actionsE">
