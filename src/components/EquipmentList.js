@@ -5,6 +5,94 @@ import EquipDetailsModal from './EquipDetailsModal';
 function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment }) {
 
   const [selectedEquipment, setSelectedEquipment] = useState(null);
+
+
+
+// inicio de la funcion ordenar
+
+
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+const getSortedItems = () => {
+  const sortableItems = [...filteredEquipment];
+  if (!sortConfig.key) return sortableItems;
+
+  sortableItems.sort((a, b) => {
+    // Manejo especial para IPs
+    if (sortConfig.key === 'IpEquipo') {
+      const ipA = a.IpEquipo || '';
+      const ipB = b.IpEquipo || '';
+
+      // Caso 1: Ambos son IPs numéricas
+      if (isValidIP(ipA) && isValidIP(ipB)) {
+        return compareNumericIPs(ipA, ipB, sortConfig.direction);
+      }
+      // Caso 2: Solo A es IP numérica
+      else if (isValidIP(ipA)) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      // Caso 3: Solo B es IP numérica
+      else if (isValidIP(ipB)) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      // Caso 4: Ninguno es IP numérica (ej. "dinámica")
+      else {
+        return ipA.localeCompare(ipB) * (sortConfig.direction === 'ascending' ? 1 : -1);
+      }
+    }
+    // Ordenamiento normal para otras columnas
+    else {
+      const aValue = a[sortConfig.key] || '';
+      const bValue = b[sortConfig.key] || '';
+      return aValue.toString().localeCompare(bValue.toString()) * 
+             (sortConfig.direction === 'ascending' ? 1 : -1);
+    }
+  });
+  
+  return sortableItems;
+};
+
+// Función auxiliar para validar IPs
+const isValidIP = (ip) => {
+  if (!ip) return false;
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  return parts.every(part => {
+    const num = parseInt(part, 10);
+    return !isNaN(num) && num >= 0 && num <= 255;
+  });
+};
+
+// Función auxiliar para comparar IPs numéricas por subredes
+const compareNumericIPs = (ipA, ipB, direction) => {
+  const partsA = ipA.split('.').map(part => parseInt(part, 10));
+  const partsB = ipB.split('.').map(part => parseInt(part, 10));
+  
+  // Comparar octeto por octeto
+  for (let i = 0; i < 4; i++) {
+    if (partsA[i] !== partsB[i]) {
+      const result = partsA[i] - partsB[i];
+      return direction === 'ascending' ? result : -result;
+    }
+  }
+  return 0;
+};
+  
+
+// final de la funcion ordenar
+
+
   
   const getAssignedUserName = (userId) => {
     const user = users.find(u => u.id === userId);
@@ -62,11 +150,29 @@ const handleEquipmentClick = (item) => {
             <th>Nombre</th>
             <th>Tipo</th>
             <th>Marca</th>
-            <th>ciudad</th>
+            <th 
+            className={`sortable ${sortConfig.key === 'ciudad' ? sortConfig.direction : ''}`}
+              onClick={() => requestSort('ciudad')}
+              style={{cursor: 'pointer'}}
+            >
+              Ciudad 
+              {sortConfig.key === 'ciudad' && (
+                sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'
+              )}
+            </th>
             <th>Estado</th>
             <th>Lugar</th>
             <th>Modelo</th>
-            <th>IP Equipo</th>
+            <th 
+            className={`sortable ${sortConfig.key === 'IpEquipo' ? sortConfig.direction : ''}`}
+              onClick={() => requestSort('IpEquipo')}
+              style={{cursor: 'pointer'}}
+            >
+              IP Equipo 
+              {sortConfig.key === 'IpEquipo' && (
+                sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'
+              )}
+            </th>
             <th>Serie</th>
             <th>descripcion</th>
             <th>Asignado a</th>
@@ -74,8 +180,9 @@ const handleEquipmentClick = (item) => {
           </tr>
         </thead>
         <tbody>
-          {filteredEquipment.length > 0 ? (
-            filteredEquipment.map(item => (
+{getSortedItems().length > 0 ? (
+            getSortedItems().map(item => (
+         
               <tr key={item.id} onClick={() => handleEquipmentClick(item)} style={{cursor: 'pointer'}}>
                 <td data-label="Nombre">{item.nombre}</td>
                 <td data-label="Tipo">{item.type}</td>
