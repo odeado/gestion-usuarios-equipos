@@ -1,4 +1,109 @@
 
+/* Estilos para el contenedor principal */
+.main-content-container {
+  position: relative;
+  height: calc(100vh - 180px); /* Ajusta según tu header */
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+/* Estilos para las páginas completas */
+.full-page {
+  height: 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  padding: 20px;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.active-page {
+  transform: scale(1.02);
+}
+
+/* Botones de navegación entre vistas */
+.view-toggle-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.view-toggle-buttons button {
+  padding: 8px 16px;
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-toggle-buttons button.active {
+  background-color: #2c4a7a;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4a6fa5;
+}
+
+.view-toggle-buttons button:hover {
+  background-color: #3a5a8f;
+}
+
+/* Encabezado de página */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.app-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  color: #ffffff;
+}
+
+/* Búsqueda global */
+
+.global-search-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+
+.global-search {
+  margin: 0px 0;
+}
+
+.global-search input {
+  width: max-content;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.global-search input:focus {
+  border-color: #4a90e2;
+}
+
+/* Ajustes para los contenedores de listas */
+.listsUser-container, 
+.listsEquipment-container {
+  height: calc(100% - 100px);
+  width: calc(100% - 100px);
+  overflow-y: auto;
+  padding: 10px;
+  background-color: rgba(25, 9, 28, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
 /* Fondo profesional */
 .app-background {
   min-height: 100vh;
@@ -50,13 +155,7 @@ html, body, #root {
 
 
 
-.app-header {
-  display: flex;
-  
-  color: #ffffff;
-  
-  
-}
+
 
 /* Contenido principal */
 .content {
@@ -151,30 +250,7 @@ html, body, #root {
 
 
 
-/* Búsqueda global */
 
-.global-search-container {
-  display: flex;
-  justify-content: flex-end;
-}
-
-
-.global-search {
-  margin: 0px 0;
-}
-
-.global-search input {
-  width: max-content;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 16px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.global-search input:focus {
-  border-color: #4a90e2;
-}
 
 /* Estilos para resaltar coincidencias */
 .highlight-match {
@@ -270,275 +346,236 @@ html, body, #root {
 
 
 
-.listUser-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
 
-.listEquipment-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-}
+
 
 
 
 /* Versión móvil */
 
+/* Estilos para tablets y móviles (hasta 1024px) */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: 0;
+  }
+  
+  .app {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+}
+
+/* Estilos específicos para móviles (hasta 768px) */
 @media (max-width: 768px) {
+  /* Header y navegación */
+  .app-header {
+    padding: 15px 10px;
+    margin-bottom: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #2c3e50;
+  }
+  
+  .app-header h2 {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    margin-right: 5px;
+  }
 
-
-    html, body {
-    overflow-x: hidden;
-    width: 100%;
+    .users-headerL {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    margin-right: 5px;
+    position: relative;
+  }
+    .users-headerL h2 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    margin-right: 5px;
     position: relative;
   }
 
-  .app-container {
-    width: 100vw;
-    max-width: 100%;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
+  .users-headerL::after{
+    
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 0px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
   }
 
-  .app {
+  .equipment-headerL h2{
+    font-size: 1.1rem;
+  }
+
+   .equipment-headerL::after{
+    
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 1000px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
+  }
+  
+  .view-toggle-buttons {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    min-width: 100%;
-    overflow-x: hidden;
+    justify-content: space-between;
   }
-
-
-  /* Contenedor del buscador fijo */
+  
+  .view-toggle-buttons button {
+    flex: 1;
+    padding: 10px 5px;
+    font-size: 0.9rem;
+  }
+  
+  /* Barra de búsqueda */
   .global-search-container {
-    position: sticky;
-    top: 60px; /* Ajusta según altura del header */
-    background: rgba(39, 39, 39, 0.95);
-    z-index: 99;
-    padding: 10px 0;
-  }
-
-
-  /* Contenedor de contenido con scroll */
-  .scrollable-content {
-   width: 100%;
-   height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    
-  }
-
-  /* Ajustes para los contenedores de listas */
-  .listsUser-container, 
-  .listsEquipment-container,
-  .content,
-  .user-form,
-  .forms-usuario-equipos {
-    height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-
-  /* Ajustes específicos para la lista de usuarios */
-  .listUser-container {
-    height: 100%;
-    overflow-y: auto;
-    padding-bottom: 20px; /* Espacio al final */
-  }
-
-
-.global-search {
-  margin: 10px 0;
-  width: 100%;
-  display: flex;
-}
-
-.global-search input {
-  width: 100%;
-  max-width: 100%;
-  
-  border: 2px solid #ddd;
-  border-radius: 25px;
-  font-size: 12px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.global-search input:focus {
-  border-color: #4a90e2;
-}
-
-
-
-    .form-row {
-      flex-direction: column;
-      gap: 0;
-    }
-    
-    .form-group {
-      margin-bottom: 5px;
-    }
-   
-
-
-    /* Encabezado fijo */
-  .app-header {
-    display: flex;
-    position: sticky;
-    top: 0;
-    background: rgba(39, 39, 39, 0.95);
-    z-index: 100;
-    padding: 10px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  .app h1 {
-    padding: 5px;
-    width: 100%;
-    display: flex;
-    font-size: 16px;
-    justify-content: center;
-  }
-
-   .app h2 {
-    padding-left: 5px;
-    color: #8b8b8b;
-    width: 100%;
-    display: flex;
-    font-size: 16px;
-    
-    
+    padding: 0 10px;
+    margin-bottom: 10px;
   }
   
-  .user-form {
-    padding: 5px;
-    width: 100%;
-    margin: 0 auto; /* Centrar el formulario */
+  .global-search input {
+    font-size: 0.9rem;
+    padding: 8px 12px;
   }
-
-
-
-   .form-toggle-buttons {
-    display: flex;
-    flex-direction: row;
+  
+  /* Contenedor principal */
+  .main-content-container {
+    height: calc(100vh - 160px);
+  }
+  
+  /* Páginas completas */
+  .full-page {
+    padding: 10px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
   }
   
- .toggle-form-btn {
-  background-color: #3f0a3c;
-  color: white;
-  border: none;
-  padding: 20px 20px;
-  
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-
-.toggle-form-btn:hover {
-  background-color: #070406;
-  transform: translateY(-2px);
-}
-
-  
-
-  .user-info h3 {
-    font-size: 14px; /* Ajustar tamaño de fuente */
-    margin-bottom: 0.2rem; /* Reducir margen */
+  .page-header h3 {
+    font-size: 1.2rem;
+    margin: 0;
   }
-
-  .user-info p {
-    font-size: 12px; /* Ajustar tamaño de fuente */
+  
+  .toggle-form-btn {
+    
+    padding: 8px;
+    font-size: 0.9rem;
   }
-
+  
+  /* Formularios */
+  .forms-usuarios-equipos {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  /* Listas */
+  .listsUser-container
+  {
+    height: calc(100% - 120px);
+    padding: 5px;
+    width: calc(100% - 30px);
+  }
+  
  
+  .listsEquipment-container {
+    height: calc(100% - 120px);
+    padding: 5px;
+    width: calc(100% - 20px);
+  }
 
-.image-preview-container img {
+  /* Modales */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
   
-  max-width: 100px;
-    max-height: 100px;
-    margin-top: 10px;
-    border-radius: 4px;
-}
-
- 
-.user-email {
-  font-size: 0.75rem;
-  margin: 0.2rem 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-  .user-avatar {
-    width: auto;
-    margin-bottom: 0;
+  /* Cards de usuario/equipo */
+  .user-card, .equipment-card {
+    padding: 10px;
+    margin-bottom: 10px;
   }
-
-
-  .department {
-    font-size: 0.7rem;
+  
+  .user-info h3, .equipment-info h3 {
+    font-size: 1rem;
   }
-
-  .users-headerL
-
- {
-    display: flex;
-    align-items: flex-start;
+  
+  .user-info p, .equipment-info p {
+    font-size: 0.8rem;
+  }
+  
+  /* Botones en cards */
+  .user-actions, .equipment-actions {
     flex-direction: column;
-    line-height: 1.2;
-    padding-bottom: 15px;
-    position: relative;
-    color: #eee;
-    font-size: 35px;
+    gap: 5px;
+  }
+  
+  .user-actions button, .equipment-actions button {
+    width: 100%;
+    padding: 6px;
+    font-size: 0.8rem;
+  }
 }
 
-.users-headerL::after
-
- {
-    content: '';
-    position: absolute;
-    bottom: 34px;
-    left: 38%;
-    width: 250px;
-    height: 3px;
-    background: linear-gradient(to right, #eb2ed1, transparent);
-    border-radius: 3px;
- }
-
-
- .equipment-headerL
-
- {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    line-height: 1.2;
-    padding-bottom: 15px;
-    position: relative;
-    color: #eee;
-    font-size: 35px;
-    padding-left: 10px;
-}
-
-
-.equipment-headerL::after
-
- {
-    content: '';
-    position: absolute;
-    bottom: 33px;
-    left: 30%;
-    width: 100px;
-    height: 3px;
-    background: linear-gradient(to right, #eb2ed1, transparent);
-    border-radius: 3px;
- }
-
-
+/* Estilos para móviles muy pequeños (hasta 480px) */
+@media (max-width: 480px) {
+  .app-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .view-toggle-buttons button {
+    font-size: 0.8rem;
+    padding: 8px 3px;
+  }
+  
+  .global-search input {
+    font-size: 0.8rem;
+  }
+  
+  .page-header h3 {
+    font-size: 1rem;
+  }
+  
+  /* Ajustes para formularios */
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .form-group input, 
+  .form-group select, 
+  .form-group textarea {
+    font-size: 0.9rem;
+    padding: 6px 8px;
+  }
+  
+  .form-actions button {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+  
+  /* Modales */
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-body p {
+    font-size: 0.9rem;
+  }
+  
+  .modal-actions button {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
 }

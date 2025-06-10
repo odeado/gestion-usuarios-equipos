@@ -101,7 +101,7 @@
     position: absolute;
     bottom: 0px;
     left: 0;
-    width: 600px;
+    width: 300px;
     height: 3px;
     background: linear-gradient(to right, #eb2ed1, transparent);
     border-radius: 3px;
@@ -274,8 +274,8 @@
    flex-direction: column;
     background: linear-gradient(135deg, #29062c 0%, #0d0d0d 50%);
     border-radius: 12px;
-    width: 100%;
-    max-width: 1000px;
+    width: 40%;
+    height: max-content;
     
    
     padding: 10px;
@@ -436,6 +436,7 @@
   padding-right: 10px;
   width: 100%;
   overflow-x: auto;
+  height: 100%;
 }
 
 .save-btn :hover {

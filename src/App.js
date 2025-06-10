@@ -12,6 +12,9 @@ import './components/UserList.css';
 
 function App() {
   // Referencias y estados
+   const usersPageRef = useRef(null);
+   const equipmentPageRef = useRef(null);
+
   const formRef = useRef(null);
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
@@ -26,10 +29,19 @@ function App() {
   const [showUserForm, setShowUserForm] = useState(false);
   const [showEquipmentForm, setShowEquipmentForm] = useState(false);
   const [globalSearchTerm, setGlobalSearchTerm] = useState('');
-
-  
   const [currentEquipmentIndex, setCurrentEquipmentIndex] = useState(0);
 
+  const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
+
+// ==================== FUNCIONES DE NAVEGACIÓN ENTRE VISTAS ====================
+  const scrollToView = (view) => {
+    setActiveView(view);
+    if (view === 'users' && usersPageRef.current) {
+      usersPageRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (view === 'equipment' && equipmentPageRef.current) {
+      equipmentPageRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // ==================== FUNCIONES DE NAVEGACIÓN PARA EQUIPOS ====================
   const handleNextEquipment = () => {
@@ -361,12 +373,26 @@ function App() {
           {/* Encabezado de la aplicación */}
           <div className="app-header">
             <h2>Gestión de Usuarios y Equipos</h2>
+            <div className="view-toggle-buttons">
+              <button 
+                onClick={() => scrollToView('users')}
+                className={activeView === 'users' ? 'active' : ''}
+              >
+                Ver Usuarios
+              </button>
+              <button 
+                onClick={() => scrollToView('equipment')}
+                className={activeView === 'equipment' ? 'active' : ''}
+              >
+                Ver Equipos
+              </button>
+            </div>
           </div>
 
           
 
-<div className="global-search-container">
-  <div className="global-search">
+        <div className="global-search-container">
+          <div className="global-search">
             <input
               type="text"
               placeholder="Buscar en usuarios y equipos..."
@@ -374,91 +400,104 @@ function App() {
               onChange={(e) => setGlobalSearchTerm(e.target.value)}
             />
           </div>
-</div>
+        </div>
 
-{/* Contenido con scroll */}
-<div className="scrollable-content">
-          <div className="form-toggle-buttons">
-
-            <button 
-              onClick={() => {
-                setShowUserForm(!showUserForm);
-                setShowEquipmentForm(false);
-                setEditingUser(null);
-              }}
-              className="toggle-form-btn"
+ {/* Contenedor principal con scroll */}
+          <div className="main-content-container">
+            {/* Página de Usuarios */}
+            <div 
+              ref={usersPageRef} 
+              className={`full-page ${activeView === 'users' ? 'active-page' : ''}`}
             >
-              {showUserForm ? 'Ocultar Formulario Usuario' : 'Mostrar Formulario Usuario'}
-            </button>
-            
-            <button 
-              onClick={() => {
-                setShowEquipmentForm(!showEquipmentForm);
-                setShowUserForm(false);
-                setEditingEquipment(null);
-              }}
-              className="toggle-form-btn"
+              <div className="page-header">
+                <h3>Listado de Usuarios</h3>
+                <button 
+                  onClick={() => {
+                    setShowUserForm(!showUserForm);
+                    setShowEquipmentForm(false);
+                    setEditingUser(null);
+                  }}
+                  className="toggle-form-btn"
+                >
+                  {showUserForm ? 'Ocultar Formulario' : 'Añadir Usuario'}
+                </button>
+              </div>
+
+              {showUserForm && (
+                <div className="forms-usuarios-equipos">
+                  <AddUserForm 
+                    onUserAdded={(userData) => {
+                      handleAddUser(userData);
+                      setShowUserForm(false);
+                    }} 
+                    userToEdit={editingUser}
+                    onEditUser={handleEditUser}
+                    onCancelEdit={() => {
+                      setEditingUser(null);
+                      setShowUserForm(false);
+                    }}
+                    departments={departments}
+                    onAddDepartment={handleAddDepartment}
+                    equipment={equipment}
+                  />
+                </div>
+              )}
+
+              <div className="listsUser-container">
+                <UserList 
+                  users={users} 
+                  equipment={equipment}
+                  searchTerm={globalSearchTerm}
+                  onSelectUser={handleSelectUser}
+                  onDeleteUser={handleDeleteUser}
+                  onEditUser={(user) => {
+                    setEditingUser(user);
+                    setShowUserForm(true);
+                    setShowEquipmentForm(false);
+                  }}
+                />
+              </div>
+            </div>
+
+   {/* Página de Equipos */}
+            <div 
+              ref={equipmentPageRef} 
+              className={`full-page ${activeView === 'equipment' ? 'active-page' : ''}`}
             >
-              {showEquipmentForm ? 'Ocultar Formulario Equipo' : 'Mostrar Formulario Equipo'}
-            </button>
-          </div>
+              <div className="page-header">
+                <h3>Listado de Equipos</h3>
+                <button 
+                  onClick={() => {
+                    setShowEquipmentForm(!showEquipmentForm);
+                    setShowUserForm(false);
+                    setEditingEquipment(null);
+                  }}
+                  className="toggle-form-btn"
+                >
+                  {showEquipmentForm ? 'Ocultar Formulario' : 'Añadir Equipo'}
+                </button>
+              </div>
 
-          {showUserForm && (
-            <div className="forms-usuarios-equipos">
-              <AddUserForm 
-                onUserAdded={(userData) => {
-                  handleAddUser(userData);
-                  setShowUserForm(false);
-                }} 
-                userToEdit={editingUser}
-                onEditUser={handleEditUser}
-                onCancelEdit={() => {
-                  setEditingUser(null);
-                  setShowUserForm(false);
-                }}
-                departments={departments}
-                onAddDepartment={handleAddDepartment}
-                equipment={equipment}
-              />
-            </div>
-          )}
+       {showEquipmentForm && (
+                <div className="forms-usuarios-equipos">
+                  <AddEquipmentForm 
+                    ref={formRef}
+                    users={users}
+                    onEquipmentAdded={(equipData) => {
+                      handleAddEquipment(equipData);
+                      setShowEquipmentForm(false);
+                    }}
+                    equipmentToEdit={editingEquipment}
+                    onEditEquipment={handleEditEquipment}
+                    onCancelEdit={() => {
+                      setEditingEquipment(null);
+                      setShowEquipmentForm(false);
+                    }}
+                  />
+                </div>
+              )}
 
-          {showEquipmentForm && (
-            <div className="forms-usuarios-equipos">
-              <AddEquipmentForm 
-                ref={formRef}
-                users={users}
-                onEquipmentAdded={(equipData) => {
-                  handleAddEquipment(equipData);
-                  setShowEquipmentForm(false);
-                }}
-                equipmentToEdit={editingEquipment}
-                onEditEquipment={handleEditEquipment}
-                onCancelEdit={() => {
-                  setEditingEquipment(null);
-                  setShowEquipmentForm(false);
-                }}
-              />
-            </div>
-          )}
 
-        
-          
-          <div className="content">
-          <div className="listsUser-container">
-            <UserList 
-              users={users} 
-              equipment={equipment}
-              searchTerm={globalSearchTerm}
-              onSelectUser={handleSelectUser}
-              onDeleteUser={handleDeleteUser}
-              onEditUser={(user) => {
-                setEditingUser(user);
-                setShowUserForm(true);
-                setShowEquipmentForm(false);
-              }}
-            />
-          </div>
           <div className="listsEquipment-container">
             <EquipmentList 
               equipment={equipment}
@@ -477,8 +516,9 @@ function App() {
               onDeleteEquipment={handleDeleteEquipment}
             />
           </div>
-</div>
-</div>
+        </div>
+      </div>
+
           {showUserModal && selectedUserId && (
             <UserDetailsModal 
               user={users.find(u => u.id === selectedUserId)}
@@ -499,20 +539,19 @@ function App() {
           {showEquipmentModal && selectedEquipmentId && (
             <EquipDetailsModal 
               equipment={equipment.find(e => e.id === selectedEquipmentId)}
-      onEdit={handleEditEquipment}
-      
-       onClose={closeModal}
-      users={users}
-      currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}
-      totalEquipment={equipment.length}
-      onNext={handleNextEquipment}  
-      onPrev={handlePrevEquipment}  
+              onEdit={handleEditEquipment}
+              onClose={closeModal}
+              users={users}
+              currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}
+              totalEquipment={equipment.length}
+              onNext={handleNextEquipment}  
+              onPrev={handlePrevEquipment}  
             />
           )}
         
       </div> {/* Cierra div.app */}
     </div>  {/* Cierra div.app-container */}
-    </div> /* Cierra div.app-background */
+  </div> /* Cierra div.app-background */
   );
 }
 
