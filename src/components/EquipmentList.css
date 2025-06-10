@@ -31,7 +31,7 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background-color: #202020;
+  background-color: rgba(39, 39, 39, 0.9);
 }
 
 /* Estilos de la tabla para desktop */
@@ -43,7 +43,7 @@
 }
 
 .equipment-table th {
-  background-color: #080808;
+  background-color: #22081c;
   padding: 12px 15px;
   text-align: left;
   font-weight: 600;

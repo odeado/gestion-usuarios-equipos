@@ -38,6 +38,15 @@ html, body, #root {
   padding-bottom: 15px;
 }
 
+.app h2 {
+  color: #63676b;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.2rem;
+  
+  padding-bottom: 15px;
+}
+
 
 
 
@@ -154,6 +163,13 @@ html, body, #root {
 
 
 /* Búsqueda global */
+
+.global-search-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
 .global-search {
   margin: 0px 0;
 }
@@ -179,10 +195,11 @@ html, body, #root {
   border-radius: 3px;
 }
 
-.users-header h2
+.users-headerL
 
  {
     display: flex;
+    align-items: flex-start;
     flex-direction: column;
     line-height: 1.2;
     padding-bottom: 15px;
@@ -191,12 +208,25 @@ html, body, #root {
     font-size: 35px;
 }
 
+.users-headerL::after
 
-.equipment-header h2
+ {
+    content: '';
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    width: 1000px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
+ }
+
+.equipment-headerL
 
  {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     line-height: 1.2;
     padding-bottom: 15px;
     position: relative;
@@ -205,25 +235,13 @@ html, body, #root {
     padding-left: 10px;
 }
 
-.users-header h2::after
+
+.equipment-headerL::after
 
  {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 1000px;
-    height: 3px;
-    background: linear-gradient(to right, #eb2ed1, transparent);
-    border-radius: 3px;
- }
-
-.equipment-header h2::after
-
- {
-    content: '';
-    position: absolute;
-    bottom: 0;
+    bottom: 50px;
     left: 0;
     width: 1000px;
     height: 3px;
@@ -401,7 +419,7 @@ html, body, #root {
     width: 100%;
     display: flex;
     font-size: 26px;
-    justify-content: center;
+    
     
   }
   
@@ -475,6 +493,32 @@ html, body, #root {
   .department {
     font-size: 0.7rem;
   }
+
+  .users-headerL
+
+ {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    line-height: 1.2;
+    padding-bottom: 15px;
+    position: relative;
+    color: #eee;
+    font-size: 35px;
+}
+
+.users-headerL::after
+
+ {
+    content: '';
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    width: 280px;
+    height: 3px;
+    background: linear-gradient(to right, #eb2ed1, transparent);
+    border-radius: 3px;
+ }
 
 
 }

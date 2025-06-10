@@ -500,6 +500,8 @@ const handleSave = async () => {
                 </div>
                 </div>
                 </div>
+
+                <label className='titulo-datos'>Hardware</label>
                 <div className="equipment-data-section">
 
                 <div className="detail-rowE">
@@ -560,7 +562,7 @@ const handleSave = async () => {
               {/* ... otros campos ... */}
               
               <div className="modal-actionsE">
-                <div className="navigation-buttons">
+                <div className="navigation-buttonsM">
                    <button 
                     onClick={handlePrev} 
                     disabled={currentIndex === 0}

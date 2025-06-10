@@ -51,7 +51,7 @@ const handleEquipmentClick = (item) => {
 
   return (
     <div className="equipment-list-container">
-      <div className="equipment-header">
+      <div className="equipment-headerL">
         <h2>Lista de Equipos</h2>
         
         

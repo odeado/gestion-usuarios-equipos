@@ -51,7 +51,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
 
   return (
     <div className="users-grid">
-      <div className="users-header">
+      <div className="users-headerL">
         <h2>Usuarios Registrados</h2>
         
       </div>
@@ -69,7 +69,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                   <img src={user.imageBase64} alt={user.name} />
                 </div>
               )}
-
+<div className='caja-datoUser'>
               <div className="user-info">
                <div className='nombre-apellidoList'>
                   <div className="nombreList">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
@@ -141,7 +141,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                     Detalles
                   </button>
                 </div>
-              
+              </div>
             </div>
           ))
         ) : (
