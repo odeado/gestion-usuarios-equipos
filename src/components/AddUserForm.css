@@ -16,13 +16,7 @@
     border-radius: 4px;
   }
 
-    .forms-usuarios-equipos {
-   background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
+
   
   /* Asegura que los inputs no causen overflow */
   .user-form input,
@@ -247,16 +241,16 @@
     }
 
       .user-form {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    
+    
+    padding: 5px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
 
   .form-container {
-    max-width: 800px;
+    
     margin: 0 auto;
     padding: 20px;
     background: #fff;

@@ -424,7 +424,7 @@ function App() {
               </div>
 
               {showUserForm && (
-                <div className="forms-usuarios-equipos">
+                <div className="forms-usuarios">
                   <AddUserForm 
                     onUserAdded={(userData) => {
                       handleAddUser(userData);
@@ -479,7 +479,7 @@ function App() {
               </div>
 
        {showEquipmentForm && (
-                <div className="forms-usuarios-equipos">
+                <div className="forms-equipos">
                   <AddEquipmentForm 
                     ref={formRef}
                     users={users}

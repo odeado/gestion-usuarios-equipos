@@ -474,12 +474,28 @@ html, body, #root {
     padding: 8px;
     font-size: 0.9rem;
   }
+
+      .forms-usuarios{
+        
+   background-color: #f8f9fa;
+  padding: 5px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 90%;
   
-  /* Formularios */
-  .forms-usuarios-equipos {
-    padding: 10px;
-    margin-bottom: 15px;
-  }
+}
+
+    .forms-equipos {
+   background-color: #f8f9fa;
+  padding: 5px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  width: max-content;
+}
+  
+
   
   /* Listas */
   .listsUser-container
@@ -503,18 +519,13 @@ html, body, #root {
   }
   
   /* Cards de usuario/equipo */
-  .user-card, .equipment-card {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
+
   
   .user-info h3, .equipment-info h3 {
     font-size: 1rem;
   }
   
-  .user-info p, .equipment-info p {
-    font-size: 0.8rem;
-  }
+  
   
   /* Botones en cards */
   .user-actions, .equipment-actions {
