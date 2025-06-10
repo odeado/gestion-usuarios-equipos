@@ -327,6 +327,42 @@ function App() {
     setShowEquipmentModal(true);
   };
 
+  // ==================== EFECTOS Paginas ====================
+
+  const [currentPage, setCurrentPage] = useState(0);
+const pages = ['users', 'equipment'];
+
+// Función para cambiar de página
+const goToPage = (index) => {
+  setCurrentPage(index);
+  setActiveView(pages[index]);
+  const pageElements = document.querySelectorAll('.full-page'); // Cambiado a pageElements
+  if (pageElements[index]) {
+    pageElements[index].scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+// Efecto para detectar el scroll
+useEffect(() => {
+  const handleScroll = () => {
+    const pages = document.querySelectorAll('.full-page');
+    const scrollPosition = window.scrollY + window.innerHeight / 2;
+    
+    pages.forEach((page, index) => {
+      const pageTop = page.offsetTop;
+      const pageBottom = pageTop + page.offsetHeight;
+      
+      if (scrollPosition > pageTop && scrollPosition < pageBottom) {
+        setCurrentPage(index);
+        setActiveView(pages[index]);
+      }
+    });
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
   // ==================== EFECTOS ====================
   useEffect(() => {
     const fetchData = async () => {
@@ -373,20 +409,33 @@ function App() {
           {/* Encabezado de la aplicación */}
           <div className="app-header">
             <h2>Gestión de Usuarios y Equipos</h2>
-            <div className="view-toggle-buttons">
-              <button 
-                onClick={() => scrollToView('users')}
-                className={activeView === 'users' ? 'active' : ''}
-              >
-                Ver Usuarios
-              </button>
-              <button 
-                onClick={() => scrollToView('equipment')}
-                className={activeView === 'equipment' ? 'active' : ''}
-              >
-                Ver Equipos
-              </button>
-            </div>
+            {/* Controles de navegación */}
+      <div className="nav-arrows">
+        <button 
+          className="nav-arrow" 
+          onClick={() => goToPage(0)}
+          disabled={currentPage === 0}
+        >
+          ↑
+        </button>
+        <button 
+          className="nav-arrow"
+          onClick={() => goToPage(1)}
+          disabled={currentPage === 1}
+        >
+          ↓
+        </button>
+      </div>
+
+      <div className="page-indicator">
+        {pages.map((_, index) => (
+          <div 
+            key={index}
+            className={`page-dot ${currentPage === index ? 'active' : ''}`}
+            onClick={() => goToPage(index)}
+          />
+        ))}
+      </div>
           </div>
 
           

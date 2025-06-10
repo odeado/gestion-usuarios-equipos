@@ -94,10 +94,14 @@ const compareNumericIPs = (ipA, ipB, direction) => {
 
 
   
-  const getAssignedUserName = (userId) => {
-    const user = users.find(u => u.id === userId);
-    return user ? user.name : 'No asignado';
-  };
+ const getAssignedUser = (userId) => {
+  return users.find(u => u.id === userId) || null;
+};
+
+const getAssignedUserName = (userId) => {
+  const user = getAssignedUser(userId);
+  return user ? user.name : 'No asignado';
+};
 
 
 
@@ -116,17 +120,20 @@ const handleEquipmentClick = (item) => {
 
 
 
-   const filteredEquipment = equipment.filter(item => {
+  const filteredEquipment = equipment.filter(item => {
     if (!searchTerm) return true;
     
     const searchLower = searchTerm.toLowerCase();
-    const assignedUserName = getAssignedUserName(item.assignedTo);
+    const assignedUser = getAssignedUser(item.assignedTo); // Asumo que puedes obtener el objeto usuario completo
+    const assignedUserName = assignedUser ? assignedUser.name : '';
+    const assignedUserCity = assignedUser ? assignedUser.ciudad : '';
     
     return (
       String(item.nombre || '').toLowerCase().includes(searchLower) ||
       String(item.type || '').toLowerCase().includes(searchLower) ||
       String(item.marca || '').toLowerCase().includes(searchLower) ||
       String(item.ciudad || '').toLowerCase().includes(searchLower) ||
+      String(assignedUserCity || '').toLowerCase().includes(searchLower) || // Nueva línea para buscar en ciudad del usuario
       String(item.estado || '').toLowerCase().includes(searchLower) ||
       String(item.lugar || '').toLowerCase().includes(searchLower) ||
       String(item.model || '').toLowerCase().includes(searchLower) ||
@@ -135,7 +142,7 @@ const handleEquipmentClick = (item) => {
       String(item.serialNumber || '').toLowerCase().includes(searchLower) ||
       assignedUserName.toLowerCase().includes(searchLower)
     );
-  });
+});
 
   return (
     <div className="equipment-list-container">
