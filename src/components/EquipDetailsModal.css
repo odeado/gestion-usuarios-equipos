@@ -581,9 +581,12 @@
 }
 
   .modal-contentE {
-    width: 90%;
+    width: 100vw; /* Usa el 100% del viewport */
+    height: 100vh; /* Altura completa */
+    max-width: none; /* Elimina cualquier límite máximo */
+    max-height: none; /* Elimina cualquier límite de altura */
     
-    padding: 10px;
+    
     margin: 0;
     border-radius: 10px;
     display: flex;
@@ -614,9 +617,9 @@
   }
 
   .modal-bodyE {
-    flex: 1;
+    height: 100%;
     overflow-y: auto;
-    padding: 15px;
+    
     -webkit-overflow-scrolling: touch; /* Mejor scroll en iOS */
   }
 
@@ -627,6 +630,7 @@
     margin-bottom: 0%;
     padding-bottom: 0%;
     align-items: center;
+    height: 10%;
     gap: 10px;
     
   }
@@ -699,7 +703,7 @@
   }
 
   .close-btn {
-    position: absolute;
+    position: relative;
     top: 0px;
     right: 0px;
     padding: 10px;

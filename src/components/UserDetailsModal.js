@@ -433,8 +433,8 @@ function UserDetailsModal({
             <p>Sin equipos asignados actualmente</p>
           )}
 
-          <label className="form-label">
-            IP Equipo Asignado:
+          <label className="form-labelU">
+            IP Equipo Asignado
             <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
           </label>
         </div>

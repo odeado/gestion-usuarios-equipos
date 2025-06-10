@@ -394,7 +394,14 @@
   color: white;
 }
 
-
+.form-labelU {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
  
   
   /* Estilos específicos para móviles */
@@ -447,13 +454,17 @@
   .modal-content {
     display: flex;
     flex-wrap: wrap;
-    width: 100%;
-    max-height: max-content;
+    position: relative;
+    width: 100vw; /* Usa el 100% del viewport */
+    height: 100vh; /* Altura completa */
+    max-width: none; /* Elimina cualquier límite máximo */
+    max-height: none; /* Elimina cualquier límite de altura */
+    border-radius: 10px;
   }
   
   .modal-header {
     display: flex;
-    max-height: max-content;
+    height: 40%;
     width: 100%;
     
   }
@@ -461,7 +472,7 @@
   .modal-body {
     width: 100%;
     padding: 15px;
-    height: 100%;
+    height: 60%;
   }
 
   .user-details {
@@ -540,12 +551,13 @@
 
   .modal-close {
     font-size: 1.0rem;
+    position: absolute;
     cursor: pointer;
     top: 0px;
     right: 0px;
     color: #f0f0f0;
     background-color: rgb(133, 5, 54);
-    border-radius: 2px;
+    border-radius: 0 10px 0 0;
     width: max-content;
   }
 
@@ -593,7 +605,7 @@
 
 .form-label-modal {
     display: block;
-    margin-bottom: 5px;
+    
     font-weight: 600;
     color: #f0f0f0;
     font-size: 12px;
@@ -616,7 +628,10 @@
     box-sizing: border-box; /* Asegura que el padding no afecte al ancho total */
   }
 
-
+.caja-titulo {
+  display: flex;
+  gap: 5px;
+}
 
 .modal-content {
   transition: transform 0.3s ease;
