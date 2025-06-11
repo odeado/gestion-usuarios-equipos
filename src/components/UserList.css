@@ -62,10 +62,7 @@
   font-size: 1.2em;
 }
 
-.listsUser-container {
-  width: 100%;
-  overflow-x: auto;
-}
+
 
 .users-grid {
     padding: 20px;
@@ -247,6 +244,12 @@
   
   @media (max-width: 768px) {
 
+    .caja-datoUser {
+  display: flex;
+  flex-wrap: wrap;
+  width: 80%;
+}
+
  .user-actions {
     display: flex;
     flex-direction: column; /* Cambia a columna en móvil */
@@ -305,6 +308,7 @@
     padding-bottom: 20px;
     box-sizing: border-box;
 gap: 5px;
+width: calc(100% - 10px);
 
   }
 
