@@ -33,6 +33,14 @@ function App() {
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 
+  
+
+const handleOpenUserModal = (userId) => {
+  setSelectedUserId(userId);
+  setShowUserModal(true);  // <-- Esto falta
+  setShowEquipmentModal(false);  // Cerrar el modal de equipo si está abierto
+};
+
 // ==================== FUNCIONES DE NAVEGACIÓN ENTRE VISTAS ====================
   const scrollToView = (view) => {
     setActiveView(view);
@@ -363,28 +371,75 @@ useEffect(() => {
   return () => window.removeEventListener('scroll', handleScroll);
 }, []);
 
+// ==================== EFECTOS ====================
+
+const [counters, setCounters] = useState({
+  totalUsers: 0,
+  activeUsers: 0,
+  MercurioAntofagastaUsers: 0,
+  totalEquipment: 0,
+  availableEquipment: 0,
+  assignedEquipment: 0
+});
+
   // ==================== EFECTOS ====================
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [usersSnapshot, equipmentSnapshot, departmentsSnapshot] = await Promise.all([
-          getDocs(collection(db, 'users')),
-          getDocs(collection(db, 'equipment')),
-          getDocs(collection(db, 'departments'))
-        ]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [usersSnapshot, equipmentSnapshot, departmentsSnapshot] = await Promise.all([
+        getDocs(collection(db, 'users')),
+        getDocs(collection(db, 'equipment')),
+        getDocs(collection(db, 'departments'))
+      ]);
 
-        setUsers(usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setEquipment(equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const equipmentData = equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    fetchData();
-  }, []);
+      setUsers(usersData);
+      setEquipment(equipmentData);
+      setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      // Actualizar contadores
+      setCounters({
+        totalUsers: usersData.length,
+        activeUsers: usersData.filter(u => u.estado === 'Activo').length,
+        MercurioAntofagastaUsers: usersData.filter(u => u.department === 'Mercurio Antofagasta').length,
+        totalEquipment: equipmentData.length,
+        availableEquipment: equipmentData.filter(e => !e.assignedTo).length,
+        assignedEquipment: equipmentData.filter(e => e.assignedTo).length
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+
+function StatsPanel({ counters }) {
+  return (
+    <div className="stats-panel">
+      <div className="stat-card">
+        <h3>Usuarios</h3>
+        <p>Total: {counters.totalUsers}</p>
+        <p>Activos: {counters.activeUsers}</p>
+        <p>Mercurio Antofagasta: {counters.MercurioAntofagastaUsers}</p>
+      </div>
+      <div className="stat-card">
+        <h3>Equipos</h3>
+        <p>Total: {counters.totalEquipment}</p>
+        <p>Disponibles: {counters.availableEquipment}</p>
+        <p>Asignados: {counters.assignedEquipment}</p>
+      </div>
+    </div>
+  );
+}
+
+
 
   // ==================== RENDER ====================
  if (loading) {
@@ -403,9 +458,12 @@ useEffect(() => {
 }
 
   return (
+
+    
     <div className="app-background">
       <div className="app-container">
         <div className="app">
+          
           {/* Encabezado de la aplicación */}
           <div className="app-header">
             <h2>Gestión de Usuarios y Equipos</h2>
@@ -438,7 +496,7 @@ useEffect(() => {
       </div>
           </div>
 
-          
+           <StatsPanel counters={counters} />
 
         <div className="global-search-container">
           <div className="global-search">
@@ -594,7 +652,8 @@ useEffect(() => {
               currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}
               totalEquipment={equipment.length}
               onNext={handleNextEquipment}  
-              onPrev={handlePrevEquipment}  
+              onPrev={handlePrevEquipment} 
+              onOpenUserModal={handleOpenUserModal} 
             />
           )}
         

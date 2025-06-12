@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './EquipDetailsModal.css';
 
-function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user }) {
+function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user, onOpenUserModal }) {
+  // Estado para manejar la edición del equipo
   const [isEditing, setIsEditing] = useState(false);
   const [editedEquipment, setEditedEquipment] = useState({...equipment});
   const [isMobile, setIsMobile] = useState(false);
@@ -9,7 +10,11 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
   const [errors, setErrors] = useState({});
 
 
-
+const handleOpenUserModal = (userId) => {
+  if (onOpenUserModal) {
+    onOpenUserModal(userId);
+  }
+};
 
  // Función para touch events
 
@@ -543,7 +548,9 @@ const handlePrev = () => {
            {assignedUser && (
                   <div className="assigned-user-section">
                     <h4>Usuario Asignado</h4>
-                    <div className="user-infoE">
+                    <div className="user-infoE clickable-user" 
+      onClick={() => handleOpenUserModal(assignedUser.id)}
+    >
                       {assignedUser.imageBase64 ? (
                         <img 
                           src={assignedUser.imageBase64} 

@@ -1,5 +1,18 @@
 
+/* En tu archivo EquipDetailsModal.css */
+.clickable-user {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
 
+.clickable-user:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-photo {
+  cursor: pointer;
+}
 /* Estilos para la sección de usuario asignado */
 .assigned-user-section {
   margin: 10px 0;
