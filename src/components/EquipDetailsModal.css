@@ -573,6 +573,14 @@
     flex-direction: column;
     margin-bottom: 5px;
     font-size: 9px;
+    color: #f1f1f1;
+  }
+
+   .detail-rowE p {
+    flex-direction: column;
+    margin-bottom: 0px;
+    font-size: 9px;
+    color: #f1f1f1;
   }
 
   .equipment-image-section {
@@ -650,13 +658,19 @@
     
   }
 
+  .app h2 {
+    margin: 0;
+    font-size: 12px;
+    color: #f1f1f1;
+  }
+
  .modal-headerE h3 {
   margin: 0;
  }
 
   .modal-headerE h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
  }
 
 .form-groupE label {

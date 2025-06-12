@@ -291,11 +291,11 @@ const handlePrev = () => {
                   value={editedEquipment.nombre}
                   onChange={handleInputChange}
                   className={`form-inputE ${errors.nombre ? 'error' : ''}`}
-                  
+                  placeholder="Ingrese el nombre del equipo"
                 />
                 {errors?.nombre && <span className="error-message">{errors.nombre}</span>}    
               </div>
-              
+
               <div className="form-groupE">
                 <label>Tipo:</label>
                 <input
@@ -521,10 +521,7 @@ const handlePrev = () => {
 
 
               <div className="equipment-data-section">
-              <div className="detail-rowE">
-                <span className="detail-labelE">Nombre:</span>
-                <span>{equipment.nombre}</span>
-              </div>
+            
                 <div className="detail-rowE">
                 <span className="detail-labelE">Tipo:</span>
                 <span>{equipment.type}</span>

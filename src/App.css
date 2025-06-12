@@ -523,6 +523,13 @@ html, body, #root {
         min-height: 99vh;
 }
 
+.app h2 {
+    color: #63676b;
+    text-align: left;
+    font-size: 0.7rem;
+    margin-bottom: 0px;
+  }
+
   .app-background {
     min-height: 100vh;
     background: linear-gradient(135deg, #1c1c35 0%, #7c3f8b 100%);
