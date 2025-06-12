@@ -33,7 +33,37 @@ function App() {
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 
+  const [showCounters, setShowCounters] = useState(false);
+const [touchStart, setTouchStart] = useState(null);
+const [touchEnd, setTouchEnd] = useState(null);
+
+ // Agrega estas funciones para manejar el gesto táctil:
+const handleTouchStart = (e) => {
+  setTouchStart(e.targetTouches[0].clientY);
+};
+
+const handleTouchMove = (e) => {
+  setTouchEnd(e.targetTouches[0].clientY);
+};
+
+const handleTouchEnd = () => {
+  if (!touchStart || !touchEnd) return;
   
+  const distance = touchStart - touchEnd;
+  
+  // Si el gesto es hacia abajo con suficiente distancia
+  if (distance > 50) {
+    setShowCounters(true);
+  } 
+  // Si el gesto es hacia arriba con suficiente distancia
+  else if (distance < -50) {
+    setShowCounters(false);
+  }
+  
+  // Resetear los valores
+  setTouchStart(null);
+  setTouchEnd(null);
+}; 
 
 const handleOpenUserModal = (userId) => {
   setSelectedUserId(userId);
@@ -424,22 +454,27 @@ useEffect(() => {
 
 
 
-function StatsPanel({ counters }) {
+function StatsPanel({ counters, visible }) {
   return (
-    <div className="stats-panel">
-      <div className="stat-card">
-        <h3>Usuarios</h3>
-        <p>Total: {counters.totalUsers}</p>
-        <p>Activos: {counters.activeUsers}</p>
-        <p>Mercurio Antofagasta: {counters.MercurioAntofagastaUsers}</p>
+    <>
+      <div className="pull-indicator" onClick={() => setShowCounters(!showCounters)}>
+        {visible ? '▲ Ocultar contadores' : '▼ Mostrar contadores'}
       </div>
-      <div className="stat-card">
-        <h3>Equipos</h3>
-        <p>Total: {counters.totalEquipment}</p>
-        <p>Disponibles: {counters.availableEquipment}</p>
-        <p>Asignados: {counters.assignedEquipment}</p>
+      <div className={`stats-panel ${visible ? 'visible' : 'hidden'}`}>
+        <div className="stat-card">
+          <h3>Usuarios</h3>
+          <p>Total: {counters.totalUsers}</p>
+          <p>Activos: {counters.activeUsers}</p>
+          <p>Mercurio Antofagasta: {counters.MercurioAntofagastaUsers}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Equipos</h3>
+          <p>Total: {counters.totalEquipment}</p>
+          <p>Disponibles: {counters.availableEquipment}</p>
+          <p>Asignados: {counters.assignedEquipment}</p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -500,7 +535,14 @@ function StatsPanel({ counters }) {
       </div>
           </div>
 
-           <StatsPanel counters={counters} />
+           <div 
+        className="stats-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <StatsPanel counters={counters} visible={showCounters} />
+      </div>
 
         <div className="global-search-container">
           <div className="global-search">

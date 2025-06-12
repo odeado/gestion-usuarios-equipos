@@ -484,6 +484,9 @@ html, body, #root {
 /* contadores */
 
 .stats-panel {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  max-height: 0;
+  overflow: hidden;
   display: flex;
   justify-content: space-around;
   margin: 2px 0;
@@ -491,6 +494,18 @@ html, body, #root {
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-panel.visible {
+  max-height: 500px; /* Ajusta según necesites */
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.stats-panel.hidden {
+  max-height: 0;
+  transform: translateY(-20px);
+  opacity: 0;
 }
 
 .stat-card {
