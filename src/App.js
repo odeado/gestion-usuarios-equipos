@@ -474,19 +474,20 @@ useEffect(() => {
 
 
 function StatsPanel({ counters, visible, position, setShowCounters }) {
+  // Animaciones con react-spring
   const panelAnimation = useSpring({
-    transform: `translateY(${(1 - position) * -100}%)`,
-    opacity: position,
+    transform: visible ? 'translateY(0%)' : 'translateY(-100%)',
+    opacity: visible ? 1 : 0,
     config: { tension: 300, friction: 30 }
   });
 
   const indicatorAnimation = useSpring({
-    opacity: 1 - position,
+    opacity: visible ? 0 : 1,
     config: { tension: 300, friction: 30 }
   });
 
   return (
-    <>
+    <div className="stats-container">
       <animated.div 
         className="pull-indicator" 
         onClick={() => setShowCounters(!visible)}
@@ -511,7 +512,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
           <p>Asignados: {counters.assignedEquipment}</p>
         </div>
       </animated.div>
-    </>
+    </div>
   );
 }
 
@@ -572,22 +573,19 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       </div>
           </div>
 
-           <div 
-  className="stats-container"
+     <div 
+  className="stats-touch-container"
   onTouchStart={handleTouchStart}
   onTouchMove={handleTouchMove}
   onTouchEnd={handleTouchEnd}
-  style={{
-    touchAction: 'none', // Deshabilitamos el scroll nativo
-    userSelect: 'none'
-  }}
+  style={{ touchAction: 'none' }}
 >
- <StatsPanel 
-  counters={counters} 
-  visible={showCounters} 
-  position={panelPosition}
-  setShowCounters={setShowCounters} 
-/>
+  <StatsPanel 
+    counters={counters} 
+    visible={showCounters} 
+    position={panelPosition}
+    setShowCounters={setShowCounters} 
+  />
 </div>
 
         <div className="global-search-container">
