@@ -54,23 +54,18 @@ const handleTouchMove = (e) => {
   setTouchEndY(currentY);
   
   // Calcular posición relativa (0-1)
-  const delta = touchStartY - currentY;
-  const newPosition = Math.min(Math.max(delta / 200, 0), 1); // 200px para mostrar completo
+  const delta = currentY - touchStartY; // Cambiado a currentY - touchStartY
+  const newPosition = Math.min(Math.max(delta / 100, 0), 1); // 100px para mostrar completo
   setPanelPosition(newPosition);
+  
+  // Mostrar si el desplazamiento es suficiente
+  if (delta > 50) {
+    setShowCounters(true);
+  }
 };
 
 const handleTouchEnd = () => {
   setIsDragging(false);
-  
-  // Determinar si mostrar u ocultar basado en la posición final
-  if (panelPosition > 0.5) {
-    setShowCounters(true);
-    setPanelPosition(1); // Mostrar completamente
-  } else {
-    setShowCounters(false);
-    setPanelPosition(0); // Ocultar completamente
-  }
-  
   setTouchStartY(null);
   setTouchEndY(null);
 };
@@ -474,26 +469,29 @@ useEffect(() => {
 
 
 function StatsPanel({ counters, visible, position, setShowCounters }) {
+  // Determinar si es móvil
+  const isMobile = window.innerWidth <= 768;
+  
+  // Animaciones con react-spring
   const panelAnimation = useSpring({
-    transform: `translateY(${(1 - position) * -100}%)`,
-    opacity: position,
-    config: { tension: 300, friction: 30 }
-  });
-
-  const indicatorAnimation = useSpring({
-    opacity: 1 - position,
+    height: isMobile ? (visible ? 'auto' : '0px') : 'auto',
+    opacity: isMobile ? (visible ? 1 : 0) : 1,
+    transform: isMobile ? (visible ? 'translateY(0)' : 'translateY(-100%)') : 'translateY(0)',
+    margin: isMobile ? (visible ? '10px 0' : '0') : '10px 0',
+    padding: isMobile ? (visible ? '15px' : '0') : '15px',
     config: { tension: 300, friction: 30 }
   });
 
   return (
-    <>
-      <animated.div 
-        className="pull-indicator" 
-        onClick={() => setShowCounters(!visible)}
-        style={indicatorAnimation}
-      >
-        {visible ? '▲ Ocultar contadores' : '▼ Mostrar contadores'}
-      </animated.div>
+    <div className="stats-container">
+      {isMobile && (
+        <div 
+          className="pull-indicator" 
+          onClick={() => setShowCounters(!visible)}
+        >
+          {visible ? '▲ Ocultar contadores' : '▼ Mostrar contadores'}
+        </div>
+      )}
       <animated.div 
         className="stats-panel"
         style={panelAnimation}
@@ -511,7 +509,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
           <p>Asignados: {counters.assignedEquipment}</p>
         </div>
       </animated.div>
-    </>
+    </div>
   );
 }
 
@@ -572,20 +570,17 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       </div>
           </div>
 
-           <div 
-  className="stats-container"
+<div 
+  className="stats-touch-container"
   onTouchStart={handleTouchStart}
   onTouchMove={handleTouchMove}
   onTouchEnd={handleTouchEnd}
-  style={{
-    touchAction: 'none', // Deshabilitamos el scroll nativo
-    userSelect: 'none'
-  }}
 >
   <StatsPanel 
     counters={counters} 
     visible={showCounters} 
-    position={panelPosition} 
+    position={panelPosition}
+    setShowCounters={setShowCounters} 
   />
 </div>
 

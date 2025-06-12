@@ -512,20 +512,20 @@ html, body, #root {
 /* contadores */
 
 .stats-container {
- position: relative;
+  position: relative;
   width: 100%;
-  height: auto;
-  margin: 10px 0;
   z-index: 10;
+  background: transparent;
 }
 
 .stats-panel {
-  display: flex;
+ display: flex;
   justify-content: space-around;
   background: rgba(63, 10, 60, 0.8);
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 0 0 8px 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  will-change: transform, height, opacity;
 }
 
 .stats-panel.visible {
@@ -537,13 +537,12 @@ html, body, #root {
 }
 
 .pull-indicator {
-  padding: 12px;
+   padding: 12px;
   text-align: center;
   background-color: #3f0a3c;
   color: white;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
-  margin-bottom: 5px;
   font-weight: bold;
   transition: all 0.3s ease;
   }
@@ -559,7 +558,7 @@ html, body, #root {
 .stats-touch-container {
   position: relative;
   width: 100%;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
 }
 
