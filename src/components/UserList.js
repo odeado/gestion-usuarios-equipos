@@ -75,10 +75,8 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                   <div className="nombreList">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
                   <div className="apellidoList">{user.name.split(' ').slice(1).join(' ')}</div>
                  </div>
-                
-<div className="user-datos">
-<p className="user-equipo">{getEquipmentName(user.EquipoAsignado)}</p>
-<p 
+                 <div className="user-datito">
+                 <p 
                   className="user-estado" 
                   style={{ 
                     color: getEstadoColor(user.estado),
@@ -107,6 +105,12 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                 >
                   {user.department}
                 </p>
+                 </div>
+                 
+                
+<div className="user-datos">
+<p className="user-equipo">{getEquipmentName(user.EquipoAsignado)}</p>
+
 </div>
                 <p className="user-email">{user.correo}</p>
                 <p className="user-tipo">{user.tipoVpn}</p>
