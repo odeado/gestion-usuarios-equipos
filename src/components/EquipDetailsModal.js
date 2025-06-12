@@ -9,33 +9,42 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
   const [errors, setErrors] = useState({});
 
 
+
+
  // Función para touch events
 
-   const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
+ const [touchStart, setTouchStart] = useState(null);
+const [touchEnd, setTouchEnd] = useState(null);
+const [isSwiping, setIsSwiping] = useState(false);
 
+const handleTouchStart = (e) => {
+  setTouchStart(e.targetTouches[0].clientX);
+};
 
+const handleTouchMove = (e) => {
+  if (touchStart) {
+    e.preventDefault();
+    setIsSwiping(true);
+  }
+  setTouchEnd(e.targetTouches[0].clientX);
+};
 
-
-  const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-  // No permitir gestos durante la edición
+const handleTouchEnd = () => {
   if (isEditing) return;
   
-  if (!touchStart || !touchEnd) return;
+  setIsSwiping(false);
+  
+  if (!touchStart || !touchEnd) {
+    setTouchStart(null);
+    setTouchEnd(null);
+    return;
+  }
   
   const distance = touchStart - touchEnd;
   const isLeftSwipe = distance > 50; // Umbral para "siguiente"
   const isRightSwipe = distance < -50; // Umbral para "anterior"
 
-  if (isLeftSwipe && currentIndex < users.length - 1) {
+  if (isLeftSwipe && currentIndex < totalEquipment - 1) {
     onNext();
   } else if (isRightSwipe && currentIndex > 0) {
     onPrev();
@@ -44,6 +53,9 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
   setTouchStart(null);
   setTouchEnd(null);
 };
+
+
+
 
 
   // fin Manejo de eventos táctiles
@@ -178,7 +190,12 @@ const handlePrev = () => {
   };
 
   return (
-    <div className="equipment-modalE" onClick={handleClose}>
+    
+    <div className="equipment-modalE" onClick={e => e.stopPropagation()}
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
+>
       <div className="modal-contentE" onClick={e => e.stopPropagation()}>
         <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
