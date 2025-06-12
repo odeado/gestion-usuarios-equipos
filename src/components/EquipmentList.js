@@ -109,13 +109,18 @@ const getAssignedUserName = (userId) => {
 
   // En EquipmentList.js
 const handleEquipmentClick = (item) => {
-  onSelectEquipment(item.id); // Esto debería llamar a handleSelectEquipment en App.js
+  if (!Array.isArray(equipment)) {
+    console.error("equipment no es un array:", equipment);
+    return;
+  }
+  
+  const index = equipment.findIndex(equip => equip.id === item.id);
   setSelectedEquipment(item);
+  
+  if (onSelectEquipment) {
+    onSelectEquipment(item.id);
+  }
 };
-
-  const closeModal = () => {
-    setSelectedEquipment(null);
-  };
 
 
 
@@ -249,55 +254,14 @@ const handleEquipmentClick = (item) => {
         </tbody>
       </table>
 
+</div>
 
-
- {/* Cards para móviles */}
-      <div className="mobile-equipment-cards">
-        {filteredEquipment.map(item => (
-          <div key={item.id} className="equipment-card" onClick={() => handleEquipmentClick(item)}>
-            <div className="card-row">
-              <span className="card-label">Nombre:</span>
-              <span>{item.nombre}</span>
-            </div>
-            <div className="card-row">
-              <span className="card-label">IP Equipo:</span>
-              <span>{item.IpEquipo}</span>
-            </div>
-            {/* Añade más campos según necesites */}
-            <div className="card-actions">
-              <button className="edit-btn" onClick={() => onEditEquipment(item)}>
-                Editar
-              </button>
-              <button className="delete-btn" onClick={() => onDeleteEquipment(item.id)}>
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredEquipment.length === 0 && (
-        <div className="no-results">No se encontraron equipos</div>
-      )}
-
-
+ 
 
  
         
-    
+        );
 
+        }
 
-{/* Modal de detalles del equipo */}
-      {selectedEquipment && (
-        <EquipDetailsModal
-         equipment={selectedEquipment}
-    onClose={closeModal}
-          onEdit={onEditEquipment}
-          getAssignedUserName={getAssignedUserName}
-        />
-      )}
-    </div>
-  );
-}
-
-export default EquipmentList;
+  export default EquipmentList;

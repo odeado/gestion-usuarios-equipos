@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './EquipDetailsModal.css';
 
-function EquipDetailsModal({ equipment = {}, onEdit, onClose, users = [], currentIndex, totalEquipment, onNext, onPrev, user }) {
-  
-
-  const [isMobile, setIsMobile] = useState(false);
+function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEquipment, setEditedEquipment] = useState({...equipment});
+  const [isMobile, setIsMobile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -51,12 +49,63 @@ function EquipDetailsModal({ equipment = {}, onEdit, onClose, users = [], curren
   // fin Manejo de eventos táctiles
 
 
+  
   // Obtener información del usuario asignado
   const assignedUser = users.find(user => user.id === equipment.assignedTo);
 
+  // Inicializar datos del equipo
+  useEffect(() => {
+    setEditedEquipment({
+      nombre: equipment.nombre || '',
+      type: equipment.type || '',
+      ciudad: equipment.ciudad || '',
+      estado: equipment.estado || '',
+      lugar: equipment.lugar || '',
+      descripcion: equipment.descripcion || '',
+      marca: equipment.marca || '',
+      model: equipment.model || '',
+      serialNumber: equipment.serialNumber || '',
+      procesador: equipment.procesador || '',
+      ram: equipment.ram || '',
+      discoDuro: equipment.discoDuro || '',
+      tarjetaGrafica: equipment.tarjetaGrafica || '',
+      IpEquipo: equipment.IpEquipo || '',
+      assignedTo: equipment.assignedTo || '',
+      imageBase64: equipment.imageBase64 || ''
+      // ... otros campos del equipo
+    });
+  }, [equipment]);
+
+   // validar datos
+
+  const validateForm = () => {
+  const newErrors = {};
+  if (!editedEquipment.nombre?.trim()) newErrors.nombre = 'Nombre es requerido';
+  if (!editedEquipment.type?.trim()) newErrors.type = 'Tipo es requerido';
+  if (!editedEquipment.model?.trim()) newErrors.model = 'Modelo es requerido';
+  if (!editedEquipment.serialNumber?.trim()) newErrors.serialNumber = 'Número de serie es requerido';
+  if (!editedEquipment.assignedTo?.trim()) newErrors.assignedTo = 'Debe asignar a un usuario';
+  
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+ // estado de color
+
+const getEstadoColor = (estado) => {
+    const colors = {
+      'Teletrabajo': '#4caf50',
+      'Trabajando': '#ffeb3b',
+      'Eliminado': '#f44336',
+     
+    };
+    return colors[estado] || '#666';
+  };
 
 
- // Efecto para detectar si es móvil
+   // fin del estado
+
+// Efecto para detectar si es móvil
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth <= 768); // 768px es un breakpoint común para móviles
@@ -69,8 +118,7 @@ function EquipDetailsModal({ equipment = {}, onEdit, onClose, users = [], curren
 
 
 
-
-const handleNext = () => {
+   const handleNext = () => {
   if (currentIndex < users.length - 1 && onNext) {
     onNext();
   }
@@ -82,63 +130,14 @@ const handlePrev = () => {
   }
 };
 
-const handleClose = () => {
-  setIsEditing(false); // Sale del modo edición si está activo
-  onClose(); // Cierra el modal
-};
- 
-    // Inicializar con todos los campos necesarios
-useEffect(() => {
-  if (equipment) {
-    setEditedEquipment({
-      nombre: equipment.nombre || '',
-      type: equipment.type || '',
-      ciudad: equipment.ciudad || '',
-      estado: equipment.estado || '',
-      lugar: equipment.lugar || '',
-      descripcion: equipment.descripcion || '',
-      marca: equipment.marca || '',
-      model: equipment.model || '',
-      serialNumber: equipment.serialNumber || '',
-
-      procesador: equipment.procesador || '',
-      ram: equipment.ram || '',
-      discoDuro: equipment.discoDuro || '',
-      tarjetaGrafica: equipment.tarjetaGrafica || '',
-
-      IpEquipo: equipment.IpEquipo || '',
-      assignedTo: equipment.assignedTo || '',
-      imageBase64: equipment.imageBase64 || ''
-      
-    });
-  }
-}, [equipment]);
-
-const validateForm = () => {
-  const newErrors = {};
-  if (!editedEquipment.nombre?.trim()) newErrors.nombre = 'Nombre es requerido';
-  if (!editedEquipment.type?.trim()) newErrors.type = 'Tipo es requerido';
-  if (!editedEquipment.model?.trim()) newErrors.model = 'Modelo es requerido';
-  if (!editedEquipment.serialNumber?.trim()) newErrors.serialNumber = 'Número de serie es requerido';
-  if (!editedEquipment.assignedTo?.trim()) newErrors.assignedTo = 'Debe asignar a un usuario';
-  
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
-
-const getEstadoColor = (estado) => {
-    const colors = {
-      'Teletrabajo': '#4caf50',
-      'Trabajando': '#ffeb3b',
-      'Eliminado': '#f44336',
-     
-    };
-    return colors[estado] || '#666';
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
+    onClose();
   };
 
- // En EquipDetailsModal.js
-const handleSave = async () => {
+ 
+
+  const handleSave = async () => {
     if (!validateForm()) return;
     
     setIsSaving(true);
@@ -157,6 +156,7 @@ const handleSave = async () => {
       setIsSaving(false);
     }
   };
+
     const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditedEquipment(prev => ({ ...prev, [name]: value }));
@@ -165,8 +165,7 @@ const handleSave = async () => {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-
-  const handleImageChange = (e) => {
+    const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -178,27 +177,20 @@ const handleSave = async () => {
     }
   };
 
-
-  
-
   return (
     <div className="equipment-modalE" onClick={handleClose}>
-    <div className="modal-contentE" onClick={e => e.stopPropagation()}>
-        <div className="modal-headerE">
-          <h3>{isEditing ? 'Editar Equipo' : 'Datos Equipo'}</h3>
-          <div className="equipment-counter">
+      <div className="modal-contentE" onClick={e => e.stopPropagation()}>
+        <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
           </div>
-          <button className="close-btn" onClick={handleClose}>Cerrar</button>
-        </div>
+        <button className="modal-close" onClick={handleClose}>×</button>
         
-        <div className="modal-bodyE">
-      
-          
-          {isEditing ? (
-           
-            <div className="edit-form">
-                {errors.form && <div className="error-message">{errors.form}</div>}
+        <h2>{isEditing ? 'Editar Equipo' : equipment.nombre}</h2>
+        
+        {isEditing ? (
+          <div className="edit-form">
+
+ {errors.form && <div className="error-message">{errors.form}</div>}
 
 
                   <div className="image-upload-containerE">
@@ -256,7 +248,14 @@ const handleSave = async () => {
               </div>
 
 
-<div className="form-groupDatosE">
+
+
+
+
+
+
+           
+              <div className="form-groupDatosE">
               <div className="form-groupE">
                 <label>Nombre:</label>
                 <input
@@ -416,9 +415,10 @@ const handleSave = async () => {
                           />
                           {errors?.tarjetaGrafica && <span className="error-message">{errors.tarjetaGrafica}</span>}
                         </div>
-                      
-                        
-                        <div className="modal-actionsE">
+            
+            {/* Más campos editables... */}
+            
+               <div className="modal-actionsE">
                           <button 
                             className="save-btn" 
                             onClick={handleSave}
@@ -440,16 +440,11 @@ const handleSave = async () => {
             </div>
             </div>
           ) : (
-            
-             
 
-  <div className="view-mode-container"
-   onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-  >
-              
-              <div className="equipment-details-container">
+   /* vista datos */
+
+          <div className="view-mode-container">
+             <div className="equipment-details-container">
                 <div className="equipment-header">
             
                {equipment.imageBase64 && equipment.imageBase64.startsWith('data:image/') && (
@@ -524,13 +519,11 @@ const handleSave = async () => {
 
 </div>
                 
-
-                
-
-</div>
-
-     {/* Sección de información del usuario asignado */}
-                {assignedUser && (
+              
+              {/* Más detalles del equipo... */}
+            </div>
+            
+           {assignedUser && (
                   <div className="assigned-user-section">
                     <h4>Usuario Asignado</h4>
                     <div className="user-infoE">
@@ -555,15 +548,10 @@ const handleSave = async () => {
                     </div>
                   </div>
                 )}
-
-
-
-                
-              {/* ... otros campos ... */}
-              
-              <div className="modal-actionsE">
-                <div className="navigation-buttonsM">
-                   <button 
+            
+            <div className="modal-actionsE">
+              <div className="navigation-buttonsM">
+              <button 
                     onClick={handlePrev} 
                     disabled={currentIndex === 0}
                     className="nav-button prev-button"
@@ -571,25 +559,24 @@ const handleSave = async () => {
                     &larr; Anterior
                   </button>
 
-                <button 
+              <button 
                   onClick={() => setIsEditing(true)} 
                   className="edit-btn"
-                >
+                ><i class="fa fa-edit"></i>
                   Editar
                 </button>
 
-                <button 
+                  <button 
                     onClick={handleNext} 
                     disabled={currentIndex === totalEquipment - 1}
                   className="nav-button next-button"
                   >
                     Siguiente &rarr;
                   </button>
-              </div>
-              </div>
+                  </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
