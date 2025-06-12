@@ -9,6 +9,7 @@ import UserDetailsModal from './components/UserDetailsModal';
 import EquipDetailsModal from './components/EquipDetailsModal';
 import './App.css';
 import './components/UserList.css';
+import { useSpring, animated } from 'react-spring';
 
 function App() {
   // Referencias y estados
@@ -33,37 +34,53 @@ function App() {
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 
-  const [showCounters, setShowCounters] = useState(false);
-const [touchStart, setTouchStart] = useState(null);
-const [touchEnd, setTouchEnd] = useState(null);
+// Estados para el gesto táctil y animación
+const [touchStartY, setTouchStartY] = useState(null);
+const [touchEndY, setTouchEndY] = useState(null);
+const [panelPosition, setPanelPosition] = useState(0); // 0: oculto, 1: visible
+const [isDragging, setIsDragging] = useState(false);
+const [showCounters, setShowCounters] = useState(false);
 
- // Agrega estas funciones para manejar el gesto táctil:
+// Handlers para el gesto táctil
 const handleTouchStart = (e) => {
-  setTouchStart(e.targetTouches[0].clientY);
+  setTouchStartY(e.touches[0].clientY);
+  setTouchEndY(e.touches[0].clientY);
+  setIsDragging(true);
 };
 
 const handleTouchMove = (e) => {
-  setTouchEnd(e.targetTouches[0].clientY);
+  if (!isDragging) return;
+  const currentY = e.touches[0].clientY;
+  setTouchEndY(currentY);
+  
+  // Calcular posición relativa (0-1)
+  const delta = touchStartY - currentY;
+  const newPosition = Math.min(Math.max(delta / 200, 0), 1); // 200px para mostrar completo
+  setPanelPosition(newPosition);
 };
 
 const handleTouchEnd = () => {
-  if (!touchStart || !touchEnd) return;
+  setIsDragging(false);
   
-  const distance = touchStart - touchEnd;
-  
-  // Si el gesto es hacia abajo con suficiente distancia
-  if (distance > 50) {
+  // Determinar si mostrar u ocultar basado en la posición final
+  if (panelPosition > 0.5) {
     setShowCounters(true);
-  } 
-  // Si el gesto es hacia arriba con suficiente distancia
-  else if (distance < -50) {
+    setPanelPosition(1); // Mostrar completamente
+  } else {
     setShowCounters(false);
+    setPanelPosition(0); // Ocultar completamente
   }
   
-  // Resetear los valores
-  setTouchStart(null);
-  setTouchEnd(null);
-}; 
+  setTouchStartY(null);
+  setTouchEndY(null);
+};
+
+
+useEffect(() => {
+  if (!isDragging) {
+    setPanelPosition(showCounters ? 1 : 0);
+  }
+}, [showCounters, isDragging]);
 
 const handleOpenUserModal = (userId) => {
   setSelectedUserId(userId);
@@ -454,13 +471,33 @@ useEffect(() => {
 
 
 
-function StatsPanel({ counters, visible }) {
+
+
+function StatsPanel({ counters, visible, position, setShowCounters }) {
+  const panelAnimation = useSpring({
+    transform: `translateY(${(1 - position) * -100}%)`,
+    opacity: position,
+    config: { tension: 300, friction: 30 }
+  });
+
+  const indicatorAnimation = useSpring({
+    opacity: 1 - position,
+    config: { tension: 300, friction: 30 }
+  });
+
   return (
     <>
-      <div className="pull-indicator" onClick={() => setShowCounters(!showCounters)}>
+      <animated.div 
+        className="pull-indicator" 
+        onClick={() => setShowCounters(!visible)}
+        style={indicatorAnimation}
+      >
         {visible ? '▲ Ocultar contadores' : '▼ Mostrar contadores'}
-      </div>
-      <div className={`stats-panel ${visible ? 'visible' : 'hidden'}`}>
+      </animated.div>
+      <animated.div 
+        className="stats-panel"
+        style={panelAnimation}
+      >
         <div className="stat-card">
           <h3>Usuarios</h3>
           <p>Total: {counters.totalUsers}</p>
@@ -473,7 +510,7 @@ function StatsPanel({ counters, visible }) {
           <p>Disponibles: {counters.availableEquipment}</p>
           <p>Asignados: {counters.assignedEquipment}</p>
         </div>
-      </div>
+      </animated.div>
     </>
   );
 }
@@ -536,13 +573,22 @@ function StatsPanel({ counters, visible }) {
           </div>
 
            <div 
-        className="stats-container"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <StatsPanel counters={counters} visible={showCounters} />
-      </div>
+  className="stats-container"
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
+  style={{
+    touchAction: 'none', // Deshabilitamos el scroll nativo
+    userSelect: 'none'
+  }}
+>
+ <StatsPanel 
+  counters={counters} 
+  visible={showCounters} 
+  position={panelPosition}
+  setShowCounters={setShowCounters} 
+/>
+</div>
 
         <div className="global-search-container">
           <div className="global-search">
