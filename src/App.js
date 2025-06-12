@@ -220,6 +220,10 @@ const handleOpenUserModal = (userId) => {
         discoDuro: equipmentData.discoDuro,
         tarjetaGrafica: equipmentData.tarjetaGrafica,
 
+        windows: equipmentData.windows,
+        antivirus: equipmentData.antivirus,
+        office: equipmentData.office,
+
 
         descripcion: equipmentData.descripcion,
         assignedTo: equipmentData.assignedTo || null,

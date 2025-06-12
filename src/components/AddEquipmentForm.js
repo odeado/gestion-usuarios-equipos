@@ -30,6 +30,10 @@ ram: '',
 discoDuro: '',
 tarjetaGrafica: '',
 
+windows: '',
+antivirus: '',
+office: '',
+
     IpEquipo: '',
     assignedTo: '',
     imageBase64: ''
@@ -60,6 +64,10 @@ procesador: equipmentToEdit.procesador || '',
         discoDuro: equipmentToEdit.discoDuro || '',
         tarjetaGrafica: equipmentToEdit.tarjetaGrafica || '',
 
+        windows: equipmentToEdit.windows || '',
+        antivirus: equipmentToEdit.antivirus || '',
+        office: equipmentToEdit.office || '',
+
         IpEquipo: equipmentToEdit.IpEquipo || '',
         assignedTo: equipmentToEdit.assignedTo || '',
         imageBase64: equipmentToEdit.imageBase64 || ''
@@ -86,6 +94,10 @@ procesador: '',
       ram: '',
       discoDuro: '',
       tarjetaGrafica: '',
+
+      windows: '',
+      antivirus: '',
+      office: '',
 
       IpEquipo: '',
       assignedTo: '',
@@ -423,7 +435,49 @@ procesador: '',
             {errors.tarjetaGrafica && <div className="error-text">{errors.tarjetaGrafica}</div>}
           </div>
         </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="windows" className="form-label">Windows</label>
+            <input
+              id="windows"
+              name="windows"
+              type="text"
+              value={formData.windows}
+              onChange={handleChange}
+              placeholder="Ej: Windows 10 Pro"
+              className={`form-input ${errors.windows ? 'input-error' : ''}`}
+            />
+            {errors.windows && <div className="error-text">{errors.windows}</div>}
+          </div>
 
+          <div className="form-group">
+            <label htmlFor="antivirus" className="form-label">Antivirus</label>
+            <input
+              id="antivirus"
+              name="antivirus"
+              type="text"
+              value={formData.antivirus}
+              onChange={handleChange}
+              placeholder="Ej: Norton, McAfee"
+              className={`form-input ${errors.antivirus ? 'input-error' : ''}`}
+            />
+            {errors.antivirus && <div className="error-text">{errors.antivirus}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="office" className="form-label">Office</label>
+            <input
+              id="office"
+              name="office"
+              type="text"
+              value={formData.office}
+              onChange={handleChange}
+              placeholder="Ej: Office 2019"
+              className={`form-input ${errors.office ? 'input-error' : ''}`}
+            />
+            {errors.office && <div className="error-text">{errors.office}</div>}
+          </div>
+        </div>
 
           <div className="form-group image-upload-group">
           <label className="form-label">Imagen del Equipo</label>

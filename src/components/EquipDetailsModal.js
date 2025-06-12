@@ -86,6 +86,10 @@ const handleTouchEnd = () => {
       ram: equipment.ram || '',
       discoDuro: equipment.discoDuro || '',
       tarjetaGrafica: equipment.tarjetaGrafica || '',
+
+      windows: equipment.windows || '',
+      antivirus: equipment.antivirus || '',
+      office: equipment.office || '',
       IpEquipo: equipment.IpEquipo || '',
       assignedTo: equipment.assignedTo || '',
       imageBase64: equipment.imageBase64 || ''
@@ -111,8 +115,8 @@ const handleTouchEnd = () => {
 
 const getEstadoColor = (estado) => {
     const colors = {
-      'Teletrabajo': '#4caf50',
-      'Trabajando': '#ffeb3b',
+      'En uso': '#4caf50',
+      'Mantenimiento': '#ffeb3b',
       'Eliminado': '#f44336',
      
     };
@@ -202,12 +206,14 @@ const handlePrev = () => {
   onTouchEnd={handleTouchEnd}
 >
       <div className="modal-contentE" onClick={e => e.stopPropagation()}>
+        <div className="modal-headerE">
         <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
           </div>
-        <button className="modal-close" onClick={handleClose}>×</button>
+        <button className="modal-closeE" onClick={handleClose}>×</button>
         
         <h2>{isEditing ? 'Editar Equipo' : equipment.nombre}</h2>
+        </div>
         
         {isEditing ? (
           <div className="edit-form">
@@ -408,6 +414,7 @@ const handlePrev = () => {
                           {errors?.procesador && <span className="error-message">{errors.procesador}</span>}
                         </div>
                         <div className="form-groupE">
+                        <div className="form-groupE">
                           <label>RAM:</label>
                           <input
                             name="ram"
@@ -437,12 +444,43 @@ const handlePrev = () => {
                           />
                           {errors?.tarjetaGrafica && <span className="error-message">{errors.tarjetaGrafica}</span>}
                         </div>
-            
+                        <div className="form-groupE">
+                          <label>Sistema Operativo:</label>
+                          <input
+                            name="windows"
+                            value={editedEquipment.windows}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.windows ? 'error' : '')}
+                          />
+                          {errors?.windows && <span className="error-message">{errors.windows}</span>}
+                        </div>
+                        <div className="form-groupE">
+                          <label>Antivirus:</label>
+                          <input
+                            name="antivirus"
+                            value={editedEquipment.antivirus}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.antivirus ? 'error' : '')}
+                          />
+                          {errors?.antivirus && <span className="error-message">{errors.antivirus}</span>}
+                        </div>
+                        <div className="form-groupE">
+                          <label>Office:</label>
+                          <input
+                            name="office"
+                            value={editedEquipment.office}
+                            onChange={handleInputChange}
+                            className={'form-inputE' + (errors?.office ? 'error' : '')}
+                          />
+                          {errors?.office && <span className="error-message">{errors.office}</span>}
+                        </div>
+                        </div>
+
             {/* Más campos editables... */}
-            
+
                <div className="modal-actionsE">
-                          <button 
-                            className="save-btn" 
+                          <button
+                            className="save-btn"
                             onClick={handleSave}
                             disabled={isSaving}
                           >
@@ -491,22 +529,23 @@ const handlePrev = () => {
                 <span className="detail-labelE">Tipo:</span>
                 <span>{equipment.type}</span>
                 </div>
-
-
                 <div className="detail-rowE">
-                <span className="detail-labelE">Estado:</span>
-                
-
-
-                <span className="status-badge" style={{ 
-                      color: getEstadoColor(equipment.estado),
-                      backgroundColor: `${getEstadoColor(equipment.estado)}20`
-                    }}>
-                      {equipment.estado}
-                    </span>
-
-
+                <span className="detail-labelE">Marca:</span>
+                <span>{equipment.marca}</span>
                 </div>
+                <div className="detail-rowE">
+                  <span className="detail-labelE">Modelo</span>
+                <span>{equipment.model}</span>
+</div>
+                <div className="detail-rowE">
+                <span className="detail-labelE">Número de Serie:</span>
+                <span>{equipment.serialNumber}</span> 
+                </div>
+                <div className="detail-rowE">
+                <span className="status-badge" style={{ color: getEstadoColor(equipment.estado), backgroundColor: `${getEstadoColor(equipment.estado)}20` }}>Estado:</span>
+                <span>{equipment.estado}</span>
+                </div>
+
                 <div className="detail-rowE">
                 <span className="detail-labelE">IP Equipo:</span>
                 <span>{equipment.IpEquipo}</span>
@@ -537,7 +576,27 @@ const handlePrev = () => {
                 <span className="detail-labelE">Tarjeta Gráfica:</span>
                 <span>{equipment.tarjetaGrafica}</span>
                 </div>
+                
+              </div>
 
+              <label className='titulo-datos'>Información Adicional</label>
+              <div className="equipment-data-section">
+              <div className="detail-rowE">
+                <span className="detail-labelE">Windows:</span>
+                <span>{equipment.windows}</span>
+              </div>
+              <div className="detail-rowE">
+                <span className="detail-labelE">Office:</span>
+                <span>{equipment.office}</span>
+              </div>
+              <div className="detail-rowE">
+                <span className="detail-labelE">Antivirus:</span>
+                <span>{equipment.antivirus}</span>
+              </div>
+              <div className="detail-rowE">
+                <span className="detail-labelE">Descripción:</span>
+                <p>{equipment.descripcion}</p>
+              </div>
 
 </div>
                 
