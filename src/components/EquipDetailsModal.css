@@ -545,6 +545,7 @@
     font-size: 18px;
     color: #f1f1f1;
     padding-bottom: 5px;
+    padding-left: 5px;
     text-align: left;
     position: relative;
   }
@@ -608,7 +609,7 @@
     height: 100vh; /* Altura completa */
     max-width: none; /* Elimina cualquier límite máximo */
     max-height: none; /* Elimina cualquier límite de altura */
-    
+    padding: 0px;
     
     margin: 0;
     border-radius: 10px;
@@ -651,11 +652,19 @@
     color: #f1f1f1;
     margin: 0%;
     margin-bottom: 0%;
-    padding-bottom: 0%;
+    padding-left: 5px;
     align-items: center;
     height: 5%;
-    gap: 10px;
+    gap: 1px;
     
+  }
+
+  .view-mode-container {
+    display: flex;
+    flex-direction: column;
+    height: 95%;
+    padding: 0px;
+    gap: 1px;
   }
 
   .app h2 {
@@ -672,6 +681,8 @@
   margin: 0;
   font-size: 12px;
  }
+
+
 
 .form-groupE label {
   display: block;

@@ -10,6 +10,7 @@ import EquipDetailsModal from './components/EquipDetailsModal';
 import './App.css';
 import './components/UserList.css';
 import { useSpring, animated } from 'react-spring';
+import imageCompression from 'browser-image-compression';
 
 function App() {
   // Referencias y estados
@@ -43,9 +44,12 @@ const [showCounters, setShowCounters] = useState(false);
 
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
-  setTouchStartY(e.touches[0].clientY);
-  setTouchEndY(e.touches[0].clientY);
-  setIsDragging(true);
+  // Solo activar si estamos cerca del borde superior
+  if (window.scrollY <= 10) {
+    setTouchStartY(e.touches[0].clientY);
+    setTouchEndY(e.touches[0].clientY);
+    setIsDragging(true);
+  }
 };
 
 const handleTouchMove = (e) => {
@@ -726,6 +730,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               onPrev={handlePrevUser}
               departments={departments}
               onAddDepartment={handleAddDepartment}
+              imageCompression={imageCompression}
             />
           )}
 

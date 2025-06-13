@@ -473,7 +473,7 @@
   }
 
   .modal-overlay {
-    padding: 10px;
+    padding: 0px;
     align-items: flex-start;
   }
   

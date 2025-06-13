@@ -155,6 +155,7 @@ function UserDetailsModal({
           useWebWorker: true
         };
         const compressedFile = await imageCompression(file, options);
+        
         const reader = new FileReader();
         reader.onloadend = () => {
           setEditedUser(prev => ({ ...prev, imageBase64: reader.result }));

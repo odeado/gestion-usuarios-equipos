@@ -20,8 +20,8 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
     const colors = {
       'Teletrabajo': '#4caf50',
       'Trabajando': '#ffeb3b',
-      'Eliminado': '#f44336',
-     
+      'Eliminada': '#f44336',
+
     };
     return colors[estado] || colors.default;
   };
