@@ -320,8 +320,8 @@ function UserDetailsModal({
               {errors.image && <span className="error-text">{errors.image}</span>}
             </div>
           ) : (
-            user.imageBase64 && (
-              <img src={user.imageBase64} alt={user.name} className="modal-user-image" />
+            imagePreview && (
+              <img src={imagePreview} alt={user.name} className="modal-user-image" />
             )
           )}
           
