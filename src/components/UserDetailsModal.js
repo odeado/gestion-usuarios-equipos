@@ -14,7 +14,8 @@ function UserDetailsModal({
   departments = [],
   onEquipmentSelect, 
   onEdit, 
-  onEditEquipment
+  onEditEquipment,
+  onUserSelect
 }) { 
 
 
@@ -27,17 +28,58 @@ function UserDetailsModal({
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  useEffect(() => {
+    console.log('Equipos del usuario:', {
+      userId: user.id,
+      equipment: userEquipment,
+      allEquipment: equipment
+    });
+  }, [user.id, equipment]);
+
  
- useEffect(() => {
-  console.log('Equipos del usuario:', {
-    userId: user.id,
-    equipment: userEquipment,
-    allEquipment: equipment
-  });
-}, [user.id, equipment]);
  
- 
- 
+
+  // Filtrar usuarios basado en el término de búsqueda
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredUsers([]);
+      return;
+    }
+    
+    const filtered = users.filter(u => 
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.department?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setFilteredUsers(filtered);
+  }, [searchTerm, users]);
+
+ // Actualiza la función handleSelectUser:
+const handleSelectUser = (selectedUser) => {
+  // Notifica al componente padre para actualizar el usuario seleccionado
+  if (onUserSelect) {
+    onUserSelect(selectedUser.id);
+  }
+  // Limpia el buscador
+  setSearchTerm('');
+  setFilteredUsers([]);
+  // Restablece el estado de edición
+  setIsEditing(false);
+  setErrors({});
+};
+
+// Asegúrate de que el efecto de sincronización esté correctamente configurado:
+useEffect(() => {
+  setEditedUser({ ...user });
+  setImagePreview(user?.imageBase64 || null);
+}, [user]); // Este efecto se ejecutará cada vez que el prop 'user' cambie
+
+
   // Función para touch events
 
    const [touchStart, setTouchStart] = useState(null);
@@ -298,6 +340,42 @@ function UserDetailsModal({
       >
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>Cerrar</button>
+
+
+{/* Buscador de usuarios */}
+          <div className="user-search-container">
+             <input
+    type="text"
+    placeholder="Buscar..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      const term = e.target.value.toLowerCase();
+      setFilteredUsers(term ? users.filter(u => 
+        u.name.toLowerCase().includes(term) || 
+        u.correo.toLowerCase().includes(term) ||
+        (u.department && u.department.toLowerCase().includes(term))
+      ) : []);
+    }}
+    className="user-search-input"
+  />
+
+           {searchTerm && filteredUsers.length > 0 && (
+    <div className="user-search-results">
+      {filteredUsers.map(user => (
+        <div 
+          key={user.id}
+          className="user-search-result-item"
+          onClick={() => handleSelectUser(user)}
+        >
+          <div className="user-search-name">{user.name}</div>
+          <div className="user-search-email">{user.correo}</div>
+          <div className="user-search-department">{user.department}</div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
         <div className="modal-header">
           {isEditing ? (

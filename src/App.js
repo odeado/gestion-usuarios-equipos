@@ -42,6 +42,20 @@ const [panelPosition, setPanelPosition] = useState(0); // 0: oculto, 1: visible
 const [isDragging, setIsDragging] = useState(false);
 const [showCounters, setShowCounters] = useState(false);
 
+const [selectedUser, setSelectedUser] = useState(null);
+
+
+// En tu componente App, actualiza la función handleUserSelect:
+const handleUserSelect = (userId) => {
+  const user = users.find(u => u.id === userId);
+  if (user) {
+    setSelectedUser(user); // Actualiza el estado del usuario seleccionado
+    setSelectedUserId(userId); // Asegúrate de actualizar también selectedUserId
+    setShowUserModal(true); // Mantén el modal abierto
+  }
+};
+
+
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
   // Solo activar si estamos cerca del borde superior
@@ -526,7 +540,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       <div className="loading-content">
         <div className="loading-spinner"></div>
         <h2>Cargando Sistema de Gestión</h2>
-        <p>Por favor espere mientras cargamos todos los recursos...</p>
+        <p>Por favor espere mientras cargamos todos los datos...</p>
         <div className="loading-progress">
           <div className="progress-bar"></div>
         </div>
@@ -731,6 +745,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               departments={departments}
               onAddDepartment={handleAddDepartment}
               imageCompression={imageCompression}
+              onUserSelect={handleUserSelect}
             />
           )}
 
