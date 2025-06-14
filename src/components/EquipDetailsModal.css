@@ -315,7 +315,7 @@
    flex-direction: row;
     background: linear-gradient(135deg, #29062c 0%, #0d0d0d 50%);
     border-radius: 12px;
-    width: 60%;
+    width: 50%;
     height: max-content;
     padding: 10px;
     position: relative;
@@ -332,10 +332,12 @@
 
 .modal-headerE {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  width: 100%;
   margin-bottom: 5px;
-  
+  padding-left: 10px;
+  color: #f1f1f1;
   padding-bottom: 10px;
 }
 
@@ -449,6 +451,8 @@
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  position: relative;
+  left: 90%;
 }
 
 .close-btnE:hover {
@@ -497,11 +501,7 @@
   cursor: pointer;
 }
 
-  .modal-headerE {
-    display: flex;
-    color: #f1f1f1;
-    
-  }
+ 
 
 @media (max-width: 768px) {
 

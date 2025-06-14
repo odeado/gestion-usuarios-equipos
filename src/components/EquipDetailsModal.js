@@ -210,8 +210,8 @@ const handlePrev = () => {
         <div className="equipment-counter">
             {currentIndex + 1} / {totalEquipment}
           </div>
-        <button className="modal-closeE" onClick={handleClose}>×</button>
-        
+        <button className="close-btnE" onClick={handleClose}>×</button>
+
         <h2>{isEditing ? 'Editar Equipo' : equipment.nombre}</h2>
         </div>
         
@@ -533,8 +533,10 @@ const handlePrev = () => {
                 <span>{equipment.serialNumber}</span> 
                 </div>
                 <div className="detail-rowE">
-                <span className="status-badge" style={{ color: getEstadoColor(equipment.estado), backgroundColor: `${getEstadoColor(equipment.estado)}20` }}>Estado:</span>
-                <span>{equipment.estado}</span>
+                <span className="status-badge">Estado:</span> 
+                <span style={{ color: getEstadoColor(equipment.estado), backgroundColor: `${getEstadoColor(equipment.estado)}20`, width: 'max-content' }}>
+                {equipment.estado}
+                </span>
                 </div>
 
                 <div className="detail-rowE">

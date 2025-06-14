@@ -287,7 +287,7 @@
     align-items: center;
     background: linear-gradient(to right, #260a36, #3a1b4a);
     
-    width: 50%;
+    width: 35%;
     position: relative;
 }
 
@@ -316,7 +316,7 @@
   display: flex;
   padding: 10px;
   font-size: 14px;
-  width: 50%; /* Ocupa todo el ancho */
+  width: 45%; /* Ocupa todo el ancho */
   height: 100%; /* Altura fija */
   flex-wrap: wrap;
 }
