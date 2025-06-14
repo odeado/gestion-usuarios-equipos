@@ -598,11 +598,12 @@ html, body, #root {
 .stats-panel {
  display: flex;
   justify-content: space-around;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(63, 10, 60, 0.8);
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: all 0.3s ease;
+  will-change: transform, height, opacity;
+  gap: 5px;
 }
 
 .stats-panel.visible {
@@ -614,13 +615,14 @@ html, body, #root {
 }
 
 .pull-indicator {
-   text-align: center;
-  padding: 8px 0;
-  color: #666;
-  background: rgba(255, 255, 255, 0.9);
+   padding: 12px;
+  text-align: center;
+  background-color: #3f0a3c;
+  color: white;
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
-  user-select: none;
-  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  transition: all 0.3s ease;
   }
 
   .pull-indicator:hover {
@@ -632,15 +634,18 @@ html, body, #root {
 }
 
 .stats-touch-container {
-  touch-action: pan-y;
   position: relative;
-  z-index: 100;
+  width: 100%;
+  touch-action: pan-y;
+  user-select: none;
 }
 
 .stat-card {
-  padding: 10px;
-  flex: 1;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  border-radius: 8px;
+  width: 45%;
+  backdrop-filter: blur(5px);
 }
 
 .stat-card h3 {
@@ -652,9 +657,9 @@ html, body, #root {
 }
 
 .stat-card p {
- margin: 3px 0;
-  color: #666;
-  font-size: 0.9em;
+ margin: 8px 0;
+  color: #ffffff;
+  font-size: 12px;
 }
 
 /* fin de contadores */
@@ -723,9 +728,9 @@ html, body, #root {
 /* Indicador de página */
 .page-indicator {
   position: fixed;
-  left: 85%;
+  left: 5%;
   
-  top: 5%;
+  top: 4%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
@@ -757,7 +762,7 @@ html, body, #root {
     position: sticky;
     top: 0;
     z-index: 100;
-    background-color: #2c3e50;
+    background-color: #0c0c0c;
   }
   
   .app-header h2 {
@@ -850,7 +855,7 @@ html, body, #root {
   
   /* Páginas completas */
   .full-page {
-    padding: 10px;
+    padding: 15px;
     
     scroll-snap-align: start;
     position: relative;
@@ -863,7 +868,7 @@ html, body, #root {
     align-items: center;
     gap: 10px;
     border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
+    padding-bottom: 0px;
   }
   
   .page-header h3 {

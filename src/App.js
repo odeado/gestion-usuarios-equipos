@@ -36,10 +36,8 @@ function App() {
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 
 // Estados para el gesto táctil y animación
-const [touchStartX, setTouchStartX] = useState(null);
 const [touchStartY, setTouchStartY] = useState(null);
 const [touchEndY, setTouchEndY] = useState(null);
-const [swipeDirection, setSwipeDirection] = useState(null);
 const [panelPosition, setPanelPosition] = useState(0); // 0: oculto, 1: visible
 const [isDragging, setIsDragging] = useState(false);
 const [showCounters, setShowCounters] = useState(false);
@@ -60,71 +58,34 @@ const handleUserSelect = (userId) => {
 
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
-  // Solo activar si estamos cerca del borde superior (primeros 50px)
-  if (window.scrollY <= 50) {
+  // Solo activar si estamos cerca del borde superior
+  if (window.scrollY <= 10) {
     setTouchStartY(e.touches[0].clientY);
-    setTouchStartX(e.touches[0].clientX);
     setTouchEndY(e.touches[0].clientY);
     setIsDragging(true);
-    setSwipeDirection(null);
   }
 };
 
 const handleTouchMove = (e) => {
   if (!isDragging) return;
-  
   const currentY = e.touches[0].clientY;
-  const currentX = e.touches[0].clientX;
   setTouchEndY(currentY);
   
   // Calcular posición relativa (0-1)
+  const delta = currentY - touchStartY; // Cambiado a currentY - touchStartY
+  const newPosition = Math.min(Math.max(delta / 100, 0), 1); // 100px para mostrar completo
+  setPanelPosition(newPosition);
   
-  const deltaY = currentY - touchStartY; // Cambiado a currentY - touchStartY
-  
-  const deltaX = currentX - touchStartX;
- 
-  // Determinar dirección principal del gesto
-  if (!swipeDirection) {
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
-      setSwipeDirection('vertical');
-    } else if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      setSwipeDirection('horizontal');
-      return; // Ignorar gestos horizontales para este panel
-    }
-  }
-  
-  // Solo procesar gestos verticales hacia abajo
-  if (swipeDirection === 'vertical' && deltaY > 0) {
-    // Calcular posición relativa (0-1) basada en 150px de desplazamiento máximo
-    const newPosition = Math.min(deltaY / 150, 1);
-    setPanelPosition(newPosition);
-    
-    // Mostrar el panel si el desplazamiento supera 50px
-    if (deltaY > 50) {
-      setShowCounters(true);
-    }
-    
-    // Prevenir el scroll de la página mientras arrastramos
-    e.preventDefault();
+  // Mostrar si el desplazamiento es suficiente
+  if (delta > 50) {
+    setShowCounters(true);
   }
 };
 
 const handleTouchEnd = () => {
-  if (!isDragging) return;
-  
-  // Determinar si el gesto fue suficiente para mantener visible el panel
-  const deltaY = touchEndY - touchStartY;
-  const shouldShow = deltaY > 80; // Umbral de 80px
-  
-  setShowCounters(shouldShow);
-  setPanelPosition(shouldShow ? 1 : 0);
   setIsDragging(false);
   setTouchStartY(null);
-  setTouchStartX(null);
   setTouchEndY(null);
-  setSwipeDirection(null);
-  // Si el panel se oculta, asegurarse de que no esté en posición visible
-  
 };
 
 
@@ -526,17 +487,16 @@ useEffect(() => {
 
 
 function StatsPanel({ counters, visible, position, setShowCounters }) {
+  // Determinar si es móvil
   const isMobile = window.innerWidth <= 768;
   
-  // Animación mejorada que responde a la posición del gesto
+  // Animaciones con react-spring
   const panelAnimation = useSpring({
     height: isMobile ? (visible ? 'auto' : '0px') : 'auto',
-    opacity: isMobile ? (visible ? position : 0) : 1, // Usamos position para la opacidad durante el gesto
-    transform: isMobile 
-      ? `translateY(${visible ? 0 : -100 + (position * 100)}%)`
-      : 'translateY(0)',
+    opacity: isMobile ? (visible ? 1 : 0) : 1,
+    transform: isMobile ? (visible ? 'translateY(0)' : 'translateY(-100%)') : 'translateY(0)',
     margin: isMobile ? (visible ? '10px 0' : '0') : '10px 0',
-    padding: isMobile ? (visible ? '10px' : '0') : '10px',
+    padding: isMobile ? (visible ? '5px' : '0') : '5px',
     config: { tension: 300, friction: 30 }
   });
 
@@ -546,9 +506,8 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
         <div 
           className="pull-indicator" 
           onClick={() => setShowCounters(!visible)}
-          onTouchStart={(e) => e.stopPropagation()} // Evitar que el gesto se propague
         >
-          {visible ? '▲ Ocultar contadores' : '▼ Mostrar contadores'}
+          {visible ? '▲ contadores' : '▼ contadores'}
         </div>
       )}
       <animated.div 
