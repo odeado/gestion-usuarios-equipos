@@ -1,3 +1,81 @@
+/* ==================== PERSONALIZACIÓN DE SCROLLBARS ==================== */
+/* Estilos generales para scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track (fondo) */
+::-webkit-scrollbar-track {
+  background: rgba(25, 9, 28, 0.5); 
+  border-radius: 5px;
+}
+
+/* Handle (barra deslizadora) */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #eb2ed1, #6b21a8);
+  border-radius: 5px;
+  border: 2px solid rgba(25, 9, 28, 0.3);
+}
+
+/* Handle al pasar el mouse */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #d626b9, #5a189a);
+}
+
+/* Scrollbar para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #eb2ed1 rgba(25, 9, 28, 0.5);
+}
+
+/* Estilos específicos para contenedores importantes */
+.listsUser-container::-webkit-scrollbar,
+.listsEquipment-container::-webkit-scrollbar,
+.main-content-container::-webkit-scrollbar,
+.forms-usuarios::-webkit-scrollbar,
+.forms-equipos::-webkit-scrollbar {
+  width: 8px;
+}
+
+.listsUser-container::-webkit-scrollbar-thumb,
+.listsEquipment-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #eb2ed1, #3f0a3c);
+}
+
+.main-content-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #eb2ed1, #5a0d55);
+}
+
+.forms-usuarios::-webkit-scrollbar-thumb,
+.forms-equipos::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #eb2ed1, #6b21a8);
+}
+
+/* Versión móvil - scrollbars más delgadas */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .listsUser-container::-webkit-scrollbar,
+  .listsEquipment-container::-webkit-scrollbar,
+  .main-content-container::-webkit-scrollbar,
+  .forms-usuarios::-webkit-scrollbar,
+  .forms-equipos::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  * {
+    scrollbar-width: thin;
+  }
+}
+
+
+
+
+
 /* contadores */
 .stats-container {
   position: relative;
@@ -15,7 +93,7 @@
   justify-content: space-around;
   margin: 5px 0;
   padding: 5px;
-  background-color: #22081c;
+  background-color: #410633;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(143, 142, 142, 0.479);
 }
@@ -37,9 +115,11 @@
   padding: 0 15px;
 }
 
+ 
+
 
 .stat-card {
-  background: rgb(97, 7, 97);
+  background: rgb(26, 18, 26);
   padding: 5px;
   border-radius: 8px;
   width: 45%;
@@ -315,14 +395,9 @@ html, body, #root {
 .app h2 {
   color: #63676b;
   text-align: center;
-  
   font-size: 1.2rem;
   
-  
 }
-
-
-
 
 
 
@@ -347,7 +422,7 @@ html, body, #root {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #31102e 0%, #0f0816 100%);
   display: flex;
   justify-content: center;
   align-items: center;

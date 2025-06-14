@@ -275,18 +275,11 @@ const handlePrev = () => {
                 )}
               </div>
 
-
-
-
-
-
-
-
-           
+<div className="form-fields-container">
               <div className="form-groupDatosE">
-              <div className="form-groupE">
-                <label>Nombre:</label>
-                <input
+                <div className="form-groupE">
+                  <label>Nombre:</label>
+                  <input
                   name="nombre"
                   value={editedEquipment.nombre}
                   onChange={handleInputChange}
@@ -402,7 +395,7 @@ const handlePrev = () => {
                           />
                           {errors?.descripcion && <span className="error-message">{errors.descripcion}</span>}
                         </div>
-<label className='titulo-datos'>Hardware</label>
+                        <label className='titulo-datos'>Hardware</label>
                         <div className="form-groupE">
                           <label>Procesador:</label>
                           <input
@@ -497,6 +490,7 @@ const handlePrev = () => {
   Cancelar
 </button>
               </div>
+              </div>
             </div>
             </div>
           ) : (
@@ -553,9 +547,10 @@ const handlePrev = () => {
                 </div>
                 </div>
                 </div>
-
-                <label className='titulo-datos'>Hardware</label>
+<div className="equipment-data-section2">
                 <div className="equipment-data-section">
+                <label className='titulo-datos'>Hardware</label>
+                
 
                 <div className="detail-rowE">
                 <span className="detail-labelE">Procesador:</span>
@@ -575,9 +570,9 @@ const handlePrev = () => {
                 </div>
                 
               </div>
-
+<div className="equipment-data-section">
               <label className='titulo-datos'>Información Adicional</label>
-              <div className="equipment-data-section">
+              
               <div className="detail-rowE">
                 <span className="detail-labelE">Windows:</span>
                 <span>{equipment.windows}</span>
@@ -594,7 +589,7 @@ const handlePrev = () => {
                 <span className="detail-labelE">Descripción:</span>
                 <p>{equipment.descripcion}</p>
               </div>
-
+</div>
 </div>
                 
               
