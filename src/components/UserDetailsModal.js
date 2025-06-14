@@ -41,7 +41,15 @@ function UserDetailsModal({
   }, [user.id, equipment]);
 
  
- 
+ const getEstadoColor = (estado) => {
+    const colors = {
+      'Teletrabajo': '#4caf50',
+      'Trabajando': '#ffeb3b',
+      'Eliminado': '#f44336',
+     
+    };
+    return colors[estado] || '#666';
+  };
 
   // Filtrar usuarios basado en el término de búsqueda
   useEffect(() => {
@@ -477,6 +485,13 @@ useEffect(() => {
                   <p className="department-badge">{user.department}</p>
                 </div>
                 <p>{user.correo}</p>
+                <p>{user.ciudad}</p>
+                <div className="caja-titulo">
+                <span className="form-label-modal">Estado:</span> 
+                <span style={{ color: getEstadoColor(user.estado), backgroundColor: `${getEstadoColor(user.estado)}20`, width: 'max-content', padding: '3px', borderRadius: '4px', fontSize: '0.9em' }}>
+                {user.estado}
+                </span>
+                </div>
               </div>
               
             </div>

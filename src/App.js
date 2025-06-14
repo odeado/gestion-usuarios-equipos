@@ -495,7 +495,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
     height: isMobile ? (visible ? 'auto' : '0px') : 'auto',
     opacity: isMobile ? (visible ? 1 : 0) : 1,
     transform: isMobile ? (visible ? 'translateY(0)' : 'translateY(-100%)') : 'translateY(0)',
-    margin: isMobile ? (visible ? '10px 0' : '0') : '10px 0',
+    margin: isMobile ? (visible ? '0px 0' : '0') : '0px 0',
     padding: isMobile ? (visible ? '5px' : '0') : '5px',
     config: { tension: 300, friction: 30 }
   });
