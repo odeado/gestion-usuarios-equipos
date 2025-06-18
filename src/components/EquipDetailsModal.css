@@ -1,4 +1,175 @@
 
+/* Estilos para caja de modal */
+
+.modal-contentE {
+   display: flex;
+   flex-wrap: wrap;
+   flex-direction: row;
+    background: linear-gradient(135deg, #29062c 0%, #0d0d0d 50%);
+    border-radius: 12px;
+    width: 50%;
+    height: 60%;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes scaleUp {
+    to { transform: scale(1); }
+}
+
+  .modal-headerE {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  height: 10%;
+  margin-bottom: 0px;
+  padding-left: 0px;
+  color: #f1f1f1;
+  padding-bottom: 0px;
+  }
+
+    .modal-headerE h3 {
+    padding: 0;
+    margin: 0;
+    }
+
+  /* Diseño para modo visualización */
+  .view-mode-container {
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+  width: 100%;
+  padding: 0px;
+  }
+
+    .equipment-details-container {
+      gap: 5px;
+      background: linear-gradient(to right, #29062c, #0d0d0d);
+      padding: 2px;
+      height: 70%;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Estilos para la sección de usuario asignado */
+    .assigned-users-section {
+      margin: 10px 0;
+      height: 20%;
+      padding-left: 15px;
+      background: linear-gradient(to right, #2e0b29, transparent);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .assigned-users-list {
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+      padding: 10px;
+    }
+
+              .assigned-users-section h4 {
+                margin: 5px;
+                color: #333;
+                font-size: 14px;
+              }
+
+              .user-infoE {
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                gap: 15px;
+              }
+
+              .user-photo {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #ddd;
+              }
+
+              .user-photo-placeholder {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background-color: #007bff;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                font-weight: bold;
+              }
+
+
+
+              .equipment-header {
+                display: flex;
+                justify-content: flex-start;
+                margin-bottom: 20px;
+                align-items: center;
+                color: #f1f1f1;
+              }
+
+              .detail-rowE {
+              display: flex;
+              flex-direction: row;
+              margin-bottom: 5px;
+              }
+
+.detail-labelE {
+  font-weight: bold;
+  width: 150px;
+  color: #f1f1f1;
+}
+
+.detail-rowE span {
+  flex: 1;
+  
+  color: #d6d5d5;
+}
+
+.modal-footerE {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+              .user-details {
+                display: flex;
+                flex-direction: column;
+              }
+
+              .user-name {
+                font-weight: bold;
+                font-size: 1rem;
+                color: #333;
+              }
+
+              .user-email, .user-department {
+                font-size: 0.85rem;
+                color: #666;
+              }
+
+    .modal-actionsE {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    flex-wrap: nowrap;
+    gap: 10px;
+    height: 10%;
+}
+
+
 /* En tu archivo EquipDetailsModal.css */
 .clickable-user {
   cursor: pointer;
@@ -13,74 +184,7 @@
 .user-photo {
   cursor: pointer;
 }
-/* Estilos para la sección de usuario asignado */
-.assigned-user-section {
-  margin: 10px 0;
-  padding: 15px;
-  background: linear-gradient(to right, #2e0b29, transparent);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
 
-.assigned-user-section h4 {
-  margin: 5px;
-  color: #333;
-  font-size: 14px;
-}
-
-.user-infoE {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  gap: 15px;
-}
-
-.user-photo {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #ddd;
-}
-
-.user-photo-placeholder {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: #007bff;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-
-
-.equipment-header {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 20px;
-  align-items: center;
-  color: #f1f1f1;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #333;
-}
-
-.user-email, .user-department {
-  font-size: 0.85rem;
-  color: #666;
-}
 
 /* Estilos para el modal de detalles del equipos */
 
@@ -93,15 +197,7 @@
   width: 50%;
 }
 
-.equipment-details-container {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  background: linear-gradient(to right, #29062c, #0d0d0d);
-  padding: 2px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+
 
  .titulo-datos {
     font-size: 18px;
@@ -151,20 +247,14 @@
   margin-left: 10px;
 }
 
-/* Diseño para modo visualización */
-.view-mode-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  padding: 10px;
-}
+
 
 
 .form-fields-container {
   width: 100%;
   display: flex;
-  flex: 1;
+  flex-direction: column;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 20px;
 }
@@ -262,12 +352,14 @@
   
 }
 
-.modal-actionsE {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 10px;
-    flex-wrap: nowrap;
-    gap: 10px;
+.form-group-select option:checked {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.form-group-select option:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
 }
 
 .form-label {
@@ -304,47 +396,13 @@
 }
 .image-upload-containerE {
   padding: 10px;
-  width: 40%;
+  width: 100%;
   height: max-content;
   border: 1px solid rgba(235, 46, 209, 0.3);
 }
 
-.modal-contentE {
-   display: flex;
-   flex-wrap: wrap;
-   flex-direction: row;
-    background: linear-gradient(135deg, #29062c 0%, #0d0d0d 50%);
-    border-radius: 12px;
-    width: 50%;
-    height: max-content;
-    padding: 10px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    transform: scale(0.95);
-    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
-@keyframes scaleUp {
-    to { transform: scale(1); }
-}
 
-.modal-headerE {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 5px;
-  padding-left: 10px;
-  color: #f1f1f1;
-  padding-bottom: 10px;
-}
-
-.modal-headerE h3 {
-  padding: 0;
-  margin: 0;
-}
 
 
 .close-btn {
@@ -362,32 +420,7 @@
   position: relative;
 }
 
-.detail-rowE {
-  
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 5px;
-}
 
-.detail-labelE {
-  font-weight: bold;
-  width: 150px;
-  color: #f1f1f1;
-}
-
-.detail-rowE span {
-  flex: 1;
-  
-  color: #d6d5d5;
-}
-
-.modal-footerE {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid #eee;
-  padding-top: 15px;
-}
 
 .equipment-counter {
   position: absolute;
@@ -473,7 +506,7 @@
   flex-direction: row;
   gap: 20px;
   width: 100%;
-  height: 100%;
+  height: 90%;
 }
 
 .form-groupDatosE {
@@ -504,6 +537,14 @@
  
 
 @media (max-width: 768px) {
+
+  .user-details,
+  .user-name,
+  .user-department,
+  .nav-button, .prev-button {
+    display: none;
+    
+  }
 
 /* Estilos para la sección de usuario asignado */
 .assigned-user-section {
@@ -638,7 +679,7 @@
   flex-direction: column;
 
   width: 100%;
-  height: 100%;
+  height: 95%;
 }
 
 
@@ -693,7 +734,7 @@
     
   }
 
-  .image-upload-container {
+  .image-upload-containerE {
     padding: 10px;
     width: 90%;
     border: 1px solid rgba(235, 46, 209, 0.3);

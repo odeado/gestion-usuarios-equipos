@@ -3,6 +3,7 @@ import imageCompression from 'browser-image-compression';
 import './AddEquipmentForm.css';
 // Eliminé esta línea que causaba conflicto
 import { ref } from 'firebase/storage';
+import { useMutation } from '@tanstack/react-query';
 
 
 const AddEquipmentForm = forwardRef((props, ref) => {
@@ -35,7 +36,7 @@ antivirus: '',
 office: '',
 
     IpEquipo: '',
-    assignedTo: '',
+    usuariosAsignados: [],
     imageBase64: ''
   });
 
@@ -44,35 +45,38 @@ office: '',
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef();
 
-  // Cargar datos del equipo a editar
+ // Cargar datos del equipo a editar
   useEffect(() => {
     if (equipmentToEdit) {
-      setFormData({
-        nombre: equipmentToEdit.nombre || '',
-        type: equipmentToEdit.type || '',
-        ciudad: equipmentToEdit.ciudad || '',
-        estado: equipmentToEdit.estado || '',
-        lugar: equipmentToEdit.lugar || '',
+      // Convertir usuariosAsignados a array si es necesario
+      const usuariosAsignados = equipmentToEdit.usuariosAsignados 
+        ? Array.isArray(equipmentToEdit.usuariosAsignados) 
+          ? equipmentToEdit.usuariosAsignados 
+          : [equipmentToEdit.usuariosAsignados]
+        : [];
+
+    setFormData({
+      nombre: equipmentToEdit.nombre || '',
+      type: equipmentToEdit.type || '',
+      ciudad: equipmentToEdit.ciudad || '',
+      estado: equipmentToEdit.estado || '',
+      lugar: equipmentToEdit.lugar || '',
         descripcion: equipmentToEdit.descripcion || '',
         marca: equipmentToEdit.marca || '',
         model: equipmentToEdit.model || '',
         serialNumber: equipmentToEdit.serialNumber || '',
-
-
-procesador: equipmentToEdit.procesador || '',
-        ram: equipmentToEdit.ram || '',
-        discoDuro: equipmentToEdit.discoDuro || '',
-        tarjetaGrafica: equipmentToEdit.tarjetaGrafica || '',
-
+      procesador: equipmentToEdit.procesador || '',
+      ram: equipmentToEdit.ram || '',
+      discoDuro: equipmentToEdit.discoDuro || '',
+      tarjetaGrafica: equipmentToEdit.tarjetaGrafica || '',
         windows: equipmentToEdit.windows || '',
         antivirus: equipmentToEdit.antivirus || '',
         office: equipmentToEdit.office || '',
-
-        IpEquipo: equipmentToEdit.IpEquipo || '',
-        assignedTo: equipmentToEdit.assignedTo || '',
-        imageBase64: equipmentToEdit.imageBase64 || ''
-      });
-      setIsEditing(true);
+      IpEquipo: equipmentToEdit.IpEquipo || '',
+      usuariosAsignados: usuariosAsignados,
+      imageBase64: equipmentToEdit.imageBase64 || ''
+    });
+    setIsEditing(true);
     } else {
       resetForm();
     }
@@ -100,7 +104,7 @@ procesador: '',
       office: '',
 
       IpEquipo: '',
-      assignedTo: '',
+      usuariosAsignados: [],
       imageBase64: ''
     });
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -120,7 +124,6 @@ procesador: '',
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
     if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
     if (!formData.serialNumber.trim()) newErrors.serialNumber = 'Número de serie es requerido';
-    if (!formData.assignedTo) newErrors.assignedTo = 'Debe asignar a un usuario';
     if (!formData.imageBase64) newErrors.image = 'Imagen es requerida';
     
     setErrors(newErrors);
@@ -362,22 +365,29 @@ procesador: '',
 
 
         <div className="form-row">
-          <div className="form-group department-group">
-            <label className="form-label">Asignar a</label>
-            <select
-              name="assignedTo"
-              value={formData.assignedTo}
-              onChange={handleChange}
-              className="user-selector"
-            >
-              <option value="">Seleccione un usuario...</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.name} - {user.department}
-                </option>
-              ))}
-            </select>
-          </div>
+         <div className="form-group department-group">
+  <label className="form-label">Asignar a</label>
+  <select
+    name="usuariosAsignados"
+    multiple // Permite selección múltiple
+    value={Array.isArray(formData.usuariosAsignados) ? formData.usuariosAsignados : []}
+    onChange={(e) => {
+      const options = [...e.target.options];
+      const selectedValues = options
+        .filter(option => option.selected)
+        .map(option => option.value);
+      setFormData(prev => ({ ...prev, usuariosAsignados: selectedValues }));
+    }}
+    className="user-selector"
+    size="5" // Muestra 5 opciones a la vez
+  >
+    {users.map(user => (
+      <option key={user.id} value={user.id}>
+        {user.name} - {user.department}
+      </option>
+    ))}
+  </select>
+</div>
         </div>
 
 

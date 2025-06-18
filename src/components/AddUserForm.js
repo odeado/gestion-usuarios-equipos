@@ -10,7 +10,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     tipoVpn: '',
     department: '',
     estado: 'Teletrabajo', // Estado por defecto
-    EquipoAsignado: '',
+    equiposAsignados: [],
     imageBase64: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -31,7 +31,11 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
-        EquipoAsignado: userToEdit.EquipoAsignado || '',
+         equiposAsignados: Array.isArray(userToEdit.equiposAsignados) 
+        ? userToEdit.equiposAsignados 
+        : userToEdit.equiposAsignados 
+          ? [userToEdit.equiposAsignados] 
+          : [],
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -49,7 +53,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       tipoVpn: '',
       department: '',
       estado: 'Teletrabajo', // Estado por defecto
-      EquipoAsignado: '',
+      equiposAsignados: [],
       imageBase64: ''
     });
     setImagePreview(null);
@@ -147,7 +151,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           estado: formData.estado,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
-          EquipoAsignado: formData.EquipoAsignado || null, // Asegúrate de que este campo exista en tu DB
+          equiposAsignados: formData.equiposAsignados || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
       } else {
@@ -158,7 +162,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
-          EquipoAsignado: formData.EquipoAsignado || null, // Asegúrate de que este campo exista en tu DB
+          equiposAsignados: formData.equiposAsignados || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
         resetForm();
@@ -247,25 +251,39 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   };
 
 
-  const renderEquipmentSelect = () => {
-    return (
-      <div className="form-group">
-        <label htmlFor="EquipoAsignado" className="form-label">Equipo Asignado</label>
-        <select
-          id="EquipoAsignado"
-          name="EquipoAsignado"
-          value={formData.EquipoAsignado}
-          onChange={handleChange}
-          className="form-input"
-        >
-          <option value="">Seleccione un equipo</option>
-          {equipment.map(eq => (
-            <option key={eq.id} value={eq.id}>{eq.nombre}</option>
-          ))}
-        </select>
-      </div>
-    );
-  };
+const renderEquipmentSelect = () => {
+  return (
+    <div className="form-group">
+      <label htmlFor="equiposAsignados" className="form-label">Equipos Asignados</label>
+      <select
+        id="equiposAsignados"
+        name="equiposAsignados"
+        multiple
+        value={formData.equiposAsignados}
+        onChange={(e) => {
+          const options = [...e.target.options];
+          const selectedValues = options
+            .filter(option => option.selected)
+            .map(option => option.value);
+          setFormData(prev => ({ ...prev, equiposAsignados: selectedValues }));
+        }}
+        className="form-input"
+        size="5" // Mostrar 5 opciones a la vez
+      >
+        {equipment.map(eq => (
+          <option 
+            key={eq.id} 
+            value={eq.id}
+            // Mostrar como seleccionado si está asignado al usuario
+            selected={formData.equiposAsignados.includes(eq.id)}
+          >
+            {eq.nombre} ({eq.type}) - {eq.IpEquipo}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
   return (
     <form onSubmit={handleSubmit} className="user-form">

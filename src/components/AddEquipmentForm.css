@@ -1,6 +1,20 @@
 
 
+.user-selector[multiple] {
+  height: auto;
+  min-height: 100px;
+  padding: 5px;
+}
 
+.user-selector[multiple] option {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.user-selector[multiple] option:checked {
+  background-color: #e0f7fa;
+  color: #00796b;
+}
 
 
 

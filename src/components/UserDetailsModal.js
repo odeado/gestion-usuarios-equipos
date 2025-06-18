@@ -1,197 +1,116 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './UserDetailsModal.css';
 
 function UserDetailsModal({ 
-  user, 
-  users, 
-  equipment, 
+  user = {}, 
   onClose, 
-  onNext,
-  imageCompression,
-  onDelete, 
-  onPrev, 
-  onAddDepartment,
-  departments = [],
-  onEquipmentSelect, 
   onEdit, 
-  onEditEquipment,
-  onUserSelect
-}) { 
-
-
-  const [isMobile, setIsMobile] = useState(false);
+  users = [], 
+  equipment = [],
+  
+  onNext, 
+  onPrev,
+  onOpenEquipmentModal,
+  imageCompression,
+  departments = [],
+  onAddDepartment
+}) {
+  // Estado para manejar la edición del usuario
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState({ ...user });
+  const [editedUser, setEditedUser] = useState({...user});
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
   const [showAddDepartment, setShowAddDepartment] = useState(false);
   const [newDepartment, setNewDepartment] = useState('');
-  const [errors, setErrors] = useState({});
-  const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
-
-  const [searchTerm, setSearchTerm] = useState('');
   
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  // Función para touch events
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
-  useEffect(() => {
-    console.log('Equipos del usuario:', {
-      userId: user.id,
-      equipment: userEquipment,
-      allEquipment: equipment
-    });
-  }, [user.id, equipment]);
+const currentIndex = users.findIndex(u => u.id === user.id);
+const totalUsers = users.length;
 
- 
- const getEstadoColor = (estado) => {
+const normalizeArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+};
+
+// Uso:
+const assignedEquipment = useMemo(() => {
+  const equipmentIdsArray = normalizeArray(editedUser.equiposAsignados);
+  return equipmentIdsArray
+    .map(equipId => equipment.find(e => e.id === equipId))
+    .filter(equip => equip !== undefined);
+}, [editedUser.equiposAsignados, equipment]);
+
+
+  // Obtener estados de los equipos asignados
+  const getEstadoColor = (estado) => {
     const colors = {
       'Teletrabajo': '#4caf50',
       'Trabajando': '#ffeb3b',
       'Eliminado': '#f44336',
-     
     };
     return colors[estado] || '#666';
   };
 
-  // Filtrar usuarios basado en el término de búsqueda
+  // Inicializar datos del usuario
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredUsers([]);
-      return;
-    }
-    
-    const filtered = users.filter(u => 
-      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.department?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    setFilteredUsers(filtered);
-  }, [searchTerm, users]);
-
- // Actualiza la función handleSelectUser:
-const handleSelectUser = (selectedUser) => {
-  // Notifica al componente padre para actualizar el usuario seleccionado
-  if (onUserSelect) {
-    onUserSelect(selectedUser.id);
-  }
-  // Limpia el buscador
-  setSearchTerm('');
-  setFilteredUsers([]);
-  // Restablece el estado de edición
-  setIsEditing(false);
-  setErrors({});
-};
-
-// Asegúrate de que el efecto de sincronización esté correctamente configurado:
-useEffect(() => {
-  setEditedUser({ ...user });
-  setImagePreview(user?.imageBase64 || null);
-}, [user]); // Este efecto se ejecutará cada vez que el prop 'user' cambie
-
-
-  // Función para touch events
-
-   const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-
-
-
-
-  const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-  // No permitir gestos durante la edición
-  if (isEditing) return;
-  
-  if (!touchStart || !touchEnd) return;
-  
-  const distance = touchStart - touchEnd;
-  const isLeftSwipe = distance > 50; // Umbral para "siguiente"
-  const isRightSwipe = distance < -50; // Umbral para "anterior"
-
-  if (isLeftSwipe && currentIndex < users.length - 1) {
-    onNext();
-  } else if (isRightSwipe && currentIndex > 0) {
-    onPrev();
-  }
-
-  setTouchStart(null);
-  setTouchEnd(null);
-};
-
-
-  // fin Manejo de eventos táctiles
-
-  const getAssignedUserName = (userId) => {
-    if (!userId || !users) return 'Sin asignar';
-    const foundUser = users.find(u => u.id === userId);
-    return foundUser ? foundUser.name : 'Usuario no encontrado';
-  };
-
-  const currentIndex = users.findIndex(u => u.id === user.id);
-  const userEquipment = equipment.filter(item => 
-  item.assignedTo && item.assignedTo === user.id
-);
-
-    // Efecto para detectar si es móvil
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768); // 768px es un breakpoint común para móviles
-    };
-    
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
-  
-  // Efecto para inicializar el usuario editado y la imagen previa
-  
-  useEffect(() => {
-    setEditedUser({ ...user });
-    setImagePreview(user.imageBase64 || null);
+    setEditedUser({
+      name: user.name || '',
+      correo: user.correo || '',
+      tipoVpn: user.tipoVpn || '',
+      department: user.department || '',
+      estado: user.estado || '',
+      ciudad: user.ciudad || '',
+      equiposAsignados: normalizeArray(user.equiposAsignados || user.EquipoAsignado),
+      imageBase64: user.imageBase64 || ''
+    });
   }, [user]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if(e.key === 'ArrowLeft') onPrev();
-      else if(e.key === 'ArrowRight') onNext();
-      else if(e.key === 'Escape') onClose();
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onPrev, onNext, onClose]);
 
   const validateForm = () => {
     const newErrors = {};
     if (!editedUser.name?.trim()) newErrors.name = 'Nombre es requerido';
-    if (!editedUser.name?.trim()) newErrors.tipoVpn = 'Tipo de Vpn';
     if (!editedUser.correo?.trim()) newErrors.correo = 'Correo es requerido';
-    else if (!/\S+@\S+\.\S+/.test(editedUser.correo)) newErrors.correo = 'Correo inválido';
+    if (!editedUser.tipoVpn?.trim()) newErrors.tipoVpn = 'Tipo VPN es requerido';
     if (!editedUser.department?.trim()) newErrors.department = 'Departamento es requerido';
-
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleEquipmentClick = (equipmentItem) => {
-    // Cierra el modal de usuario primero
-    onClose();
-    // Luego notifica al componente padre para abrir el modal de equipo
-    if (onEquipmentSelect) {
-      onEquipmentSelect(equipmentItem.id);
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    
+    setIsSaving(true);
+    try {
+      const userToUpdate = {
+        id: user.id,
+        ...editedUser,
+         equiposAsignados: normalizeArray(editedUser.equiposAsignados)
+      };
+      
+      await onEdit(userToUpdate);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      setErrors({ form: error.message || 'Error al guardar los cambios' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditedUser(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    // Limpiar error del campo al modificar
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleImageChange = async (e) => {
@@ -209,7 +128,6 @@ useEffect(() => {
         const reader = new FileReader();
         reader.onloadend = () => {
           setEditedUser(prev => ({ ...prev, imageBase64: reader.result }));
-          setImagePreview(reader.result);
           setIsCompressing(false);
         };
         reader.readAsDataURL(compressedFile);
@@ -242,32 +160,12 @@ useEffect(() => {
     }
   };
 
- const handleSave = async () => {
-  if (!validateForm()) return;
-  
-  // Verificar duplicados antes de guardar
-  const currentAssignedEquipment = equipment.find(
-    item => item.assignedTo === editedUser.id && item.id !== editedUser.EquipoAsignado
-  );
-  
-  if (currentAssignedEquipment) {
-    setErrors(prev => ({
-      ...prev,
-      EquipoAsignado: `El usuario ya tiene asignado el equipo ${currentAssignedEquipment.nombre}`
-    }));
-    return;
-  }
-
-  await onEdit(editedUser);
-  setIsEditing(false);
-};
-
   const renderDepartmentSelect = () => {
     const currentDept = editedUser.department;
     const deptExists = departments.some(d => (d.name || d) === currentDept);
 
     return (
-      <div className="department-select-container">
+      <div className="form-groupU">
         <select
           name="department"
           value={currentDept}
@@ -280,7 +178,7 @@ useEffect(() => {
             }
           }}
           required
-          className={`edit-input ${errors.department ? 'input-error' : ''}`}
+          className={`form-inputU ${errors.department ? 'error' : ''}`}
         >
           <option value="">Selecciona un departamento</option>
           
@@ -315,287 +213,412 @@ useEffect(() => {
               <button 
                 type="button" 
                 onClick={handleAddNewDepartment}
-                className="add-button"
+                className="save-btn"
               >
                 Agregar
               </button>
               <button 
                 type="button" 
                 onClick={() => setShowAddDepartment(false)}
-                className="cancel-button"
+                className="cancel-btn"
               >
                 Cancelar
               </button>
             </div>
           </div>
         )}
-        {errors.department && <div className="error-message">{errors.department}</div>}
+        {errors.department && <span className="error-message">{errors.department}</span>}
       </div>
     );
   };
 
-  const getEquipmentName = (EquipoAsignado) => {
-    if (!EquipoAsignado || !equipment) return 'Sin equipo';
-    const foundEquipment = equipment.find(eq => eq.id === EquipoAsignado);
-    return foundEquipment ? foundEquipment.IpEquipo : 'Equipo no encontrado';
+  // Manejo de eventos táctiles
+ const handleTouchStart = (e) => {
+  setTouchStart(e.targetTouches[0].clientX);
+  setTouchEnd(null); // Reset touchEnd
+};
+
+ const handleTouchMove = (e) => {
+  if (!touchStart) return;
+  setTouchEnd(e.targetTouches[0].clientX);
+  e.preventDefault(); // Prevenir scroll horizontal
+};
+
+  const handleTouchEnd = () => {
+  if (!touchStart || !touchEnd || isEditing) return;
+  
+  const distance = touchStart - touchEnd;
+  const isLeftSwipe = distance > 50; // Umbral para "siguiente"
+  const isRightSwipe = distance < -50; // Umbral para "anterior"
+
+  if (isLeftSwipe && currentIndex < totalUsers - 1) {
+    onNext();
+  } else if (isRightSwipe && currentIndex > 0) {
+    onPrev();
+  }
+
+  setTouchStart(null);
+  setTouchEnd(null);
+};
+
+  // Efecto para detectar si es móvil
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
+
+  const handleNext = () => {
+  if (onNext) {
+    onNext();
+  }
+};
+
+const handlePrev = () => {
+  if (onPrev) {
+    onPrev();
+  }
+};
+
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
+    onClose();
+  };
+
+ const handleEquipmentClick = (equipmentItem) => {
+    onClose();
+    if (onOpenEquipmentModal) {
+      onOpenEquipmentModal(equipmentItem.id);
+    }
   };
 
   return (
-    <div className="modal-overlay"
+    <div 
+      className="user-modalU" 
+      onClick={e => e.stopPropagation()}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      >
-      <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>Cerrar</button>
-
-
-{/* Buscador de usuarios */}
-          <div className="user-search-container">
-             <input
-    type="text"
-    placeholder="Buscar..."
-    value={searchTerm}
-    onChange={(e) => {
-      setSearchTerm(e.target.value);
-      const term = e.target.value.toLowerCase();
-      setFilteredUsers(term ? users.filter(u => 
-        u.name.toLowerCase().includes(term) || 
-        u.correo.toLowerCase().includes(term) ||
-        (u.department && u.department.toLowerCase().includes(term))
-      ) : []);
-    }}
-    className="user-search-input"
-  />
-
-           {searchTerm && filteredUsers.length > 0 && (
-    <div className="user-search-results">
-      {filteredUsers.map(user => (
-        <div 
-          key={user.id}
-          className="user-search-result-item"
-          onClick={() => handleSelectUser(user)}
-        >
-          <div className="user-search-name">{user.name}</div>
-          <div className="user-search-email">{user.correo}</div>
-          <div className="user-search-department">{user.department}</div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-        <div className="modal-header">
-          {isEditing ? (
-            <div className="image-upload-container">
-              <label htmlFor="modal-image-upload" className="image-upload-label">
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="modal-user-image editable" />
-                ) : (
-                  <div className="image-placeholder">+ Imagen</div>
-                )}
-                <input
-                  id="modal-image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={isCompressing}
-                  className="image-upload-input"
-                />
-              </label>
-              {errors.image && <span className="error-text">{errors.image}</span>}
-            </div>
-          ) : (
-            imagePreview && (
-              <img src={imagePreview} alt={user.name} className="modal-user-image" />
-            )
-          )}
-          
-          {isEditing ? (
-            <div className="edit-fields">
-              <div className="form-group">
-                <input
-                  name="name"
-                  value={editedUser.name}
-                  onChange={handleInputChange}
-                  placeholder="Nombre"
-                  className={`edit-input ${errors.name ? 'input-error' : ''}`}
-                />
-                {errors.name && <div className="error-text">{errors.name}</div>}
-              </div>
-              
-              <div className="form-group">
-                <input
-                  name="correo"
-                  type="email"
-                  value={editedUser.correo}
-                  onChange={handleInputChange}
-                  placeholder="Correo electrónico"
-                  className={`edit-input ${errors.correo ? 'input-error' : ''}`}
-                />
-                {errors.correo && <div className="error-text">{errors.correo}</div>}
-              </div>
-
-              <div className="form-group">
-                <input
-                  name="tipoVpn"
-                  type="tipoVpn"
-                  value={editedUser.tipoVpn}
-                  onChange={handleInputChange}
-                  placeholder="Tipo Vpn"
-                  className={`edit-input ${errors.tipoVpn ? 'input-error' : ''}`}
-                />
-                {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
-              </div>
-
-              <div className="form-group">
-                <select
-                  name="EquipoAsignado"
-                  value={editedUser.EquipoAsignado || ''}
-                  onChange={handleInputChange}
-                  className={`edit-input ${errors.EquipoAsignado ? 'input-error' : ''}`}
-                >
-                  <option value="">Seleccione un equipo</option>
-                  {equipment.map(eq => (
-                    <option key={eq.id} value={eq.id}>
-                      {eq.name} - {eq.ipEquipo || eq.IpEquipo || 'Sin IP'}
-                    </option>
-                  ))}
-                </select>
-                {errors.EquipoAsignado && <div className="error-text">{errors.EquipoAsignado}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label className="form-label-modal">Departamento</label>
-                {renderDepartmentSelect()}
-              </div>
-            </div>
-          ) : (
-            <div className="view-mode">
-              
-
-              <div className="texto-container">
-                <div className='nombre-apellido'>
-                  <div className="nombre">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
-                  <div className="apellido">{user.name.split(' ').slice(1).join(' ')}</div>
-                 </div>
-                <label className="form-label-modal">Tipo VPN: {user.tipoVpn}</label>
-                <div className="caja-titulo">
-                  <label className="form-label-modal">Departamento:</label>
-                  <p className="department-badge">{user.department}</p>
-                </div>
-                <p>{user.correo}</p>
-                <p>{user.ciudad}</p>
-                <div className="caja-titulo">
-                <span className="form-label-modal">Estado:</span> 
-                <span style={{ color: getEstadoColor(user.estado), backgroundColor: `${getEstadoColor(user.estado)}20`, width: 'max-content', padding: '3px', borderRadius: '4px', fontSize: '0.9em' }}>
-                {user.estado}
-                </span>
-                </div>
-              </div>
-              
-            </div>
-          )}
-        </div>
-
-        <div className="modal-body">
-          <div className="user-details">
-          <h3>Equipos en uso ({userEquipment.length})</h3>
-          {userEquipment.length > 0 ? (
-            <ul className="equipment-list">
-              {userEquipment.map(item => (
-                <li 
-                  key={`${item.id}-${item.assignedTo}`} // Key única
-            className={`equipment-item ${item.type.toLowerCase()}`}
-            onClick={() => handleEquipmentClick(item)}
-                >
-
-                  <div className="equipo-info">
-                  
-                  <span className="equipo-nombre">{item.nombre}</span>/ 
-                  <span className="equipo-type">{item.type}</span>
-                  <span className="equipo-serial">({item.serialNumber})</span>
- </div>
-            <div className="equipo-meta">
-                  <span className="equipo-lugar">{item.lugar}</span>:
-                  <span className="equipo-ip">{item.IpEquipo}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Sin equipos asignados actualmente</p>
-          )}
-
-          <label className="form-labelU">
-            IP Equipo Asignado
-            <span className="department-badge">{getEquipmentName(user.EquipoAsignado)}</span>
-          </label>
+    >
+      <div className="modal-contentU" onClick={e => e.stopPropagation()}>
+        <div className="modal-headerU">
+          <div className="user-counter">
+            {currentIndex + 1} / {totalUsers}
+          </div>
+          <button className="close-btnU" onClick={handleClose}>×</button>
+          <h2>{isEditing ? 'Editar Usuario' : user.name}</h2>
         </div>
         
-<div className="modal-footer">
-               
-              
- <div className="navigation-buttons">
-{!isMobile && (
-              <>
+        {isEditing ? (
+          <div className="edit-form">
+            {errors.form && <div className="error-message">{errors.form}</div>}
 
-                  <button 
-                    onClick={onPrev} 
-                    disabled={currentIndex === 0}
-                    className="nav-button prev-button"
-                  >
-                    &larr; Anterior
-                  </button>
-
-                   <button 
-                    onClick={onNext} 
-                    disabled={currentIndex === users.length - 1}
-                    className="nav-button next-button"
-                  >
-                    Siguiente &rarr;
-                  </button>
-
-                 
-                    </>
-)}
-
- {isEditing ? (
-<>
-                      <button 
-                        onClick={handleSave} 
-                        className="action-button save-button"
-                        disabled={isCompressing}
-                      >
-                        {isCompressing ? 'Guardando...' : '✅ Guardar'}
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setIsEditing(false);
-                          setEditedUser({ ...user });
-                          setErrors({});
-                        }} 
-                        className="action-button cancel-button"
-                      >
-                        ❌ Cancelar
-                      </button>
-                    </>
+            <div className="image-upload-containerU">
+              <label>Foto del Usuario:</label>
+              {editedUser.imageBase64 ? (
+                <div className="image-previewU">
+                  {editedUser.imageBase64.startsWith('data:image/') ? (
+                    <img 
+                      src={editedUser.imageBase64}
+                      alt="Vista previa" 
+                      className="user-image-preview"
+                    />
                   ) : (
-                    <button 
-                      onClick={() => setIsEditing(true)} 
-                      className="action-button edit-buttonM"
-                    >
-                      ✏️ Editar
-                    </button>
+                    <p className="image-error">Formato de imagen no válido</p>
                   )}
+                  <div className="image-actions">
+                    <label className="change-image-btn">
+                      Cambiar foto
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleImageChange}
+                        style={{ display: 'none' }}
+                        disabled={isCompressing}
+                      />
+                    </label>
+                    <button 
+                      type="button" 
+                      className="remove-image-btn"
+                      onClick={() => setEditedUser(prev => ({ ...prev, imageBase64: '' }))}
+                    >
+                      Eliminar foto
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="upload-image-containerU">
+                  <label className="upload-image-labelU">
+                    <span>+ Seleccionar foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      style={{ display: 'none' }}
+                      disabled={isCompressing}
+                    />
+                  </label>
+                </div>
+              )}
+              {isCompressing && <p className="compressing-message">Comprimiendo imagen...</p>}
+            </div>
 
-                 
+            <div className="form-fields-container">
+              <div className="form-groupDatosU">
+                <div className="form-groupU">
+                  <label>Nombre:</label>
+                  <input
+                    name="name"
+                    value={editedUser.name}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.name ? 'error' : ''}`}
+                    placeholder="Nombre completo"
+                  />
+                  {errors?.name && <span className="error-message">{errors.name}</span>}    
+                </div>
+
+                <div className="form-groupU">
+                  <label>Correo:</label>
+                  <input
+                    name="correo"
+                    type="email"
+                    value={editedUser.correo}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.correo ? 'error' : ''}`}
+                    placeholder="Correo electrónico"
+                  />
+                  {errors?.correo && <span className="error-message">{errors.correo}</span>}
+                </div>
+
+                <div className="form-groupU">
+                  <label>Tipo VPN:</label>
+                  <input
+                    name="tipoVpn"
+                    value={editedUser.tipoVpn}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.tipoVpn ? 'error' : ''}`}
+                    placeholder="Tipo de VPN"
+                  />
+                  {errors?.tipoVpn && <span className="error-message">{errors.tipoVpn}</span>}
+                </div>
+
+                <div className="form-groupU">
+                  <label>Departamento:</label>
+                  {renderDepartmentSelect()}
+                </div>
+
+                <div className="form-groupU">
+                  <label>Estado:</label>
+                  <select
+                    name="estado"
+                    value={editedUser.estado}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.estado ? 'error' : ''}`}
+                  >
+                    <option value="">Seleccione estado</option>
+                    <option value="Teletrabajo">Teletrabajo</option>
+                    <option value="Trabajando">Trabajando</option>
+                    <option value="Eliminado">Eliminado</option>
+                  </select>
+                  {errors?.estado && <span className="error-message">{errors.estado}</span>}
+                </div>
+              
+                <div className="form-groupU">
+                  <label>Ciudad:</label>
+                  <input
+                    name="ciudad"
+                    value={editedUser.ciudad}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.ciudad ? 'error' : ''}`}
+                  />
+                  {errors?.ciudad && <span className="error-message">{errors.ciudad}</span>}
+                </div>
+                
+                <div className="form-groupU">
+                  <label>Equipos Asignados:</label>
+                 <select
+  name="equiposAsignados"
+  multiple
+  value={normalizeArray(editedUser.equiposAsignados)}
+  onChange={(e) => {
+    const selectedId = e.target.value;
+    setEditedUser(prev => {
+      const currentSelection = normalizeArray(prev.equiposAsignados);
+      const newSelection = currentSelection.includes(selectedId)
+        ? currentSelection.filter(id => id !== selectedId) // Deseleccionar
+        : [...currentSelection, selectedId]; // Agregar selección
+      
+      return { ...prev, equiposAsignados: newSelection };
+    });
+  }}
+  className="form-group-select"
+  size="5"
+  onClick={(e) => e.preventDefault()} // Evita el comportamiento por defecto
+>
+  {equipment.map(equip => (
+    <option 
+      key={equip.id} 
+      value={equip.id}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      {equip.nombre} - {equip.IpEquipo || 'Sin IP'} ({equip.type})
+    </option>
+  ))}
+</select>
                 </div>
               </div>
+
+              <div className="modal-actionsU">
+                <button
+                  className="save-btn"
+                  onClick={handleSave}
+                  disabled={isSaving || isCompressing}
+                >
+                  {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+                <button 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditedUser({...user});
+                  }}
+                  disabled={isSaving}
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-        </div>
-        </div>
+          </div>
+        ) : (
+          <div className="view-mode-container">
+            <div className="user-details-container">
+              <div className="user-header">
+                {user.imageBase64?.startsWith('data:image/') && (
+                  <div className="user-image-section">
+                    <img
+                      src={user.imageBase64}
+                      alt={user.name}
+                      className="user-image-view"
+                    />
+                  </div>
+                )}
+              
+                <div className="user-data-section">
+                  <div className="detail-rowU">
+                    <span className="detail-labelU">Nombre:</span>
+                    <span>{user.name}</span>
+                  </div>
+
+                  <div className="detail-rowU">
+                    <span className="detail-labelU">Correo:</span>
+                    <span>{user.correo}</span>
+                  </div>
+
+                  <div className="detail-rowU">
+                    <span className="detail-labelU">Tipo VPN:</span>
+                    <span>{user.tipoVpn}</span>
+                  </div>
+
+                  <div className="detail-rowU">
+                    <span className="detail-labelU">Departamento:</span>
+                    <span>{user.department}</span>
+                  </div>
+
+                  <div className="detail-rowU">
+                    <span className="status-badge">Estado:</span> 
+                    <span style={{ 
+                      color: getEstadoColor(user.estado), 
+                      backgroundColor: `${getEstadoColor(user.estado)}20`, 
+                      width: 'max-content' 
+                    }}>
+                      {user.estado}
+                    </span>
+                  </div>
+
+                  <div className="detail-rowU">
+                    <span className="detail-labelU">Ciudad:</span>
+                    <span>{user.ciudad || 'No especificada'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {assignedEquipment.length > 0 && (
+                <div className="assigned-equipment-section">
+                  <h4>Equipos Asignados ({assignedEquipment.length})</h4>
+                  <div className="assigned-equipment-list">
+                    {assignedEquipment.map(equip => (
+                      <div 
+                        key={equip.id} 
+                        className="equipment-infoU clickable-equipment"
+                        onClick={() => handleEquipmentClick(equip)}
+                      >
+                        <div className="equipment-details">
+                          <div className="equipment-name">{equip.nombre}</div>
+                          <div className="equipment-type">{equip.type}</div>
+                          {equip.IpEquipo && (
+                            <div className="equipment-ip">{equip.IpEquipo}</div>
+                          )}
+                          {equip.serialNumber && (
+                            <div className="equipment-serial">S/N: {equip.serialNumber}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-actionsU">
+               {isMobile ? (
+    // Solo muestra el botón de editar en móvil
+    <div className="mobile-edit-button">
+      <button 
+        onClick={() => setIsEditing(true)} 
+        className="edit-btn"
+      >
+        Editar
+      </button>
+    </div>
+  ) : (
+    // Versión desktop
+              <div className="navigation-buttonsU">
+                <button 
+                  onClick={handlePrev} 
+                  disabled={currentIndex === 0}
+                  className="nav-button prev-button"
+                >
+                  &larr; Anterior
+                </button>
+
+                <button 
+                  onClick={() => setIsEditing(true)} 
+                  className="edit-btn"
+                >
+                  Editar
+                </button>
+
+                <button 
+                  onClick={handleNext} 
+                  disabled={currentIndex === totalUsers - 1}
+                  className="nav-button next-button"
+                >
+                  Siguiente &rarr;
+                </button>
+              </div>
+            )}
+          </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

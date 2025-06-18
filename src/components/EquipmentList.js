@@ -93,14 +93,24 @@ const compareNumericIPs = (ipA, ipB, direction) => {
 // final de la funcion ordenar
 
 
+// Obtener todos los usuarios asignados (array de objetos usuario)
+const getAssignedUsers = (userIds) => {
+  if (!userIds) return [];
   
- const getAssignedUser = (userId) => {
-  return users.find(u => u.id === userId) || null;
+  // Asegurarse que userIds es un array
+  const userIdsArray = Array.isArray(userIds) ? userIds : [userIds].filter(Boolean);
+  
+  return userIdsArray
+    .map(userId => users.find(u => u.id === userId))
+    .filter(user => user !== undefined);
 };
 
-const getAssignedUserName = (userId) => {
-  const user = getAssignedUser(userId);
-  return user ? user.name : 'No asignado';
+// Obtener nombres de usuarios asignados como string
+const getAssignedUserNames = (userIds) => {
+  const assignedUsers = getAssignedUsers(userIds);
+  return assignedUsers.length > 0 
+    ? assignedUsers.map(user => user.name).join(', ') 
+    : 'No asignado';
 };
 
 
@@ -129,23 +139,23 @@ const handleEquipmentClick = (item) => {
     if (!searchTerm) return true;
     
     const searchLower = searchTerm.toLowerCase();
-    const assignedUser = getAssignedUser(item.assignedTo); // Asumo que puedes obtener el objeto usuario completo
-    const assignedUserName = assignedUser ? assignedUser.name : '';
-    const assignedUserCity = assignedUser ? assignedUser.ciudad : '';
-    
+    const assignedUsers = getAssignedUsers(item.usuariosAsignados); // Asumo que puedes obtener el objeto usuario completo
+    const assignedUserNames = assignedUsers.map(user => user.name).join(', ');
+    const assignedUserCities = assignedUsers.map(user => user.ciudad).join(', ');
+
     return (
       String(item.nombre || '').toLowerCase().includes(searchLower) ||
       String(item.type || '').toLowerCase().includes(searchLower) ||
       String(item.marca || '').toLowerCase().includes(searchLower) ||
       String(item.ciudad || '').toLowerCase().includes(searchLower) ||
-      String(assignedUserCity || '').toLowerCase().includes(searchLower) || // Nueva línea para buscar en ciudad del usuario
+      String(assignedUserCities || '').toLowerCase().includes(searchLower) || // Nueva línea para buscar en ciudad del usuario
       String(item.estado || '').toLowerCase().includes(searchLower) ||
       String(item.lugar || '').toLowerCase().includes(searchLower) ||
       String(item.model || '').toLowerCase().includes(searchLower) ||
       String(item.IpEquipo || '').toLowerCase().includes(searchLower) ||
       String(item.descripcion || '').toLowerCase().includes(searchLower) ||
       String(item.serialNumber || '').toLowerCase().includes(searchLower) ||
-      assignedUserName.toLowerCase().includes(searchLower)
+      assignedUserNames.toLowerCase().includes(searchLower)
     );
 });
 
@@ -223,7 +233,19 @@ const handleEquipmentClick = (item) => {
                 <td data-label="IP Equipo">{item.IpEquipo}</td>
                 <td data-label="Serie">{item.serialNumber}</td>
                 <td data-label="Descripcion" style={{color: 'rgb(20 20 20)', backgroundColor: 'rgb(249 251 188 / 94%)'}}>{item.descripcion}</td>
-                <td data-label="Asignado a">{getAssignedUserName(item.assignedTo)}</td>
+                <td data-label="Asignado a">
+  {getAssignedUsers(item.usuariosAsignados).map(user => ( // Asumo que puedes obtener el objeto usuario completo
+    <div 
+      key={user.id} 
+      className="assigned-user-chip"
+      title={`${user.name} - ${user.department}`}
+    >
+      {user.name}
+    </div>
+  ))}
+   {getAssignedUsers(item.usuariosAsignados).length === 0 && 'No asignado'}
+</td>
+
                 <td className="actions-buttons" onClick={(e) => e.stopPropagation()}>
                   <button 
                   className="edit-btn" 

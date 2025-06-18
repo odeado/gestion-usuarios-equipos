@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
@@ -45,14 +45,10 @@ const [showCounters, setShowCounters] = useState(false);
 const [selectedUser, setSelectedUser] = useState(null);
 
 
-// En tu componente App, actualiza la función handleUserSelect:
-const handleUserSelect = (userId) => {
-  const user = users.find(u => u.id === userId);
-  if (user) {
-    setSelectedUser(user); // Actualiza el estado del usuario seleccionado
-    setSelectedUserId(userId); // Asegúrate de actualizar también selectedUserId
-    setShowUserModal(true); // Mantén el modal abierto
-  }
+const handleSelectEquipment = (equipmentId) => {
+  setSelectedEquipmentId(equipmentId);
+  setCurrentEquipmentIndex(equipment.findIndex(e => e.id === equipmentId));
+  setShowEquipmentModal(true);
 };
 
 
@@ -95,11 +91,7 @@ useEffect(() => {
   }
 }, [showCounters, isDragging]);
 
-const handleOpenUserModal = (userId) => {
-  setSelectedUserId(userId);
-  setShowUserModal(true);  // <-- Esto falta
-  setShowEquipmentModal(false);  // Cerrar el modal de equipo si está abierto
-};
+
 
 // ==================== FUNCIONES DE NAVEGACIÓN ENTRE VISTAS ====================
   const scrollToView = (view) => {
@@ -135,13 +127,13 @@ const handleOpenUserModal = (userId) => {
   const updateUserEquipment = async (userId, equipmentId) => {
     try {
       await updateDoc(doc(db, 'users', userId), {
-        EquipoAsignado: equipmentId || null,
+        equiposAsignados: equipmentId ? [equipmentId] : [],
         updatedAt: new Date()
       });
-      
-      setUsers(users.map(user => 
-        user.id === userId 
-          ? { ...user, EquipoAsignado: equipmentId || null }
+
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, equiposAsignados: equipmentId ? [equipmentId] : [] }
           : user
       ));
     } catch (error) {
@@ -153,18 +145,18 @@ const handleOpenUserModal = (userId) => {
  const updateEquipmentAssignment = async (equipmentId, userId) => {
   try {
     await updateDoc(doc(db, 'equipment', equipmentId), {
-      assignedTo: userId || null,
+      usuariosAsignados: userId ? [userId] : [],
       updatedAt: new Date()
     });
     
     // Actualización más completa del estado
     setEquipment(prevEquipment => prevEquipment.map(equip => {
       if (equip.id === equipmentId) {
-        return { ...equip, assignedTo: userId || null };
+        return { ...equip, usuariosAsignados: userId ? [userId] : [] };
       }
       // Limpiar asignación si este equipo estaba asignado al usuario
-      if (userId && equip.assignedTo === userId && equip.id !== equipmentId) {
-        return { ...equip, assignedTo: null };
+      if (userId && equip.usuariosAsignados === userId && equip.id !== equipmentId) {
+        return { ...equip, usuariosAsignados: null };
       }
       return equip;
     }));
@@ -174,21 +166,46 @@ const handleOpenUserModal = (userId) => {
   }
 };
 
-  // ==================== MANEJO DE USUARIOS ====================
+   // ==================== FUNCIONES DE USUARIOS ====================
+
+ 
+
+
   const handleEditUser = async (userData) => {
     try {
       const oldUser = users.find(u => u.id === userData.id);
-      const equipmentChanged = oldUser?.EquipoAsignado !== userData.EquipoAsignado;
+      
+      // Obtener equipos antiguos y nuevos (siempre como arrays)
+      const oldEquipos = Array.isArray(oldUser?.equiposAsignados) 
+        ? oldUser.equiposAsignados 
+        : [];
+        
+      const newEquipos = Array.isArray(userData.equiposAsignados) 
+        ? userData.equiposAsignados 
+        : [];
 
-      if (equipmentChanged) {
-        if (oldUser?.EquipoAsignado) {
-          await updateEquipmentAssignment(oldUser.EquipoAsignado, null);
-        }
-        if (userData.EquipoAsignado) {
-          await updateEquipmentAssignment(userData.EquipoAsignado, userData.id);
-        }
-      }
+      // Equipos que ya no están asignados
+      const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
+      // Nuevos equipos asignados
+      const addedEquipos = newEquipos.filter(id => !oldEquipos.includes(id));
 
+      // Actualizar equipos en Firestore
+      await Promise.all([
+        ...removedEquipos.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayRemove(userData.id),
+            updatedAt: new Date()
+          })
+        ),
+        ...addedEquipos.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayUnion(userData.id),
+            updatedAt: new Date()
+          })
+        )
+      ]);
+
+      // Actualizar el usuario
       await updateDoc(doc(db, 'users', userData.id), {
         name: userData.name,
         correo: userData.correo,
@@ -196,16 +213,39 @@ const handleOpenUserModal = (userId) => {
         tipoVpn: userData.tipoVpn,
         department: userData.department,
         estado: userData.estado,
-        EquipoAsignado: userData.EquipoAsignado || null,
+        equiposAsignados: newEquipos,
         imageBase64: userData.imageBase64,
         updatedAt: new Date()
       });
 
-      setUsers(users.map(user => 
-        user.id === userData.id ? { ...userData } : user
+      // Actualizar estado local
+      setUsers(users.map(u => 
+        u.id === userData.id ? { ...userData, equiposAsignados: newEquipos } : u
       ));
-      
-      setEditingUser(null);
+
+      setEquipment(prevEquipment => 
+        prevEquipment.map(eq => {
+          const usuarios = Array.isArray(eq.usuariosAsignados) ? eq.usuariosAsignados : [];
+          
+          if (removedEquipos.includes(eq.id)) {
+            return {
+              ...eq,
+              usuariosAsignados: usuarios.filter(id => id !== userData.id)
+            };
+          }
+          
+          if (addedEquipos.includes(eq.id) && !usuarios.includes(userData.id)) {
+            return {
+              ...eq,
+              usuariosAsignados: [...usuarios, userData.id]
+            };
+          }
+          
+          return eq;
+        })
+      );
+
+      return true;
     } catch (error) {
       console.error("Error editando usuario:", error);
       throw error;
@@ -214,17 +254,42 @@ const handleOpenUserModal = (userId) => {
 
   const handleAddUser = async (userData) => {
     try {
+      const equiposAsignados = Array.isArray(userData.equiposAsignados) 
+        ? userData.equiposAsignados 
+        : [];
+
       const docRef = await addDoc(collection(db, 'users'), {
         ...userData,
-        EquipoAsignado: userData.EquipoAsignado || null,
+        equiposAsignados,
         createdAt: new Date()
       });
 
-      const newUser = { id: docRef.id, ...userData };
+      // Actualizar equipos asignados
+      await Promise.all(
+        equiposAsignados.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayUnion(docRef.id),
+            updatedAt: new Date()
+          })
+        )
+      );
 
-      if (userData.EquipoAsignado) {
-        await updateEquipmentAssignment(userData.EquipoAsignado, docRef.id);
-      }
+      const newUser = { id: docRef.id, ...userData, equiposAsignados };
+      
+      // Actualizar estado local
+      setUsers([...users, newUser]);
+      setEquipment(prevEquipment => 
+        prevEquipment.map(eq => 
+          equiposAsignados.includes(eq.id)
+            ? {
+                ...eq,
+                usuariosAsignados: Array.isArray(eq.usuariosAsignados)
+                  ? [...eq.usuariosAsignados, docRef.id]
+                  : [docRef.id]
+              }
+            : eq
+        )
+      );
 
       return newUser;
     } catch (error) {
@@ -236,35 +301,76 @@ const handleOpenUserModal = (userId) => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
       try {
-        const userToDelete = users.find(u => u.id === userId);
+        const user = users.find(u => u.id === userId);
         
-        if (userToDelete?.EquipoAsignado) {
-          await updateEquipmentAssignment(userToDelete.EquipoAsignado, null);
-        }
+        // Quitar usuario de todos los equipos asignados
+        await Promise.all(
+          (user.equiposAsignados || []).map(equipoId => 
+            updateDoc(doc(db, 'equipment', equipoId), {
+              usuariosAsignados: arrayRemove(userId),
+              updatedAt: new Date()
+            })
+          )
+        );
 
         await deleteDoc(doc(db, 'users', userId));
-        setUsers(users.filter(user => user.id !== userId));
+        
+        // Actualizar estado local
+        setUsers(users.filter(u => u.id !== userId));
+        setEquipment(prevEquipment => 
+          prevEquipment.map(eq => ({
+            ...eq,
+            usuariosAsignados: Array.isArray(eq.usuariosAsignados)
+              ? eq.usuariosAsignados.filter(id => id !== userId)
+              : []
+          }))
+        );
       } catch (error) {
         console.error("Error eliminando usuario:", error);
       }
     }
   };
 
-  // ==================== MANEJO DE EQUIPOS ====================
+ 
+
+    // ==================== FUNCIONES DE EQUIPOS ====================
+
   const handleEditEquipment = async (equipmentData) => {
     try {
-      if (!equipmentData.id) {
-        throw new Error("ID de equipo no proporcionado");
-      }
-
-      const equipmentRef = doc(db, 'equipment', equipmentData.id);
-      const equipmentSnap = await getDoc(equipmentRef);
+      const oldEquipment = equipment.find(e => e.id === equipmentData.id);
       
-      if (!equipmentSnap.exists()) {
-        throw new Error("El equipo no existe en la base de datos");
-      }
+      // Obtener usuarios antiguos y nuevos (siempre como arrays)
+      const oldUsuarios = Array.isArray(oldEquipment?.usuariosAsignados) 
+        ? oldEquipment.usuariosAsignados 
+        : [];
+        
+      const newUsuarios = Array.isArray(equipmentData.usuariosAsignados) 
+        ? equipmentData.usuariosAsignados 
+        : [];
 
-      const updateData = {
+      // Usuarios que ya no están asignados
+      const removedUsers = oldUsuarios.filter(id => !newUsuarios.includes(id));
+      // Nuevos usuarios asignados
+      const addedUsers = newUsuarios.filter(id => !oldUsuarios.includes(id));
+
+      // Actualizar usuarios en Firestore
+      await Promise.all([
+        ...removedUsers.map(userId => 
+          updateDoc(doc(db, 'users', userId), {
+            equiposAsignados: arrayRemove(equipmentData.id),
+            updatedAt: new Date()
+          })
+        ),
+        ...addedUsers.map(userId => 
+          updateDoc(doc(db, 'users', userId), {
+            equiposAsignados: arrayUnion(equipmentData.id),
+            updatedAt: new Date()
+          })
+        )
+      ]);
+
+      // Actualizar el equipo
+      await updateDoc(doc(db, 'equipment', equipmentData.id), {
         nombre: equipmentData.nombre,
         type: equipmentData.type,
         model: equipmentData.model,
@@ -274,63 +380,93 @@ const handleOpenUserModal = (userId) => {
         ciudad: equipmentData.ciudad,
         estado: equipmentData.estado,
         lugar: equipmentData.lugar,
-
         procesador: equipmentData.procesador,
         ram: equipmentData.ram,
         discoDuro: equipmentData.discoDuro,
         tarjetaGrafica: equipmentData.tarjetaGrafica,
-
         windows: equipmentData.windows,
         antivirus: equipmentData.antivirus,
         office: equipmentData.office,
-
-
         descripcion: equipmentData.descripcion,
-        assignedTo: equipmentData.assignedTo || null,
+        usuariosAsignados: newUsuarios,
+        imageBase64: equipmentData.imageBase64,
         updatedAt: new Date()
-      };
+      });
 
-      if (equipmentData.imageBase64) {
-        updateData.imageBase64 = equipmentData.imageBase64;
-      }
-
-      await updateDoc(equipmentRef, updateData);
-
-      const oldEquipment = equipment.find(e => e.id === equipmentData.id);
-      const assignmentChanged = oldEquipment?.assignedTo !== equipmentData.assignedTo;
-
-      if (assignmentChanged) {
-        if (oldEquipment?.assignedTo) {
-          await updateUserEquipment(oldEquipment.assignedTo, null);
-        }
-        if (equipmentData.assignedTo) {
-          await updateUserEquipment(equipmentData.assignedTo, equipmentData.id);
-        }
-      }
-
-      setEquipment(prev => prev.map(eq => 
-        eq.id === equipmentData.id ? { ...eq, ...updateData } : eq
+      // Actualizar estado local
+      setEquipment(equipment.map(e => 
+        e.id === equipmentData.id 
+          ? { ...equipmentData, usuariosAsignados: newUsuarios } 
+          : e
       ));
+
+      setUsers(prevUsers => 
+        prevUsers.map(user => {
+          const equipos = Array.isArray(user.equiposAsignados) ? user.equiposAsignados : [];
+          
+          if (removedUsers.includes(user.id)) {
+            return {
+              ...user,
+              equiposAsignados: equipos.filter(id => id !== equipmentData.id)
+            };
+          }
+          
+          if (addedUsers.includes(user.id) && !equipos.includes(equipmentData.id)) {
+            return {
+              ...user,
+              equiposAsignados: [...equipos, equipmentData.id]
+            };
+          }
+          
+          return user;
+        })
+      );
 
       return true;
     } catch (error) {
-      console.error("Error en handleEditEquipment:", error);
+      console.error("Error editando equipo:", error);
       throw error;
     }
   };
 
   const handleAddEquipment = async (equipmentData) => {
     try {
+      const usuariosAsignados = Array.isArray(equipmentData.usuariosAsignados) 
+        ? equipmentData.usuariosAsignados 
+        : [];
+
       const docRef = await addDoc(collection(db, 'equipment'), {
         ...equipmentData,
+        usuariosAsignados,
         createdAt: new Date()
       });
 
-      const newEquipment = { id: docRef.id, ...equipmentData };
+      // Actualizar usuarios asignados
+      await Promise.all(
+        usuariosAsignados.map(userId => 
+          updateDoc(doc(db, 'users', userId), {
+            equiposAsignados: arrayUnion(docRef.id),
+            updatedAt: new Date()
+          })
+        )
+      );
 
-      if (equipmentData.assignedTo) {
-        await updateUserEquipment(equipmentData.assignedTo, docRef.id);
-      }
+      const newEquipment = { id: docRef.id, ...equipmentData, usuariosAsignados };
+      
+      // Actualizar estado local
+      setEquipment([...equipment, newEquipment]);
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          usuariosAsignados.includes(user.id)
+            ? {
+                ...user,
+                equiposAsignados: Array.isArray(user.equiposAsignados)
+                  ? [...user.equiposAsignados, docRef.id]
+                  : [docRef.id]
+              }
+            : user
+        )
+      );
 
       return newEquipment;
     } catch (error) {
@@ -342,14 +478,30 @@ const handleOpenUserModal = (userId) => {
   const handleDeleteEquipment = async (equipmentId) => {
     if (window.confirm('¿Estás seguro de eliminar este equipo?')) {
       try {
-        const equipmentToDelete = equipment.find(e => e.id === equipmentId);
+        const equipo = equipment.find(e => e.id === equipmentId);
         
-        if (equipmentToDelete?.assignedTo) {
-          await updateUserEquipment(equipmentToDelete.assignedTo, null);
-        }
+        // Quitar equipo de todos los usuarios asignados
+        await Promise.all(
+          (equipo.usuariosAsignados || []).map(userId => 
+            updateDoc(doc(db, 'users', userId), {
+              equiposAsignados: arrayRemove(equipmentId),
+              updatedAt: new Date()
+            })
+          )
+        );
 
         await deleteDoc(doc(db, 'equipment', equipmentId));
-        setEquipment(equipment.filter(item => item.id !== equipmentId));
+        
+        // Actualizar estado local
+        setEquipment(equipment.filter(e => e.id !== equipmentId));
+        setUsers(prevUsers => 
+          prevUsers.map(user => ({
+            ...user,
+            equiposAsignados: Array.isArray(user.equiposAsignados)
+              ? user.equiposAsignados.filter(id => id !== equipmentId)
+              : []
+          }))
+        );
       } catch (error) {
         console.error("Error eliminando equipo:", error);
       }
@@ -388,16 +540,18 @@ const handleOpenUserModal = (userId) => {
     }
   };
 
-  const handleSelectUser = (userId) => {
-    setSelectedUserId(userId);
-    setShowUserModal(true);
-    setShowEquipmentModal(false);
-  };
 
-  const handleSelectEquipment = (equipmentId) => {
-    setSelectedEquipmentId(equipmentId); 
-    setShowEquipmentModal(true);
-  };
+
+ const handleOpenEquipmentModal = (equipmentId) => {
+  setSelectedEquipmentId(equipmentId);
+  setShowEquipmentModal(true);
+};
+
+const handleOpenUserModal = (userId) => {
+  console.log("handleOpenUserModal called with userId:", userId);
+  setSelectedUserId(userId);
+  setShowUserModal(true);
+};
 
   // ==================== EFECTOS Paginas ====================
 
@@ -469,8 +623,8 @@ useEffect(() => {
         activeUsers: usersData.filter(u => u.estado === 'Activo').length,
         MercurioAntofagastaUsers: usersData.filter(u => u.department === 'Mercurio Antofagasta').length,
         totalEquipment: equipmentData.length,
-        availableEquipment: equipmentData.filter(e => !e.assignedTo).length,
-        assignedEquipment: equipmentData.filter(e => e.assignedTo).length
+        availableEquipment: equipmentData.filter(e => !e.usuariosAsignados).length,
+        assignedEquipment: equipmentData.filter(e => e.usuariosAsignados).length
       });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -659,7 +813,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
                   users={users} 
                   equipment={equipment}
                   searchTerm={globalSearchTerm}
-                  onSelectUser={handleSelectUser}
+                  onSelectUser={handleOpenUserModal}
                   onDeleteUser={handleDeleteUser}
                   onEditUser={(user) => {
                     setEditingUser(user);
@@ -737,15 +891,14 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               equipment={equipment}
               onClose={() => setShowUserModal(false)}
               onEdit={handleEditUser}
-              onEditEquipment={handleEditEquipment}
-              onEquipmentSelect={handleSelectEquipment}
+              onOpenEquipmentModal={handleOpenEquipmentModal}
               onDelete={handleDeleteUser}
               onNext={handleNextUser}
               onPrev={handlePrevUser}
               departments={departments}
               onAddDepartment={handleAddDepartment}
               imageCompression={imageCompression}
-              onUserSelect={handleUserSelect}
+              
             />
           )}
 
@@ -765,7 +918,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
         
       </div> {/* Cierra div.app */}
     </div>  {/* Cierra div.app-container */}
-  </div> /* Cierra div.app-background */
+  </div> 
   );
 }
 

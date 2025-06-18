@@ -314,6 +314,8 @@
 .global-search-container {
   display: flex;
   justify-content: flex-start;
+      padding-bottom: 15px;
+    padding-top: 15px;
 }
 
 
@@ -339,7 +341,7 @@
 .listsEquipment-container {
  height: calc(100% - 100px);
   width: 90%; /* Más flexible que calc(100% - 100px) */
-  max-width: 1500px; /* Opcional: limita el ancho máximo */
+  max-width: 1800px; /* Opcional: limita el ancho máximo */
   margin: 0 auto; /* Centrado horizontal */
   overflow-y: auto;
   overflow-x: hidden;
