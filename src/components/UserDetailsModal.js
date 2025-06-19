@@ -36,7 +36,8 @@ const totalUsers = users.length;
 const normalizeArray = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  return [value];
+  if (typeof value === 'string') return value.split(',').map(item => item.trim());
+  return [String(value)];
 };
 
 // Uso:
@@ -83,26 +84,28 @@ const assignedEquipment = useMemo(() => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
+const handleSave = async () => {
+  if (!validateForm()) return;
+  
+  setIsSaving(true);
+  try {
+    const userToUpdate = {
+      id: user.id,
+      ...editedUser,
+      equiposAsignados: Array.isArray(editedUser.equiposAsignados) 
+        ? editedUser.equiposAsignados 
+        : [editedUser.equiposAsignados].filter(Boolean)
+    };
     
-    setIsSaving(true);
-    try {
-      const userToUpdate = {
-        id: user.id,
-        ...editedUser,
-         equiposAsignados: normalizeArray(editedUser.equiposAsignados)
-      };
-      
-      await onEdit(userToUpdate);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      setErrors({ form: error.message || 'Error al guardar los cambios' });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    await onEdit(userToUpdate);
+    setIsEditing(false);
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    setErrors({ form: error.message || 'Error al guardar los cambios' });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -439,40 +442,34 @@ const handlePrev = () => {
                 </div>
                 
                 <div className="form-groupU">
-                  <label>Equipos Asignados:</label>
-                 <select
-  name="equiposAsignados"
-  multiple
-  value={normalizeArray(editedUser.equiposAsignados)}
-  onChange={(e) => {
-    const selectedId = e.target.value;
-    setEditedUser(prev => {
-      const currentSelection = normalizeArray(prev.equiposAsignados);
-      const newSelection = currentSelection.includes(selectedId)
-        ? currentSelection.filter(id => id !== selectedId) // Deseleccionar
-        : [...currentSelection, selectedId]; // Agregar selección
-      
-      return { ...prev, equiposAsignados: newSelection };
-    });
-  }}
-  className="form-group-select"
-  size="5"
-  onClick={(e) => e.preventDefault()} // Evita el comportamiento por defecto
->
-  {equipment.map(equip => (
-    <option 
-      key={equip.id} 
-      value={equip.id}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
-      {equip.nombre} - {equip.IpEquipo || 'Sin IP'} ({equip.type})
-    </option>
-  ))}
-</select>
-                </div>
+  <label>Equipos Asignados:</label>
+  <select
+    name="equiposAsignados"
+    multiple
+    value={normalizeArray(editedUser.equiposAsignados)}
+    onChange={(e) => {
+      const options = e.target.options;
+      const selectedValues = [];
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          selectedValues.push(options[i].value);
+        }
+      }
+      setEditedUser(prev => ({
+        ...prev,
+        equiposAsignados: selectedValues
+      }));
+    }}
+    className="form-group-select"
+    size="5"
+  >
+    {equipment.map(equip => (
+      <option key={equip.id} value={equip.id}>
+        {equip.nombre} - {equip.IpEquipo || 'Sin IP'} ({equip.type})
+      </option>
+    ))}
+  </select>
+</div>
               </div>
 
               <div className="modal-actionsU">
