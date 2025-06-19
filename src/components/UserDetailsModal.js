@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './UserDetailsModal.css';
+import Select from 'react-select';
 
 function UserDetailsModal({ 
   user = {}, 
@@ -162,6 +163,45 @@ const handleSave = async () => {
       setErrors(prev => ({ ...prev, department: 'Error al agregar departamento' }));
     }
   };
+
+
+
+const renderEquipmentSelect = () => {
+  const options = equipment.map(eq => ({
+      value: eq.id,
+      label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo}`
+    }));
+
+  return (
+    <div className="form-group">
+        <label className="form-label">Equipos Asignados</label>
+        <Select
+          isMulti
+          options={options}
+          value={options.filter(option => 
+            editedUser.equiposAsignados.includes(option.value)
+          )}
+          onChange={(selectedOptions) => {
+            setEditedUser(prev => ({
+              ...prev,
+              equiposAsignados: selectedOptions ? 
+                selectedOptions.map(option => option.value) : 
+                []
+            }));
+          }}
+          className="react-select-container"
+          classNamePrefix="react-select"
+          placeholder="Seleccione equipos..."
+          noOptionsMessage={() => "No hay equipos disponibles"}
+          isSearchable
+        />
+      </div>
+    );
+  };
+
+
+
+
 
   const renderDepartmentSelect = () => {
     const currentDept = editedUser.department;
@@ -442,33 +482,8 @@ const handlePrev = () => {
                 </div>
                 
                 <div className="form-groupU">
-  <label>Equipos Asignados:</label>
-  <select
-    name="equiposAsignados"
-    multiple
-    value={normalizeArray(editedUser.equiposAsignados)}
-    onChange={(e) => {
-      const options = e.target.options;
-      const selectedValues = [];
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].selected) {
-          selectedValues.push(options[i].value);
-        }
-      }
-      setEditedUser(prev => ({
-        ...prev,
-        equiposAsignados: selectedValues
-      }));
-    }}
-    className="form-group-select"
-    size="5"
-  >
-    {equipment.map(equip => (
-      <option key={equip.id} value={equip.id}>
-        {equip.nombre} - {equip.IpEquipo || 'Sin IP'} ({equip.type})
-      </option>
-    ))}
-  </select>
+  {renderEquipmentSelect()}
+  {errors?.equiposAsignados && <span className="error-message">{errors.equiposAsignados}</span>}
 </div>
               </div>
 
@@ -507,12 +522,15 @@ const handlePrev = () => {
                   </div>
                 )}
               
-                <div className="user-data-section">
-                  <div className="detail-rowU">
-                    <span className="detail-labelU">Nombre:</span>
-                    <span>{user.name}</span>
+                
+                  <div className="detail-nameU">
+                    <div className='nombre-apellidoM'>
+                      <div className="nombreM">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
+                    <div className="apellidoM">{user.name.split(' ').slice(1).join(' ')}</div>
+                 </div>
                   </div>
-
+</div>
+<div className="user-data-section">
                   <div className="detail-rowU">
                     <span className="detail-labelU">Correo:</span>
                     <span>{user.correo}</span>
@@ -544,7 +562,7 @@ const handlePrev = () => {
                     <span>{user.ciudad || 'No especificada'}</span>
                   </div>
                 </div>
-              </div>
+              
 
               {assignedEquipment.length > 0 && (
                 <div className="assigned-equipment-section">

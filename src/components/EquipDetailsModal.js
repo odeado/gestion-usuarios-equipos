@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Select from 'react-select';
 import './EquipDetailsModal.css';
 
 function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user, onOpenUserModal }) {
@@ -16,11 +17,11 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
 
 // Función para normalizar arrays
   const normalizeArray = (value) => {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    return [value];
-  };
-
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return value.split(',').map(item => item.trim());
+  return [String(value)];
+};
   // Usuarios asignados con normalización
   const assignedUsers = useMemo(() => {
     const userIdsArray = normalizeArray(editedEquipment.usuariosAsignados);
@@ -89,7 +90,8 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
 
   const handleSave = async () => {
     if (!validateForm()) return;
-    
+
+  
     setIsSaving(true);
     try {
       const equipmentToUpdate = {
@@ -97,7 +99,7 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
         ...editedEquipment,
         usuariosAsignados: Array.isArray(editedEquipment.usuariosAsignados)
           ? editedEquipment.usuariosAsignados
-          : []
+          : [editedEquipment.usuariosAsignados].filter(Boolean)
       };
       
       await onEdit(equipmentToUpdate);
@@ -109,6 +111,10 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
       setIsSaving(false);
     }
   };
+
+
+
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -192,6 +198,42 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
     if (e) e.stopPropagation();
     onClose();
   };
+
+
+const renderUserSelect = () => {
+    const options = users.map(user => ({
+      value: user.id,
+      label: `${user.name} - ${user.department}`
+    }));
+
+    return (
+      <div className="form-groupE">
+        <label className="form-label">Usuarios Asignados</label>
+      <Select
+        isMulti
+        options={options}
+        value={options.filter(option => 
+          editedEquipment.usuariosAsignados.includes(option.value)
+        )}
+        onChange={(selectedOptions) => {
+          setEditedEquipment(prev => ({
+            ...prev,
+            usuariosAsignados: selectedOptions ? 
+              selectedOptions.map(option => option.value) : 
+              []
+          }));
+        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
+        placeholder="Seleccione usuarios..."
+        noOptionsMessage={() => "No hay usuarios disponibles"}
+        isSearchable
+      />
+    </div>
+    );
+  };
+
+
 
   return (
     <div 
@@ -320,39 +362,7 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
                 </div>
 
                 <div className="form-groupE">
-                  <label>Asignado a:</label>
-                 <select
-  name="usuariosAsignados"
-  multiple
-  value={normalizeArray(editedEquipment.usuariosAsignados)}
-  onChange={(e) => {
-    const selectedId = e.target.value;
-    setEditedEquipment(prev => {
-      const currentSelection = normalizeArray(prev.usuariosAsignados);
-      const newSelection = currentSelection.includes(selectedId)
-        ? currentSelection.filter(id => id !== selectedId)
-        : [...currentSelection, selectedId];
-      
-      return { ...prev, usuariosAsignados: newSelection };
-    });
-  }}
-  className="form-group-select"
-  size="5"
-  onClick={(e) => e.preventDefault()}
->
-  {users.map(user => (
-    <option 
-      key={user.id} 
-      value={user.id}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-    >
-      {user.name} - {user.department || 'Sin departamento'}
-    </option>
-  ))}
-</select>
+                  {renderUserSelect()}
                 </div>
 
                 <div className="form-groupE">

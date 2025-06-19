@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
+import Select from 'react-select';
 import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
 
 function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment, equipment = [] }) {
@@ -20,6 +21,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   const [newDepartment, setNewDepartment] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  
 
   // Efecto para cargar datos del usuario a editar
   useEffect(() => {
@@ -252,38 +255,38 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
 
 const renderEquipmentSelect = () => {
+  const options = equipment.map(eq => ({
+      value: eq.id,
+      label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo}`
+    }));
+
   return (
     <div className="form-group">
-      <label htmlFor="equiposAsignados" className="form-label">Equipos Asignados</label>
-      <select
-        id="equiposAsignados"
-        name="equiposAsignados"
-        multiple
-        value={formData.equiposAsignados}
-        onChange={(e) => {
-          const options = [...e.target.options];
-          const selectedValues = options
-            .filter(option => option.selected)
-            .map(option => option.value);
-          setFormData(prev => ({ ...prev, equiposAsignados: selectedValues }));
-        }}
-        className="form-input"
-        size="5" // Mostrar 5 opciones a la vez
-      >
-        {equipment.map(eq => (
-          <option 
-            key={eq.id} 
-            value={eq.id}
-            // Mostrar como seleccionado si está asignado al usuario
-            selected={formData.equiposAsignados.includes(eq.id)}
-          >
-            {eq.nombre} ({eq.type}) - {eq.IpEquipo}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
+        <label className="form-label">Equipos Asignados</label>
+        <Select
+          isMulti
+          options={options}
+          value={options.filter(option => 
+            formData.equiposAsignados.includes(option.value)
+          )}
+          onChange={(selectedOptions) => {
+            setFormData(prev => ({
+              ...prev,
+              equiposAsignados: selectedOptions ? 
+                selectedOptions.map(option => option.value) : 
+                []
+            }));
+          }}
+          className="react-select-container"
+          classNamePrefix="react-select"
+          placeholder="Seleccione equipos..."
+          noOptionsMessage={() => "No hay equipos disponibles"}
+          isSearchable
+        />
+      </div>
+    );
+  };
+
 
   return (
     <form onSubmit={handleSubmit} className="user-form">

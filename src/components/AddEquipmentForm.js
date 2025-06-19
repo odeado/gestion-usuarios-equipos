@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import imageCompression from 'browser-image-compression';
+import Select from 'react-select';
 import './AddEquipmentForm.css';
 // Eliminé esta línea que causaba conflicto
 import { ref } from 'firebase/storage';
@@ -175,6 +176,36 @@ procesador: '',
       console.error('Error submitting form:', error);
       setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
     }
+  };
+
+  const renderUserSelect = () => {
+    const options = users.map(user => ({
+      value: user.id,
+      label: `${user.name} - ${user.department}`
+    }));
+
+    return (
+      <Select
+        isMulti
+        options={options}
+        value={options.filter(option => 
+          formData.usuariosAsignados.includes(option.value)
+        )}
+        onChange={(selectedOptions) => {
+          setFormData(prev => ({
+            ...prev,
+            usuariosAsignados: selectedOptions ? 
+              selectedOptions.map(option => option.value) : 
+              []
+          }));
+        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
+        placeholder="Seleccione usuarios..."
+        noOptionsMessage={() => "No hay usuarios disponibles"}
+        isSearchable
+      />
+    );
   };
 
   return (
@@ -367,26 +398,8 @@ procesador: '',
         <div className="form-row">
          <div className="form-group department-group">
   <label className="form-label">Asignar a</label>
-  <select
-    name="usuariosAsignados"
-    multiple // Permite selección múltiple
-    value={Array.isArray(formData.usuariosAsignados) ? formData.usuariosAsignados : []}
-    onChange={(e) => {
-      const options = [...e.target.options];
-      const selectedValues = options
-        .filter(option => option.selected)
-        .map(option => option.value);
-      setFormData(prev => ({ ...prev, usuariosAsignados: selectedValues }));
-    }}
-    className="user-selector"
-    size="5" // Muestra 5 opciones a la vez
-  >
-    {users.map(user => (
-      <option key={user.id} value={user.id}>
-        {user.name} - {user.department}
-      </option>
-    ))}
-  </select>
+          {renderUserSelect()}
+          {errors.usuariosAsignados && <div className="error-text">{errors.usuariosAsignados}</div>}
 </div>
         </div>
 

@@ -27,7 +27,7 @@
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: 10%;
+  height: 5%;
   margin-bottom: 0px;
   padding-left: 0px;
   color: #f1f1f1;
@@ -43,8 +43,8 @@
   .view-mode-container {
   display: flex;
   flex-direction: column;
-  height: 90%;
-  width: 100%;
+  height: 95%;
+  
   padding: 0px;
   }
 
@@ -52,14 +52,14 @@
       gap: 5px;
       background: linear-gradient(to right, #29062c, #0d0d0d);
       padding: 2px;
-      height: 70%;
+      height: 65%;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     /* Estilos para la sección de usuario asignado */
     .assigned-users-section {
-      margin: 10px 0;
+      margin: 5px 0;
       height: 20%;
       padding-left: 15px;
       background: linear-gradient(to right, #2e0b29, transparent);
@@ -165,7 +165,7 @@
     justify-content: flex-end;
     padding-top: 10px;
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 15px;
     height: 10%;
 }
 
@@ -434,6 +434,7 @@
 .navigation-buttonsM {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   flex-wrap: nowrap;
   gap: 10px;
@@ -450,6 +451,7 @@
   transition: all 0.3s ease;
   font-weight: 600;
   flex: 1;
+  width: 33.33%;
 }
 
 .nav-button:hover:not(:disabled) {
@@ -471,6 +473,7 @@
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+  width: 33.33%;
 }
 
 .edit-btn:hover {
@@ -548,11 +551,12 @@
 
 /* Estilos para la sección de usuario asignado */
 .assigned-user-section {
-  margin: 10px 0;
+  margin: 5px 0;
   padding: 10px;
   background: linear-gradient(to right, #2e0b29, transparent);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 15%;
 }
 
 .assigned-user-section h4 {
@@ -611,6 +615,7 @@
 .equipment-details-container {
   display: flex;
   flex-direction: column;
+  height: 75%;
   gap: 2px;
   background: linear-gradient(to right, #29062c, #0d0d0d);
   padding: 2px;
@@ -854,10 +859,18 @@
 
 .modal-actionsE {
  margin-top: auto;
-  padding: 15px 0;
+  padding: 5px 0;
   display: flex;
   gap: 15px;
+  height: 10%;
 
+}
+
+.mobile-edit-button {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
  .modal-actionsE button {
