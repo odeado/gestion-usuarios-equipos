@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import './EquipDetailsModal.css';
 
-function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user, onOpenUserModal }) {
+function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], currentIndex, totalEquipment, onNext, onPrev, user, onOpenUserModal, availableIps: parentAvailableIps = [], onAddNewIp }) {
   // Estado para manejar la edición del equipo
   const [isEditing, setIsEditing] = useState(false);
   const [editedEquipment, setEditedEquipment] = useState({...equipment});
@@ -75,7 +76,10 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
         : (equipment.usuariosAsignados ? [equipment.usuariosAsignados] : []),
       imageBase64: equipment.imageBase64 || ''
     });
-  }, [equipment]);
+
+}, [equipment]);
+
+ 
 
   const validateForm = () => {
     const newErrors = {};
@@ -199,6 +203,61 @@ function EquipDetailsModal({ equipment = {}, onClose, onEdit, users = [], curren
     onClose();
   };
 
+
+
+
+// Renderizar el select de IPs
+
+// En tu función renderIpSelect, cambia esto:
+  const renderIpSelect = () => {
+    const currentIp = Array.isArray(editedEquipment.IpEquipo) && editedEquipment.IpEquipo.length > 0 
+      ? editedEquipment.IpEquipo[0] 
+      : editedEquipment.IpEquipo || '';
+
+    const options = [
+      ...parentAvailableIps.map(ip => ({
+        value: ip,
+        label: ip
+      })),
+      ...(currentIp && !parentAvailableIps.includes(currentIp) ? [{
+        value: currentIp,
+        label: currentIp
+      }] : [])
+    ].filter(option => option.value);
+
+    return (
+      <div className="form-groupE">
+        <label className="form-label">IP del Equipo</label>
+        <CreatableSelect  
+          isMulti={false}
+          options={options}
+          value={options.find(option => option.value === currentIp)}
+          onChange={(selectedOption) => {
+            const ipValue = selectedOption?.value || '';
+            setEditedEquipment(prev => ({
+              ...prev,
+              IpEquipo: ipValue ? [ipValue] : []
+            }));
+          }}
+          onCreateOption={(inputValue) => {
+            const newIp = inputValue.trim();
+            if (newIp) {
+              onAddNewIp(newIp);  // Usa la función del padre para agregar la nueva IP
+              setEditedEquipment(prev => ({
+                ...prev,
+                IpEquipo: [newIp]
+              }));
+            }
+          }}
+          // ... resto de las props
+        />
+      </div>
+    );
+  };
+
+
+
+// Funcuión para renderizar el select de usuarios asignados
 
 const renderUserSelect = () => {
     const options = users.map(user => ({
@@ -377,14 +436,8 @@ const renderUserSelect = () => {
                 </div>
               
                 <div className="form-groupE">
-                  <label>IP Equipo:</label>
-                  <input
-                    name="IpEquipo"
-                    value={Array.isArray(editedEquipment.IpEquipo) ? editedEquipment.IpEquipo.join(', ') : editedEquipment.IpEquipo || ''}
-                    onChange={handleInputChange}
-                    className={'form-inputE' + (errors?.IpEquipo ? 'error' : '')}
-                  />
-                  {errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
+                  {renderIpSelect()}
+{errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
                 </div>
                 
                 <div className="form-groupE">

@@ -394,7 +394,7 @@ html, body, #root {
   padding-bottom: 15px;
 }
 
-.app h2 {
+.app h2:not(.modal-headerE) {
   color: #63676b;
   text-align: center;
   font-size: 1.2rem;

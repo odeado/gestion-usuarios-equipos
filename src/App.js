@@ -91,7 +91,18 @@ useEffect(() => {
   }
 }, [showCounters, isDragging]);
 
+const [allAvailableIps, setAllAvailableIps] = useState([
+  '192.168.1.1',
+  '192.168.1.2',
+  '10.0.0.1'
+]);
 
+// Función para agregar IPs nuevas
+const handleAddNewIp = (newIp) => {
+  if (!allAvailableIps.includes(newIp)) {
+    setAllAvailableIps([...allAvailableIps, newIp]);
+  }
+};
 
 // ==================== FUNCIONES DE NAVEGACIÓN ENTRE VISTAS ====================
   const scrollToView = (view) => {
@@ -617,6 +628,17 @@ useEffect(() => {
       setEquipment(equipmentData);
       setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 
+
+// Extraer todas las IPs únicas de los equipos
+      const allIps = equipmentData.reduce((acc, equip) => {
+        const equipIps = Array.isArray(equip.IpEquipo) ? equip.IpEquipo : [];
+        return [...acc, ...equipIps];
+      }, ['192.168.1.1', '192.168.1.2', '10.0.0.1']);
+
+      setAllAvailableIps([...new Set(allIps.filter(ip => ip))]); // Elimina duplicados y valores nulos
+
+
+
       // Actualizar contadores
       setCounters({
         totalUsers: usersData.length,
@@ -913,6 +935,8 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               onNext={handleNextEquipment}  
               onPrev={handlePrevEquipment} 
               onOpenUserModal={handleOpenUserModal} 
+              availableIps={allAvailableIps}
+              onAddNewIp={handleAddNewIp}
             />
           )}
         
