@@ -640,6 +640,10 @@ color: #a55c5c;
 
 @media (max-width: 768px) {
 
+
+
+
+
   .user-details,
   .user-name,
   .user-department,
@@ -648,6 +652,62 @@ color: #a55c5c;
     
   }
 
+   .equipment-image-section {
+    width: 100% !important;
+    height: 200px !important; /* Altura fija */
+    min-width: auto !important;
+    margin: 0 auto 15px;
+  }
+  
+  .equipment-image-view, .equipment-image-preview {
+   width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+background-color: #2d062a; /* Fondo que combine con tu diseño */
+    object-position: center center; /* Centra la imagen */
+  }
+
+.edit-form {
+    padding: 0 5px !important; /* Reducir padding horizontal */
+  }
+  
+  .form-groupE {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0 5px;
+  }
+  
+  .image-upload-containerE {
+    padding: 2px 2px !important;
+    margin-left: -5px;
+    margin-right: -5px;
+    width: calc(100% + 10px);
+  }
+
+   body .modal-contentE {
+    position: relative;
+    left: -3px; /* Ajuste fino de posición */
+    width: 95vw; /* Usar viewport width en lugar de porcentaje */
+    margin: 0 auto; /* Centrar el modal */
+    padding: 15px 10px; /* Más padding arriba/abajo, menos en lados */
+  }
+  
+ 
+
+   .edit-form {
+    padding: 25px !important; /* Padding uniforme */
+  }
+
+  .form-groupDatosE {
+    grid-template-columns: 1fr !important; /* Una sola columna en móviles */
+    gap: 15px !important;
+  }
+  
+  .form-inputE, .react-select__control {
+    width: 100% !important;
+    min-width: 0 !important; /* Permitir que se reduzcan */
+    padding: 10px 12px !important; /* Ajustar padding */
+  }
 
   .equipment-header {
 flex-direction: column;
@@ -655,13 +715,27 @@ flex-direction: column;
 }
 
  .modal-headerE h2 {
-  margin: 0;
-  color: #f0e6ef;
-  font-size: 1.8rem;
-  font-weight: 600;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+ font-size: 1.4rem !important;
+    padding: 0 15px;
 }
+
+ .detail-rowE {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 5px !important;
+  }
+  
+  .detail-labelE, .detail-rowE span {
+    font-size: 0.85rem !important;
+  }
+  
+  .detail-rowE span:not(.detail-labelE) {
+    width: 100% !important;
+    padding-left: 10px !important;
+  }
+
+
+
 
 /* Estilos para la sección de usuario asignado */
 .assigned-user-section {
@@ -679,12 +753,22 @@ flex-direction: column;
   font-size: 14px;
 }
 
+.assigned-users-list {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+  
+  .user-infoE {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
  .detail-labelE, .status-badge {
     min-width: 100%;
     margin-bottom: 5px;
   }
 
-  .navigation-buttonsM {
+  .modal-actionsE {
     flex-direction: column;
   }
   

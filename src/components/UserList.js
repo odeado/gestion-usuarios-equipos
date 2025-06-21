@@ -30,16 +30,15 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
   if (!userId || !equipment) return 'Sin equipo';
   
   const assignedEquipments = equipment.filter(eq => 
-    Array.isArray(eq.equiposAsignados) 
-      ? eq.equiposAsignados.includes(userId)
-      : eq.equiposAsignados === userId
+    Array.isArray(eq.usuariosAsignados) 
+      ? eq.usuariosAsignados.includes(userId)
+      : eq.usuariosAsignados === userId
   );
 
-  if (assignedEquipments.length === 0) return 'Sin equipo';
+  if (assignedEquipments.length === 0) return 'Sin equipo asignado';
   
-  return assignedEquipments
-    .map(eq => eq.IpEquipo || eq.nombre || 'Equipo sin nombre')
-    .join(', ');
+  // Mostrar todos los equipos separados por coma
+  return assignedEquipments.map(eq => eq.IpEquipo || eq.nombre || 'Equipo').join(', ');
 };
 
  const filteredUsers = users.filter(user => {
@@ -127,7 +126,9 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                  
                 
 <div className="user-datos">
-<p className="user-equipo">{getEquipmentName(user.id)}</p>
+ <p className="user-equipo" title={getEquipmentName(user.id)}>
+    {getEquipmentName(user.id)}
+  </p>
 
 </div>
                 <p className="user-email">{user.correo}</p>

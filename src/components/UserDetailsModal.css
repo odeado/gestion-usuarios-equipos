@@ -634,9 +634,12 @@ display: flex;
 /* Responsive */
 @media (max-width: 768px) {
 
-  .modal-contentU {
-    width: 95%;
-    max-height: 85vh;
+  body .modal-contentU {
+    position: relative;
+    left: -3px; /* Ajuste fino de posición */
+    width: 95vw; /* Usar viewport width en lugar de porcentaje */
+    margin: 0 auto; /* Centrar el modal */
+    padding: 15px 10px; /* Más padding arriba/abajo, menos en lados */
   }
   
   .user-header {
@@ -683,10 +686,21 @@ display: flex;
   }
   
   .form-groupDatosU {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important; /* Una sola columna en móviles */
+    gap: 15px !important;
+  }
+
+   .edit-form {
+    padding: 25px !important; /* Padding uniforme */
   }
   
-  .navigation-buttonsU {
+    .form-inputU, .react-select__control {
+    width: 100% !important;
+    min-width: 0 !important; /* Permitir que se reduzcan */
+    padding: 10px 12px !important; /* Ajustar padding */
+  }
+
+  .modal-actionsU {
     flex-direction: column;
   }
   
