@@ -11,6 +11,10 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     tipoVpn: '',
     department: '',
     estado: 'Teletrabajo', // Estado por defecto
+    tipoTrabajo: 'remoto', // Nuevo campo: 'remoto', 'hibrido', 'oficina'
+    equiposCasa: [],
+  equiposRemoto: [],
+  equiposOficina: [],
     equiposAsignados: [],
     imageBase64: ''
   });
@@ -34,11 +38,11 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
-         equiposAsignados: Array.isArray(userToEdit.equiposAsignados) 
-        ? userToEdit.equiposAsignados 
-        : userToEdit.equiposAsignados 
-          ? [userToEdit.equiposAsignados] 
-          : [],
+        tipoTrabajo: userToEdit.tipoTrabajo || 'remoto', // Nuevo campo: 'remoto', 'hibrido', 'oficina'
+        equiposCasa: userToEdit.equiposCasa || [],
+      equiposRemoto: userToEdit.equiposRemoto || [],
+      equiposOficina: userToEdit.equiposOficina || [],
+      equiposAsignados: userToEdit.equiposAsignados || [],
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -56,7 +60,12 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       tipoVpn: '',
       department: '',
       estado: 'Teletrabajo', // Estado por defecto
-      equiposAsignados: [],
+       tipoTrabajo: 'remoto',
+      equiposCasa: [],
+    equiposRemoto: [],
+    equiposOficina: [],
+    equiposAsignados: [],
+      
       imageBase64: ''
     });
     setImagePreview(null);
@@ -152,6 +161,10 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           ciudad: formData.ciudad,
           department: formData.department,
           estado: formData.estado,
+           tipoTrabajo: formData.tipoTrabajo,
+      equiposCasa: formData.equiposCasa || [],
+      equiposRemoto: formData.equiposRemoto || [],
+      equiposOficina: formData.equiposOficina || [],
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
           equiposAsignados: formData.equiposAsignados || null, // Asegúrate de que este campo exista en tu DB
@@ -162,6 +175,10 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           name: formData.name,
           department: formData.department,
           estado: formData.estado,
+           tipoTrabajo: formData.tipoTrabajo,
+      equiposCasa: formData.equiposCasa || [],
+      equiposRemoto: formData.equiposRemoto || [],
+      equiposOficina: formData.equiposOficina || [],
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
@@ -254,38 +271,110 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   };
 
 
-const renderEquipmentSelect = () => {
-  const options = equipment.map(eq => ({
-      value: eq.id,
-      label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo}`
-    }));
+
+
+const renderEquipmentSelects = () => {
+  if (!equipment || equipment.length === 0) {
+    return <div className="no-equipment">No hay equipos disponibles</div>;
+  }
+
+ 
 
   return (
-    <div className="form-group">
-        <label className="form-label">Equipos Asignados</label>
+    <div className="equipment-selects-container">
+      <div className="form-group">
+        <label className="form-label">Equipos para Casa</label>
         <Select
           isMulti
-          options={options}
-          value={options.filter(option => 
-            formData.equiposAsignados.includes(option.value)
-          )}
-          onChange={(selectedOptions) => {
+          options={equipment.map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))}
+          value={formData.equiposCasa?.map(id => {
+            const eq = equipment.find(e => e.id === id);
+            return {
+              value: eq?.id,
+              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
+            };
+          })}
+          onChange={selected => {
             setFormData(prev => ({
               ...prev,
-              equiposAsignados: selectedOptions ? 
-                selectedOptions.map(option => option.value) : 
-                []
+              equiposCasa: selected ? selected.map(item => item.value) : []
             }));
           }}
-          className="react-select-container"
-          classNamePrefix="react-select"
-          placeholder="Seleccione equipos..."
-          noOptionsMessage={() => "No hay equipos disponibles"}
-          isSearchable
+          className="equipment-select"
+          classNamePrefix="select"
         />
       </div>
-    );
-  };
+
+      {/* Repetir para equiposRemoto y equiposOficina */}
+      <div className="form-group">
+        <label className="form-label">Equipos para Remoto</label>
+        <Select
+          isMulti
+          options={equipment.map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))}
+          value={formData.equiposRemoto?.map(id => {
+            const eq = equipment.find(e => e.id === id);
+            return {
+              value: eq?.id,
+              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
+            };
+          })}
+          onChange={selected => {
+            setFormData(prev => ({
+              ...prev,
+              equiposRemoto: selected ? selected.map(item => item.value) : []
+            }));
+          }}
+          className="equipment-select"
+          classNamePrefix="select"
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Equipos para Oficina</label>
+        <Select
+          isMulti
+          options={equipment.map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))}
+          value={formData.equiposOficina?.map(id => {
+            const eq = equipment.find(e => e.id === id);
+            return {
+              value: eq?.id,
+              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
+            };
+          })}
+          onChange={selected => {
+            setFormData(prev => ({
+              ...prev,
+              equiposOficina: selected ? selected.map(item => item.value) : []
+            }));
+          }}
+          className="equipment-select"
+          classNamePrefix="select"
+        />
+      </div>
+    </div>
+  );
+};
+
+const toOption = (eq) => ({
+  value: eq.id,
+  label: `${eq.nombre} (${eq.IpEquipo || 'Sin IP'})`
+});
+
+const handleEquipmentChange = (field, selectedOptions) => {
+  setFormData(prev => ({
+    ...prev,
+    [field]: selectedOptions ? selectedOptions.map(o => o.value) : []
+  }));
+};
 
 
   return (
@@ -384,7 +473,22 @@ const renderEquipmentSelect = () => {
       </div>
 
       <div className="form-group">
-    {renderEquipmentSelect()}
+  <label htmlFor="tipoTrabajo" className="form-label">Modalidad de trabajo</label>
+  <select
+    id="tipoTrabajo"
+    name="tipoTrabajo"
+    value={formData.tipoTrabajo}
+    onChange={handleChange}
+    className="form-input"
+  >
+    <option value="remoto">Remoto</option>
+    <option value="hibrido">Híbrido</option>
+    <option value="oficina">Oficina</option>
+  </select>
+</div>
+
+      <div className="form-group">
+    {renderEquipmentSelects()}
   </div>
         </div>
 

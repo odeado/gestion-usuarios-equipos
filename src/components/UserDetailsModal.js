@@ -16,9 +16,24 @@ function UserDetailsModal({
   departments = [],
   onAddDepartment
 }) {
+
+
+
+
+const normalizeArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return value.split(',').map(item => item.trim());
+  return [String(value)];
+};
   // Estado para manejar la edición del usuario
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState({...user});
+ const [editedUser, setEditedUser] = useState({
+    ...user,
+    equiposCasa: normalizeArray(user.equiposCasa),
+    equiposRemoto: normalizeArray(user.equiposRemoto),
+    equiposOficina: normalizeArray(user.equiposOficina)
+  });
   const [isMobile, setIsMobile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -31,23 +46,40 @@ function UserDetailsModal({
   const [touchEnd, setTouchEnd] = useState(null);
   const [isSwiping, setIsSwiping] = useState(false);
 
-const currentIndex = users.findIndex(u => u.id === user.id);
+  const currentIndex = users.findIndex(u => u.id === user.id);
 const totalUsers = users.length;
 
-const normalizeArray = (value) => {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') return value.split(',').map(item => item.trim());
-  return [String(value)];
+
+// Obtener etiqueta legible para el tipo de trabajo
+const getTrabajoLabel = (tipo) => {
+  const tipos = {
+    'remoto': 'Remoto',
+    'hibrido': 'Híbrido',
+    'oficina': 'Oficina'
+  };
+  return tipos[tipo] || tipo || 'No especificado';
 };
 
+// Obtener propósito del equipo
+const getEquipmentPurpose = (type) => {
+  const purposes = {
+    'laptop': 'Portátil',
+    'desktop': 'Computadora de escritorio',
+    'monitor': 'Monitor',
+    'dispositivo_remoto': 'Dispositivo remoto',
+    'accesorio': 'Accesorio'
+  };
+  return purposes[type] || type;
+};
+
+
+
 // Uso:
-const assignedEquipment = useMemo(() => {
-  const equipmentIdsArray = normalizeArray(editedUser.equiposAsignados);
-  return equipmentIdsArray
-    .map(equipId => equipment.find(e => e.id === equipId))
-    .filter(equip => equip !== undefined);
-}, [editedUser.equiposAsignados, equipment]);
+const assignedEquipment = useMemo(() => ({
+  casa: equipment.filter(e => editedUser.equiposCasa.includes(e.id)),
+  remoto: equipment.filter(e => editedUser.equiposRemoto.includes(e.id)),
+  oficina: equipment.filter(e => editedUser.equiposOficina.includes(e.id))
+}), [editedUser, equipment]);
 
 
   // Obtener estados de los equipos asignados
@@ -69,7 +101,9 @@ const assignedEquipment = useMemo(() => {
       department: user.department || '',
       estado: user.estado || '',
       ciudad: user.ciudad || '',
-      equiposAsignados: normalizeArray(user.equiposAsignados || user.EquipoAsignado),
+      equiposCasa: Array.isArray(user.equiposCasa) ? user.equiposCasa : [],
+    equiposRemoto: Array.isArray(user.equiposRemoto) ? user.equiposRemoto : [],
+    equiposOficina: Array.isArray(user.equiposOficina) ? user.equiposOficina : [],
       imageBase64: user.imageBase64 || ''
     });
   }, [user]);
@@ -88,14 +122,14 @@ const assignedEquipment = useMemo(() => {
 const handleSave = async () => {
   if (!validateForm()) return;
   
-  setIsSaving(true);
+   setIsSaving(true);
   try {
     const userToUpdate = {
       id: user.id,
       ...editedUser,
-      equiposAsignados: Array.isArray(editedUser.equiposAsignados) 
-        ? editedUser.equiposAsignados 
-        : [editedUser.equiposAsignados].filter(Boolean)
+      equiposCasa: editedUser.equiposCasa || [],
+      equiposRemoto: editedUser.equiposRemoto || [],
+      equiposOficina: editedUser.equiposOficina || []
     };
     
     await onEdit(userToUpdate);
@@ -166,39 +200,73 @@ const handleSave = async () => {
 
 
 
-const renderEquipmentSelect = () => {
-  const options = equipment.map(eq => ({
-      value: eq.id,
-      label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo}`
-    }));
+const renderEquipmentSelects = () => {
+  if (!equipment || !Array.isArray(equipment)) return null;
 
   return (
-    <div className="form-group">
-        <label className="form-label">Equipos Asignados</label>
+        <div className="equipment-selects-container">
+      <div className="form-group">
+        <label className="form-label">Equipos para Casa</label>
         <Select
           isMulti
-          options={options}
-          value={options.filter(option => 
-            editedUser.equiposAsignados.includes(option.value)
-          )}
-          onChange={(selectedOptions) => {
+          options={equipment.map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))}
+          value={editedUser.equiposCasa?.map(id => {
+            const eq = equipment.find(e => e.id === id);
+            return {
+              value: eq?.id,
+              label: eq ? `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
+            };
+          })}
+          onChange={selected => {
             setEditedUser(prev => ({
               ...prev,
-              equiposAsignados: selectedOptions ? 
-                selectedOptions.map(option => option.value) : 
-                []
+              equiposCasa: selected ? selected.map(item => item.value) : []
             }));
           }}
-          className="react-select-container"
-          classNamePrefix="react-select"
-          placeholder="Seleccione equipos..."
-          noOptionsMessage={() => "No hay equipos disponibles"}
-          isSearchable
         />
       </div>
-    );
-  };
 
+      <div className="form-group">
+        <label className="form-label">Equipos para Remoto</label>
+        <Select
+          isMulti
+          options={equipment.map(toOption)}
+          value={equipment
+            .filter(e => editedUser.equiposRemoto?.includes(e.id))
+            .map(toOption)}
+          onChange={selected => handleEquipmentChange('equiposRemoto', selected)}
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Equipos para Oficina</label>
+        <Select
+          isMulti
+          options={equipment.map(toOption)}
+          value={equipment
+            .filter(e => editedUser.equiposOficina?.includes(e.id))
+            .map(toOption)}
+          onChange={selected => handleEquipmentChange('equiposOficina', selected)}
+        />
+      </div>
+    </div>
+  );
+};
+
+const toOption = (eq) => ({
+  value: eq.id,
+  label: `${eq.nombre} (${eq.IpEquipo || 'Sin IP'})`
+});
+
+const handleEquipmentChange = (field, selectedOptions) => {
+  setEditedUser(prev => ({
+    ...prev,
+    [field]: selectedOptions ? selectedOptions.map(o => o.value) : []
+  }));
+};
 
 
 
@@ -480,11 +548,13 @@ const handlePrev = () => {
                   />
                   {errors?.ciudad && <span className="error-message">{errors.ciudad}</span>}
                 </div>
+
+ <div className="form-groupU">
+   <label>equipos:</label>
+                 {renderEquipmentSelects()}
+        </div>
+       
                 
-                <div className="form-groupU">
-  {renderEquipmentSelect()}
-  {errors?.equiposAsignados && <span className="error-message">{errors.equiposAsignados}</span>}
-</div>
               </div>
 
               <div className="modal-actionsU">
@@ -562,34 +632,53 @@ const handlePrev = () => {
                     <span>{user.ciudad || 'No especificada'}</span>
                   </div>
                 </div>
-              
+              </div>
 
-              {assignedEquipment.length > 0 && (
-                <div className="assigned-equipment-section">
-                  <h4>Equipos Asignados ({assignedEquipment.length})</h4>
-                  <div className="assigned-equipment-list">
-                    {assignedEquipment.map(equip => (
-                      <div 
-                        key={equip.id} 
-                        className="equipment-infoU clickable-equipment"
-                        onClick={() => handleEquipmentClick(equip)}
-                      >
-                        <div className="equipment-details">
-                          <div className="equipment-name">{equip.nombre}</div>
-                          <div className="equipment-type">{equip.type}</div>
-                          {equip.IpEquipo && (
-                            <div className="equipment-ip">{equip.IpEquipo}</div>
-                          )}
-                          {equip.serialNumber && (
-                            <div className="equipment-serial">S/N: {equip.serialNumber}</div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+         
+<div className="assigned-equipment-section">
+            {assignedEquipment.casa.length > 0 && (
+              <div className="equipment-category">
+                <h4>Equipos para Casa ({assignedEquipment.casa.length})</h4>
+                <div className="equipment-list">
+                  {assignedEquipment.casa.map(equipo => (
+                    <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+                      <span className="equipment-name">{equipo.nombre}</span>
+                      <span className="equipment-ip">{equipo.IpEquipo}</span>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+  
+  {assignedEquipment.remoto.length > 0 && (
+    <div className="equipment-category">
+      <h4>Equipos para Remoto ({assignedEquipment.remoto.length})</h4>
+      <div className="equipment-list">
+        {assignedEquipment.remoto.map(equipo => (
+          <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+            <span className="equipment-name">{equipo.nombre}</span>
+            <span className="equipment-ip">{equipo.IpEquipo}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+  
+  {assignedEquipment.oficina.length > 0 && (
+    <div className="equipment-category">
+      <h4>Equipos para Oficina ({assignedEquipment.oficina.length})</h4>
+      <div className="equipment-list">
+        {assignedEquipment.oficina.map(equipo => (
+          <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+            <span className="equipment-name">{equipo.nombre}</span>
+            <span className="equipment-ip">{equipo.IpEquipo}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
+
 
             <div className="modal-actionsU">
                {isMobile ? (

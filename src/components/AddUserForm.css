@@ -1,3 +1,40 @@
+
+.equipment-selects-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.equipment-select {
+  width: 100%;
+}
+
+.no-equipment {
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  text-align: center;
+  color: #666;
+}
+
+/* Estilos para los selects de react-select */
+.select__control {
+  border: 1px solid #ddd;
+  min-height: 38px;
+}
+
+.select__multi-value {
+  background: #e6f7ff;
+}
+
+.select__multi-value__label {
+  color: #1890ff;
+}
+
+
+
+
 /* Estilos para react-select */
 .react-select-container {
   width: 100%;

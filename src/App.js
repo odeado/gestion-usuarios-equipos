@@ -224,15 +224,22 @@ const handleAddNewIp = (newIp) => {
         tipoVpn: userData.tipoVpn,
         department: userData.department,
         estado: userData.estado,
-        equiposAsignados: newEquipos,
+        equiposCasa: userData.equiposCasa || [],
+      equiposRemoto: userData.equiposRemoto || [],
+      equiposOficina: userData.equiposOficina || [],
         imageBase64: userData.imageBase64,
         updatedAt: new Date()
       });
 
       // Actualizar estado local
       setUsers(users.map(u => 
-        u.id === userData.id ? { ...userData, equiposAsignados: newEquipos } : u
-      ));
+      u.id === userData.id ? { 
+        ...u, 
+        equiposCasa: userData.equiposCasa || [],
+        equiposRemoto: userData.equiposRemoto || [],
+        equiposOficina: userData.equiposOficina || []
+      } : u
+    ));
 
       setEquipment(prevEquipment => 
         prevEquipment.map(eq => {
@@ -901,6 +908,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
                 });
               }}
               onDeleteEquipment={handleDeleteEquipment}
+              onOpenUserModal={handleOpenUserModal}
             />
           </div>
         </div>
@@ -908,7 +916,13 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
 
           {showUserModal && selectedUserId && (
             <UserDetailsModal 
-              user={users.find(u => u.id === selectedUserId)}
+            
+              user={{
+      ...users.find(u => u.id === selectedUserId),
+      equiposCasa: users.find(u => u.id === selectedUserId)?.equiposCasa || [],
+      equiposRemoto: users.find(u => u.id === selectedUserId)?.equiposRemoto || [],
+      equiposOficina: users.find(u => u.id === selectedUserId)?.equiposOficina || []
+    }}
               users={users}
               equipment={equipment}
               onClose={() => setShowUserModal(false)}

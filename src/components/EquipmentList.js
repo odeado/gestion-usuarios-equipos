@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import './EquipmentList.css';
 import EquipDetailsModal from './EquipDetailsModal';
 
-function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment }) {
+function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment, onOpenUserModal }) {
 
   const [selectedEquipment, setSelectedEquipment] = useState(null);
 
@@ -114,7 +114,16 @@ const getAssignedUserNames = (userIds) => {
 };
 
 
+// función que maneje el clic en el usuario y muestre su información
 
+const [selectedUser, setSelectedUser] = useState(null);
+
+ const handleUserClick = (user, e) => {
+    e.stopPropagation(); // Evita que se active el clic en la fila del equipo
+    if (onOpenUserModal) {
+      onOpenUserModal(user.id);
+    }
+  };
  
 
   // En EquipmentList.js
@@ -234,16 +243,26 @@ const handleEquipmentClick = (item) => {
                 <td data-label="Serie">{item.serialNumber}</td>
                 <td data-label="Descripcion" style={{color: 'rgb(20 20 20)', backgroundColor: 'rgb(249 251 188 / 94%)'}}>{item.descripcion}</td>
                 <td data-label="Asignado a">
-  {getAssignedUsers(item.usuariosAsignados).map(user => ( // Asumo que puedes obtener el objeto usuario completo
+  {getAssignedUsers(item.usuariosAsignados).map(user => (
     <div 
       key={user.id} 
       className="assigned-user-chip"
       title={`${user.name} - ${user.department}`}
+      onClick={(e) => handleUserClick(user, e)}
+      style={{
+        cursor: 'pointer',
+        textDecoration: 'underline',
+        display: 'inline-block',
+        margin: '2px',
+        padding: '4px 8px',
+        backgroundColor: '#e0e0e0',
+        borderRadius: '16px'
+      }}
     >
       {user.name}
     </div>
   ))}
-   {getAssignedUsers(item.usuariosAsignados).length === 0 && 'No asignado'}
+  {getAssignedUsers(item.usuariosAsignados).length === 0 && 'No asignado'}
 </td>
 
                 <td className="actions-buttons" onClick={(e) => e.stopPropagation()}>

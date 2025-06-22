@@ -241,11 +241,10 @@ display: flex;
 
 /* Sección de equipos asignados */
 .assigned-equipment-section {
-   margin-top: 30px;
-  background: rgba(26, 3, 24, 0.5);
-  padding: 20px;
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
   border-radius: 8px;
-  border: 1px solid rgba(74, 4, 66, 0.3);
 }
 
 .assigned-equipment-section h4 {
@@ -257,9 +256,10 @@ display: flex;
 }
 
 .assigned-equipment-list {
-  display: grid;
+    display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .equipment-infoU {
@@ -295,10 +295,44 @@ display: flex;
   font-size: 14px;
 }
 
+.equipment-item {
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.equipment-item:hover {
+  transform: translateY(-2px);
+}
+
+.equipment-name {
+  font-weight: bold;
+  display: block;
+}
+
+.equipment-type {
+  display: inline-block;
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin-right: 8px;
+}
+
+.equipment-purpose {
+  font-size: 0.9em;
+  color: #6c757d;
+}
+
 .equipment-ip {
+  display: block;
   font-family: monospace;
-  color: #4a90e2;
-  font-size: 13px;
+  color: #495057;
+  font-size: 0.85em;
+  margin-top: 4px;
 }
 
 .equipment-serial {
