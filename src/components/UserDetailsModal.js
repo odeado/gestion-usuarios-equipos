@@ -102,8 +102,8 @@ const assignedEquipment = useMemo(() => ({
       estado: user.estado || '',
       ciudad: user.ciudad || '',
       equiposCasa: Array.isArray(user.equiposCasa) ? user.equiposCasa : [],
-    equiposRemoto: Array.isArray(user.equiposRemoto) ? user.equiposRemoto : [],
-    equiposOficina: Array.isArray(user.equiposOficina) ? user.equiposOficina : [],
+      equiposRemoto: Array.isArray(user.equiposRemoto) ? user.equiposRemoto : [],
+      equiposOficina: Array.isArray(user.equiposOficina) ? user.equiposOficina : [],
       imageBase64: user.imageBase64 || ''
     });
   }, [user]);

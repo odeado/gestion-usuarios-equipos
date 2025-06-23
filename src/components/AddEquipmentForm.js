@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import imageCompression from 'browser-image-compression';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import './AddEquipmentForm.css';
+import AutocompleteInput from './AutocompleteInput';
 // Eliminé esta línea que causaba conflicto
 import { ref } from 'firebase/storage';
 import { useMutation } from '@tanstack/react-query';
@@ -10,10 +12,19 @@ import { useMutation } from '@tanstack/react-query';
 const AddEquipmentForm = forwardRef((props, ref) => {
   const { 
     users, 
+    equipment,
     onEquipmentAdded, 
     equipmentToEdit, 
     onEditEquipment, 
-    onCancelEdit 
+    onCancelEdit,
+    parentAvailableIps,
+    availableIps,
+    onAddNewIp, 
+    parentAvailableSerials = [], // Nueva prop para números de serie disponibles
+    onAddNewSerial, // Nueva prop para agregar nuevos números de serie
+    availableModels = [],
+    availableProcessors = [], // Nueva prop para procesadores
+    availableBrands = [] // Nueva prop para marcas
   } = props;
 
   const [formData, setFormData] = useState({
@@ -36,13 +47,14 @@ windows: '',
 antivirus: '',
 office: '',
 
-    IpEquipo: '',
+    IpEquipo: [],
     usuariosAsignados: [],
     imageBase64: ''
   });
 
   const [isCompressing, setIsCompressing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [editedEquipment, setEditedEquipment] = useState({...equipment});
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef();
 
@@ -55,6 +67,11 @@ office: '',
           ? equipmentToEdit.usuariosAsignados 
           : [equipmentToEdit.usuariosAsignados]
         : [];
+
+        const ipEquipoArray = Array.isArray(equipmentToEdit.IpEquipo) ? 
+                         equipmentToEdit.IpEquipo : 
+                         (equipmentToEdit.IpEquipo ? [equipmentToEdit.IpEquipo] : []);
+
 
     setFormData({
       nombre: equipmentToEdit.nombre || '',
@@ -73,7 +90,7 @@ office: '',
         windows: equipmentToEdit.windows || '',
         antivirus: equipmentToEdit.antivirus || '',
         office: equipmentToEdit.office || '',
-      IpEquipo: equipmentToEdit.IpEquipo || '',
+      IpEquipo: ipEquipoArray,  
       usuariosAsignados: usuariosAsignados,
       imageBase64: equipmentToEdit.imageBase64 || ''
     });
@@ -104,7 +121,7 @@ procesador: '',
       antivirus: '',
       office: '',
 
-      IpEquipo: '',
+      IpEquipo: [],
       usuariosAsignados: [],
       imageBase64: ''
     });
@@ -123,7 +140,7 @@ procesador: '',
     const newErrors = {};
     if (!formData.nombre.trim()) newErrors.nombre = 'Nombre requerido';
     if (!formData.type.trim()) newErrors.type = 'Tipo es requerido';
-    if (!formData.model.trim()) newErrors.model = 'Modelo es requerido';
+    if (!formData.model.trim()) newErrors.model = 'model es requerido';
     if (!formData.serialNumber.trim()) newErrors.serialNumber = 'Número de serie es requerido';
     if (!formData.imageBase64) newErrors.image = 'Imagen es requerida';
     
@@ -178,13 +195,18 @@ procesador: '',
     }
   };
 
-  const renderUserSelect = () => {
-    const options = users.map(user => ({
-      value: user.id,
-      label: `${user.name} - ${user.department}`
-    }));
+ const renderUserSelect = () => {
+  // Asegurarse que users tenga un valor por defecto
+  const safeUsers = users || [];
+  
+  const options = safeUsers.map(user => ({
+    value: user.id,
+    label: `${user.name} - ${user.department}`
+  }));
 
-    return (
+  return (
+    <div className="form-group department-group">
+      <label className="form-label">Asignar a</label>
       <Select
         isMulti
         options={options}
@@ -205,8 +227,170 @@ procesador: '',
         noOptionsMessage={() => "No hay usuarios disponibles"}
         isSearchable
       />
-    );
+    </div>
+  );
+};
+
+
+
+ // Estado para las opciones locales
+  const [localOptions, setLocalOptions] = useState({
+    model: availableModels,
+    procesador: availableProcessors,
+    marca: availableBrands
+  });
+
+  // ... (el resto de tu estado existente)
+
+  // Función para actualizar opciones locales
+  const updateLocalOptions = (field, value) => {
+    if (value && !localOptions[field].includes(value)) {
+      setLocalOptions(prev => ({
+        ...prev,
+        [field]: [...prev[field], value]
+      }));
+    }
   };
+
+// Función para manejar cambios en los campos con autocompletado
+  const handleAutocompleteChange = (field) => (e) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    // Asignar el nombre al onChange para que el input lo use
+    e.target.name = field;
+    handleChange(e);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+// Renderizar el select de IPs
+
+const renderIpSelect = () => {
+  // Asegurarse que parentAvailableIps tenga un valor por defecto
+  const safeParentIps = parentAvailableIps || [];
+  
+  // Obtener IP actual del equipo (asegurando que sea array)
+  const currentIps = Array.isArray(formData.IpEquipo) ? formData.IpEquipo : 
+                    (formData.IpEquipo ? [formData.IpEquipo] : []);
+
+  // Crear opciones combinando IPs disponibles e IP actual si no está en la lista
+  const options = [
+    ...safeParentIps.map(ip => ({
+      value: ip,
+      label: ip
+    })),
+    ...(currentIps.length > 0 && !safeParentIps.includes(currentIps[0]) ? [{
+      value: currentIps[0],
+      label: currentIps[0]
+    }] : [])
+  ].filter(option => option.value);
+
+  return (
+    <div className="form-groupE">
+      <label className="form-label">IP del Equipo</label>
+      <CreatableSelect  
+        isMulti={false}
+        options={options}
+        value={currentIps.length > 0 ? options.find(option => option.value === currentIps[0]) : null}
+        onChange={(selectedOption) => {
+          const ipValue = selectedOption?.value || '';
+          setFormData(prev => ({
+            ...prev,
+            IpEquipo: ipValue ? [ipValue] : []
+          }));
+        }}
+        onCreateOption={(inputValue) => {
+          const newIp = inputValue.trim();
+          if (newIp) {
+            // Agrega la nueva IP tanto al estado local como a la lista general
+            setFormData(prev => ({
+              ...prev,
+              IpEquipo: [newIp]
+            }));
+            onAddNewIp(newIp);  // Notifica al componente padre
+          }
+        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
+        placeholder="Seleccione o cree una IP..."
+        noOptionsMessage={() => "No hay IPs disponibles. Escriba para crear una nueva."}
+        isSearchable
+        formatCreateLabel={(inputValue) => `Crear nueva IP: ${inputValue}`}
+      />
+    </div>
+  );
+};
+
+
+const renderSerialSelect = () => {
+  // Asegurarse que parentAvailableSerials tenga un valor por defecto
+  const safeParentSerials = parentAvailableSerials || [];
+  
+  // Obtener serial actual del equipo
+  const currentSerial = formData.serialNumber || '';
+
+  // Crear opciones combinando seriales disponibles y serial actual si no está en la lista
+  const options = [
+    ...safeParentSerials.map(serial => ({
+      value: serial,
+      label: serial
+    })),
+    ...(currentSerial && !safeParentSerials.includes(currentSerial) ? [{
+      value: currentSerial,
+      label: currentSerial
+    }] : [])
+  ].filter(option => option.value);
+
+  return (
+    <div className="form-groupE">
+      <label className="form-label">Número de Serie</label>
+      <CreatableSelect  
+        isMulti={false}
+        options={options}
+        value={options.find(option => option.value === currentSerial)}
+        onChange={(selectedOption) => {
+          const serialValue = selectedOption?.value || '';
+          setFormData(prev => ({
+            ...prev,
+            serialNumber: serialValue
+          }));
+        }}
+        onCreateOption={(inputValue) => {
+          const newSerial = inputValue.trim();
+          if (newSerial) {
+            // Agrega el nuevo serial tanto al estado local como a la lista general
+            setFormData(prev => ({
+              ...prev,
+              serialNumber: newSerial
+            }));
+            onAddNewSerial(newSerial);  // Notifica al componente padre
+          }
+        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
+        placeholder="Seleccione o ingrese un número de serie..."
+        noOptionsMessage={() => "No hay números de serie disponibles. Escriba para crear uno nuevo."}
+        isSearchable
+        formatCreateLabel={(inputValue) => `Usar nuevo serial: ${inputValue}`}
+      />
+      {errors.serialNumber && <div className="error-text">{errors.serialNumber}</div>}
+    </div>
+  );
+};
+
+
+
 
   return (
     <div className="eqipment-form" ref={ref}>
@@ -330,74 +514,49 @@ procesador: '',
           </div>
 
 
-          <div className="form-row">
+         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="marca" className="form-label">Marca</label>
-            <input
-              id="marca"
-              name="marca"
-              type="text"
+            <AutocompleteInput
               value={formData.marca}
-              onChange={handleChange}
+              onChange={handleAutocompleteChange('marca')}
+              options={localOptions.marca}
+              onAddNewOption={(newOption) => updateLocalOptions('marca', newOption)}
               placeholder="Ej: Dell, Apple, Samsung"
-              required
-              className={`form-input ${errors.marca ? 'input-error' : ''}`}
+              label="Marca"
+              error={errors.marca}
             />
-            {errors.marca && <div className="error-text">{errors.marca}</div>}
           </div>
-          </div>
+        </div>
           
 
 
+           <div className="form-row">
           <div className="form-group">
-            <label htmlFor="model" className="form-label">Modelo</label>
-            <input
-              id="model"
-              name="model"
-              type="text"
+            <AutocompleteInput
               value={formData.model}
-              onChange={handleChange}
-              placeholder="Ej: Dell XPS 15, iPhone 13"
-              required
-              className={`form-input ${errors.model ? 'input-error' : ''}`}
+              onChange={handleAutocompleteChange('model')}
+              options={localOptions.model}
+              onAddNewOption={(newOption) => updateLocalOptions('model', newOption)}
+              placeholder="Ej: XPS 13, MacBook Pro"
+              label="model"
+              error={errors.model}
             />
-            {errors.model && <div className="error-text">{errors.model}</div>}
           </div>
+        </div>
 
           <div className="form-group">
-            <label htmlFor="serialNumber" className="form-label">Número de Serie</label>
-            <input
-              id="serialNumber"
-              name="serialNumber"
-              type="text"
-              value={formData.serialNumber}
-              onChange={handleChange}
-              placeholder="Ej: SN123456789"
-              required
-              className={`form-input ${errors.serialNumber ? 'input-error' : ''}`}
-            />
-            {errors.serialNumber && <div className="error-text">{errors.serialNumber}</div>}
+            {renderSerialSelect()}
           </div>
         
           <div className="form-group">
-            <label htmlFor="IpEquipo" className="form-label">IP Equipo</label>
-            <input
-              id="IpEquipo"
-              name="IpEquipo"
-              type="text"
-              value={formData.IpEquipo}
-              onChange={handleChange}
-              placeholder="Ej: Dell XPS 15, iPhone 13"
-              required
-              className={`form-input ${errors.IpEquipo ? 'input-error' : ''}`}
-            />
-            {errors.IpEquipo && <div className="error-text">{errors.IpEquipo}</div>}
+            {renderIpSelect()}
+{errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
           </div>
 
 
         <div className="form-row">
          <div className="form-group department-group">
-  <label className="form-label">Asignar a</label>
+ 
           {renderUserSelect()}
           {errors.usuariosAsignados && <div className="error-text">{errors.usuariosAsignados}</div>}
 </div>
@@ -406,18 +565,18 @@ procesador: '',
 
 <div className="form-row">
           <div className="form-group">
-            <label htmlFor="procesador" className="form-label">Procesador</label>
-            <input
-              id="procesador"
-              name="procesador"
-              type="text"
+            <AutocompleteInput
               value={formData.procesador}
-              onChange={handleChange}
+              onChange={handleAutocompleteChange('procesador')}
+              options={localOptions.procesador}
+              onAddNewOption={(newOption) => updateLocalOptions('procesador', newOption)}
               placeholder="Ej: Intel i7, AMD Ryzen 5"
-              className={`form-input ${errors.procesador ? 'input-error' : ''}`}
+              label="procesador"
+              error={errors.procesador}
             />
-            {errors.procesador && <div className="error-text">{errors.procesador}</div>}
           </div>
+
+
           <div className="form-group">
             <label htmlFor="ram" className="form-label">RAM</label>
             <input

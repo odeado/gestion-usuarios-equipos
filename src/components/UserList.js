@@ -29,13 +29,18 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
  const getEquipmentName = (userId) => {
   if (!userId || !equipment) return 'Sin equipo';
   
-  const assignedEquipments = equipment.filter(eq => 
-    Array.isArray(eq.usuariosAsignados) 
-      ? eq.usuariosAsignados.includes(userId)
-      : eq.usuariosAsignados === userId
-  );
+  const user = users.find(u => u.id === userId);
+  if (!user) return 'Sin equipo';
+  
+ const allEquipmentIds = [
+    ...(Array.isArray(user.equiposCasa) ? user.equiposCasa : []),
+    ...(Array.isArray(user.equiposRemoto) ? user.equiposRemoto : []),
+    ...(Array.isArray(user.equiposOficina) ? user.equiposOficina : [])
+  ];
 
-  if (assignedEquipments.length === 0) return 'Sin equipo asignado';
+  if (allEquipmentIds.length === 0) return 'Sin equipo asignado';
+
+  const assignedEquipments = equipment.filter(eq => allEquipmentIds.includes(eq.id));
   
   // Mostrar todos los equipos separados por coma
   return assignedEquipments.map(eq => eq.IpEquipo || eq.nombre || 'Equipo').join(', ');

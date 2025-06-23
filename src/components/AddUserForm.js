@@ -11,11 +11,9 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     tipoVpn: '',
     department: '',
     estado: 'Teletrabajo', // Estado por defecto
-    tipoTrabajo: 'remoto', // Nuevo campo: 'remoto', 'hibrido', 'oficina'
     equiposCasa: [],
-  equiposRemoto: [],
-  equiposOficina: [],
-    equiposAsignados: [],
+    equiposRemoto: [],
+    equiposOficina: [],
     imageBase64: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -38,11 +36,9 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
-        tipoTrabajo: userToEdit.tipoTrabajo || 'remoto', // Nuevo campo: 'remoto', 'hibrido', 'oficina'
         equiposCasa: userToEdit.equiposCasa || [],
-      equiposRemoto: userToEdit.equiposRemoto || [],
-      equiposOficina: userToEdit.equiposOficina || [],
-      equiposAsignados: userToEdit.equiposAsignados || [],
+        equiposRemoto: userToEdit.equiposRemoto || [],
+        equiposOficina: userToEdit.equiposOficina || [],
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -60,12 +56,9 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       tipoVpn: '',
       department: '',
       estado: 'Teletrabajo', // Estado por defecto
-       tipoTrabajo: 'remoto',
       equiposCasa: [],
-    equiposRemoto: [],
-    equiposOficina: [],
-    equiposAsignados: [],
-      
+      equiposRemoto: [],
+      equiposOficina: [], 
       imageBase64: ''
     });
     setImagePreview(null);
@@ -161,13 +154,11 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           ciudad: formData.ciudad,
           department: formData.department,
           estado: formData.estado,
-           tipoTrabajo: formData.tipoTrabajo,
-      equiposCasa: formData.equiposCasa || [],
-      equiposRemoto: formData.equiposRemoto || [],
-      equiposOficina: formData.equiposOficina || [],
+          equiposCasa: formData.equiposCasa || [],
+          equiposRemoto: formData.equiposRemoto || [],
+          equiposOficina: formData.equiposOficina || [],
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
-          equiposAsignados: formData.equiposAsignados || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
       } else {
@@ -175,14 +166,12 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
           name: formData.name,
           department: formData.department,
           estado: formData.estado,
-           tipoTrabajo: formData.tipoTrabajo,
-      equiposCasa: formData.equiposCasa || [],
-      equiposRemoto: formData.equiposRemoto || [],
-      equiposOficina: formData.equiposOficina || [],
+          equiposCasa: formData.equiposCasa || [],
+          equiposRemoto: formData.equiposRemoto || [],
+          equiposOficina: formData.equiposOficina || [],
           ciudad: formData.ciudad,
           tipoVpn: formData.tipoVpn,
           correo: formData.correo, // Convertimos correo a correo para la DB
-          equiposAsignados: formData.equiposAsignados || null, // Asegúrate de que este campo exista en tu DB
           imageBase64: formData.imageBase64
         });
         resetForm();
@@ -472,20 +461,7 @@ const handleEquipmentChange = (field, selectedOptions) => {
         {renderDepartmentSelect()}
       </div>
 
-      <div className="form-group">
-  <label htmlFor="tipoTrabajo" className="form-label">Modalidad de trabajo</label>
-  <select
-    id="tipoTrabajo"
-    name="tipoTrabajo"
-    value={formData.tipoTrabajo}
-    onChange={handleChange}
-    className="form-input"
-  >
-    <option value="remoto">Remoto</option>
-    <option value="hibrido">Híbrido</option>
-    <option value="oficina">Oficina</option>
-  </select>
-</div>
+     
 
       <div className="form-group">
     {renderEquipmentSelects()}

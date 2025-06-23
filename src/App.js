@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
@@ -34,7 +34,7 @@ function App() {
   const [currentEquipmentIndex, setCurrentEquipmentIndex] = useState(0);
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
-
+const [allAvailableSerials, setAllAvailableSerials] = useState([]);
 // Estados para el gesto táctil y animación
 const [touchStartY, setTouchStartY] = useState(null);
 const [touchEndY, setTouchEndY] = useState(null);
@@ -51,6 +51,13 @@ const handleSelectEquipment = (equipmentId) => {
   setShowEquipmentModal(true);
 };
 
+
+
+const handleAddNewSerial = (newSerial) => {
+  if (!allAvailableSerials.includes(newSerial)) {
+    setAllAvailableSerials([...allAvailableSerials, newSerial]);
+  }
+};
 
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
@@ -129,10 +136,11 @@ const handleAddNewIp = (newIp) => {
     }
   };
 
-  const closeModal = () => {
-    setShowEquipmentModal(false);
-    setSelectedEquipmentId(null);
-  };
+  const closeModal = useCallback(() => {
+  setShowEquipmentModal(false);
+  setSelectedEquipmentId(null);
+  setCurrentEquipmentIndex(0);
+}, []);
 
   // ==================== FUNCIONES DE ASIGNACIÓN ====================
   const updateUserEquipment = async (userId, equipmentId) => {
@@ -187,13 +195,17 @@ const handleAddNewIp = (newIp) => {
       const oldUser = users.find(u => u.id === userData.id);
       
       // Obtener equipos antiguos y nuevos (siempre como arrays)
-      const oldEquipos = Array.isArray(oldUser?.equiposAsignados) 
-        ? oldUser.equiposAsignados 
-        : [];
+      const oldEquipos = [
+      ...(Array.isArray(oldUser?.equiposCasa) ? oldUser.equiposCasa : []),
+      ...(Array.isArray(oldUser?.equiposRemoto) ? oldUser.equiposRemoto : []),
+      ...(Array.isArray(oldUser?.equiposOficina) ? oldUser.equiposOficina : [])
+    ];
         
-      const newEquipos = Array.isArray(userData.equiposAsignados) 
-        ? userData.equiposAsignados 
-        : [];
+      const newEquipos = [
+      ...(Array.isArray(userData.equiposCasa) ? userData.equiposCasa : []),
+      ...(Array.isArray(userData.equiposRemoto) ? userData.equiposRemoto : []),
+      ...(Array.isArray(userData.equiposOficina) ? userData.equiposOficina : [])
+    ];
 
       // Equipos que ya no están asignados
       const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
@@ -225,8 +237,8 @@ const handleAddNewIp = (newIp) => {
         department: userData.department,
         estado: userData.estado,
         equiposCasa: userData.equiposCasa || [],
-      equiposRemoto: userData.equiposRemoto || [],
-      equiposOficina: userData.equiposOficina || [],
+        equiposRemoto: userData.equiposRemoto || [],
+        equiposOficina: userData.equiposOficina || [],
         imageBase64: userData.imageBase64,
         updatedAt: new Date()
       });
@@ -272,19 +284,23 @@ const handleAddNewIp = (newIp) => {
 
   const handleAddUser = async (userData) => {
     try {
-      const equiposAsignados = Array.isArray(userData.equiposAsignados) 
-        ? userData.equiposAsignados 
-        : [];
+       const allEquipmentIds = [
+      ...(Array.isArray(userData.equiposCasa) ? userData.equiposCasa : []),
+      ...(Array.isArray(userData.equiposRemoto) ? userData.equiposRemoto : []),
+      ...(Array.isArray(userData.equiposOficina) ? userData.equiposOficina : [])
+    ];
 
       const docRef = await addDoc(collection(db, 'users'), {
-        ...userData,
-        equiposAsignados,
-        createdAt: new Date()
-      });
+      ...userData,
+      equiposCasa: userData.equiposCasa || [],
+      equiposRemoto: userData.equiposRemoto || [],
+      equiposOficina: userData.equiposOficina || [],
+      createdAt: new Date()
+    });
 
       // Actualizar equipos asignados
       await Promise.all(
-        equiposAsignados.map(equipoId => 
+        allEquipmentIds.map(equipoId => 
           updateDoc(doc(db, 'equipment', equipoId), {
             usuariosAsignados: arrayUnion(docRef.id),
             updatedAt: new Date()
@@ -292,29 +308,25 @@ const handleAddNewIp = (newIp) => {
         )
       );
 
-      const newUser = { id: docRef.id, ...userData, equiposAsignados };
+      const newUser = { 
+      id: docRef.id, 
+      ...userData,
+      equiposCasa: userData.equiposCasa || [],
+      equiposRemoto: userData.equiposRemoto || [],
+      equiposOficina: userData.equiposOficina || []
+    };
       
       // Actualizar estado local
-      setUsers([...users, newUser]);
-      setEquipment(prevEquipment => 
-        prevEquipment.map(eq => 
-          equiposAsignados.includes(eq.id)
-            ? {
-                ...eq,
-                usuariosAsignados: Array.isArray(eq.usuariosAsignados)
-                  ? [...eq.usuariosAsignados, docRef.id]
-                  : [docRef.id]
-              }
-            : eq
-        )
-      );
+    setUsers([...users, newUser]);
+    
+    return newUser;
+  } catch (error) {
+    console.error("Error añadiendo usuario:", error);
+    throw error;
+  }
+};
 
-      return newUser;
-    } catch (error) {
-      console.error("Error añadiendo usuario:", error);
-      throw error;
-    }
-  };
+ 
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
@@ -644,7 +656,12 @@ useEffect(() => {
 
       setAllAvailableIps([...new Set(allIps.filter(ip => ip))]); // Elimina duplicados y valores nulos
 
+// Extraer todos los números de serie únicos de los equipos
+      const allSerials = equipmentData
+        .map(equip => equip.serialNumber)
+        .filter(serial => serial); // Filtrar valores nulos o vacíos
 
+      setAllAvailableSerials([...new Set(allSerials)]); // Eliminar duplicados
 
       // Actualizar contadores
       setCounters({
@@ -887,6 +904,15 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
                       setEditingEquipment(null);
                       setShowEquipmentForm(false);
                     }}
+                    
+                    parentAvailableIps={allAvailableIps}
+                    onAddNewIp={handleAddNewIp}
+                    parentAvailableSerials={allAvailableSerials}
+                    onAddNewSerial={handleAddNewSerial}
+
+                    availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
+                    availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
+                    availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
                   />
                 </div>
               )}
@@ -944,13 +970,18 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               onEdit={handleEditEquipment}
               onClose={closeModal}
               users={users}
-              currentIndex={equipment.findIndex(e => e.id === selectedEquipmentId)}
+              currentIndex={currentEquipmentIndex}
               totalEquipment={equipment.length}
               onNext={handleNextEquipment}  
               onPrev={handlePrevEquipment} 
               onOpenUserModal={handleOpenUserModal} 
               availableIps={allAvailableIps}
               onAddNewIp={handleAddNewIp}
+              availableSerials={allAvailableSerials}
+              onAddNewSerial={handleAddNewSerial}
+              availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
+  availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
+  availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
             />
           )}
         
