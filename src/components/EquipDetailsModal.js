@@ -527,33 +527,28 @@ const EditForm = ({
         </div>
 
         <div className="form-groupE">
-          <AutocompleteInput
-            value={editedEquipment.marca}
-            onChange={(value) => {
-              setEditedEquipment(prev => ({ ...prev, marca: value }));
-              if (errors.marca) setErrors(prev => ({ ...prev, marca: '' }));
-            }}
-            options={availableBrands}
-            placeholder="Ej: Dell, Apple, Samsung"
-            label="Marca"
-            error={errors.marca}
-            name="marca"
-          />
+         <AutocompleteInput
+                    value={editedEquipment.marca}
+                    onChange={handleAutocompleteChange('marca')}
+                    options={localOptions.marca}
+                    onAddNewOption={(newOption) => updateLocalOptions('marca', newOption)}
+                    placeholder="Ej: Dell, Apple, Samsung"
+                    label="Marca"
+                    error={errors.marca}
+                  />
         </div>
 
         <div className="form-groupE">
-          <AutocompleteInput
-            value={editedEquipment.model}
-            onChange={(value) => {
-              setEditedEquipment(prev => ({ ...prev, model: value }));
-              if (errors.model) setErrors(prev => ({ ...prev, model: '' }));
-            }}
-            options={availableModels}
-            placeholder="Ej: XPS 13, MacBook Pro"
-            label="Modelo"
-            error={errors.model}
-            name="model"
-          />
+         <AutocompleteInput
+                    value={editedEquipment.model}
+                    onChange={handleAutocompleteChange('model')}
+                    options={localOptions.model}
+                    onAddNewOption={(newOption) => updateLocalOptions('model', newOption)}
+                    placeholder="Ej: Dell, Apple, Samsung"
+                    label="Modelo"
+                    error={errors.model}
+                  />
+          
         </div>
 
         {renderSerialSelect()}
