@@ -45,3 +45,44 @@
 .category-indicator:hover {
   background: #e0e0e0;
 }
+
+/* Mejoras para interacción táctil */
+button, .clickable-user {
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px; /* Tamaño mínimo recomendado para elementos táctiles */
+}
+
+input, select, textarea {
+  font-size: 16px; /* Evita el zoom automático en iOS */
+}
+
+/* Estilos para el modal de categorías en móviles */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 8px 8px 0 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+
+ .category-indicator {
+    max-width: 80px;
+    font-size: 0.7em;
+    padding: 2px 5px;
+  }
+
+}
