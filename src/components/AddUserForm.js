@@ -11,9 +11,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     tipoVpn: '',
     department: '',
     estado: 'Teletrabajo', // Estado por defecto
-    equiposCasa: [],
-    equiposRemoto: [],
-    equiposOficina: [],
+    equiposAsignados: [],
+    categoriasTemporales: {}, // {equipoId: 'casa'|'remoto'|'oficina'}
     imageBase64: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
@@ -29,6 +28,14 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
   // Efecto para cargar datos del usuario a editar
   useEffect(() => {
     if (userToEdit) {
+
+      const initialCategories = {};
+      equipment.forEach(eq => {
+        if (eq.usuariosAsignados?.includes(userToEdit.id)) {
+          initialCategories[eq.id] = eq.categoriasAsignacion?.[userToEdit.id] || 'casa';
+        }
+        });
+
       setFormData({
         name: userToEdit.name || '',
         correo: userToEdit.correo || '',
@@ -36,9 +43,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
         estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
-        equiposCasa: userToEdit.equiposCasa || [],
-        equiposRemoto: userToEdit.equiposRemoto || [],
-        equiposOficina: userToEdit.equiposOficina || [],
+        equiposAsignados: userToEdit.equiposAsignados || [],
+        categoriasTemporales: initialCategories,
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -56,9 +62,8 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       tipoVpn: '',
       department: '',
       estado: 'Teletrabajo', // Estado por defecto
-      equiposCasa: [],
-      equiposRemoto: [],
-      equiposOficina: [], 
+     equiposAsignados: [],
+      categoriasTemporales: {},
       imageBase64: ''
     });
     setImagePreview(null);
@@ -146,34 +151,28 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       return;
     }
 
-    try {
+  
+
+   try {
+      const userData = {
+        name: formData.name,
+        correo: formData.correo,
+        ciudad: formData.ciudad,
+        tipoVpn: formData.tipoVpn,
+        department: formData.department,
+        estado: formData.estado,
+        equiposAsignados: formData.equiposAsignados,
+        categoriasTemporales: formData.categoriasTemporales,
+        imageBase64: formData.imageBase64
+      };
+
       if (isEditing && userToEdit) {
         await onEditUser({
-          id: userToEdit.id,
-          name: formData.name,
-          ciudad: formData.ciudad,
-          department: formData.department,
-          estado: formData.estado,
-          equiposCasa: formData.equiposCasa || [],
-          equiposRemoto: formData.equiposRemoto || [],
-          equiposOficina: formData.equiposOficina || [],
-          tipoVpn: formData.tipoVpn,
-          correo: formData.correo, // Convertimos correo a correo para la DB
-          imageBase64: formData.imageBase64
+          ...userData,
+          id: userToEdit.id
         });
       } else {
-        await onUserAdded({
-          name: formData.name,
-          department: formData.department,
-          estado: formData.estado,
-          equiposCasa: formData.equiposCasa || [],
-          equiposRemoto: formData.equiposRemoto || [],
-          equiposOficina: formData.equiposOficina || [],
-          ciudad: formData.ciudad,
-          tipoVpn: formData.tipoVpn,
-          correo: formData.correo, // Convertimos correo a correo para la DB
-          imageBase64: formData.imageBase64
-        });
+        await onUserAdded(userData);
         resetForm();
       }
     } catch (error) {
@@ -183,6 +182,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
       setIsSubmitting(false);
     }
   };
+
 
   const renderDepartmentSelect = () => {
     const currentDept = formData.department;
@@ -205,6 +205,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
             }
           }}
           required
+          className={`form-input ${errors.department ? 'input-error' : ''}`}
         >
           <option value="">Selecciona un departamento</option>
           
@@ -262,96 +263,60 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
 
 
-const renderEquipmentSelects = () => {
-  if (!equipment || equipment.length === 0) {
-    return <div className="no-equipment">No hay equipos disponibles</div>;
-  }
-
- 
-
-  return (
-    <div className="equipment-selects-container">
-      <div className="form-group">
-        <label className="form-label">Equipos para Casa</label>
-        <Select
-          isMulti
-          options={equipment.map(eq => ({
-            value: eq.id,
-            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-          }))}
-          value={formData.equiposCasa?.map(id => {
-            const eq = equipment.find(e => e.id === id);
-            return {
-              value: eq?.id,
-              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
-            };
-          })}
-          onChange={selected => {
-            setFormData(prev => ({
-              ...prev,
-              equiposCasa: selected ? selected.map(item => item.value) : []
-            }));
-          }}
-          className="equipment-select"
-          classNamePrefix="select"
-        />
+  const renderEquipmentSelects = () => {
+    const categories = ['casa', 'remoto', 'oficina'];
+    
+    return (
+      <div className="equipment-selects-container">
+        {categories.map(category => (
+          <div key={category} className="form-group">
+            <label className="form-label">Equipos para {category}</label>
+            <Select
+              isMulti
+              options={equipment.map(eq => ({
+                value: eq.id,
+                label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+              }))}
+              value={equipment
+                .filter(eq => 
+                  formData.equiposAsignados.includes(eq.id) && 
+                  formData.categoriasTemporales[eq.id] === category
+                )
+                .map(eq => ({
+                  value: eq.id,
+                  label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+                }))}
+              onChange={selected => {
+                const selectedIds = selected ? selected.map(item => item.value) : [];
+                
+                // Actualizar equipos asignados
+                const newEquipos = [
+                  ...formData.equiposAsignados.filter(id => 
+                    formData.categoriasTemporales[id] !== category
+                  ),
+                  ...selectedIds
+                ];
+                
+                // Actualizar categorías temporales
+                const newCategories = {...formData.categoriasTemporales};
+                selectedIds.forEach(id => {
+                  newCategories[id] = category;
+                });
+                
+                setFormData(prev => ({
+                  ...prev,
+                  equiposAsignados: [...new Set(newEquipos)], // Eliminar duplicados
+                  categoriasTemporales: newCategories
+                }));
+              }}
+              className="equipment-select"
+              classNamePrefix="select"
+            />
+          </div>
+        ))}
       </div>
-
-      {/* Repetir para equiposRemoto y equiposOficina */}
-      <div className="form-group">
-        <label className="form-label">Equipos para Remoto</label>
-        <Select
-          isMulti
-          options={equipment.map(eq => ({
-            value: eq.id,
-            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-          }))}
-          value={formData.equiposRemoto?.map(id => {
-            const eq = equipment.find(e => e.id === id);
-            return {
-              value: eq?.id,
-              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
-            };
-          })}
-          onChange={selected => {
-            setFormData(prev => ({
-              ...prev,
-              equiposRemoto: selected ? selected.map(item => item.value) : []
-            }));
-          }}
-          className="equipment-select"
-          classNamePrefix="select"
-        />
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Equipos para Oficina</label>
-        <Select
-          isMulti
-          options={equipment.map(eq => ({
-            value: eq.id,
-            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-          }))}
-          value={formData.equiposOficina?.map(id => {
-            const eq = equipment.find(e => e.id === id);
-            return {
-              value: eq?.id,
-              label: eq ? `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
-            };
-          })}
-          onChange={selected => {
-            setFormData(prev => ({
-              ...prev,
-              equiposOficina: selected ? selected.map(item => item.value) : []
-            }));
-          }}
-          className="equipment-select"
-          classNamePrefix="select"
-        />
-      </div>
-    </div>
-  );
-};
+    );
+  };
 
 const toOption = (eq) => ({
   value: eq.id,
@@ -420,20 +385,23 @@ const handleEquipmentChange = (field, selectedOptions) => {
         {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
       </div>
 
-           <div className="form-group">
-      <label htmlFor="estado" className="form-label">Estado</label>
-        <input
-          id="estado"
-          name="estado"
-          type="text"
-          placeholder="estados"
-          value={formData.estado}
-          onChange={handleChange}
-          required
-          className={`form-input ${errors.estado ? 'input-error' : ''}`}
-        />
-        {errors.estado && <div className="error-text">{errors.estado}</div>}
-      </div>
+          
+        <div className="form-group">
+          <label htmlFor="estado" className="form-label">Estado</label>
+          <select
+            id="estado"
+            name="estado"
+            value={formData.estado}
+            onChange={handleChange}
+            required
+            className={`form-input ${errors.estado ? 'input-error' : ''}`}
+          >
+            <option value="Teletrabajo">Teletrabajo</option>
+            <option value="Trabajando">Trabajando</option>
+            <option value="Eliminado">Eliminado</option>
+          </select>
+          {errors.estado && <div className="error-text">{errors.estado}</div>}
+        </div>
     
 
           <div className="form-group">

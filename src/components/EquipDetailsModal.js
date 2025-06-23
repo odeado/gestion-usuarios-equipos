@@ -3,6 +3,7 @@ import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import './EquipDetailsModal.css';
 import AutocompleteInput from './AutocompleteInput';
+import CategoryModal from './CategoryModal';
 
 function EquipDetailsModal({
   equipment = {},
@@ -30,6 +31,9 @@ function EquipDetailsModal({
   const [errors, setErrors] = useState({});
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+   const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [currentUserForCategory, setCurrentUserForCategory] = useState(null);
 
   // Normalizar arrays
   const normalizeArray = useCallback((value) => {
@@ -97,6 +101,7 @@ function EquipDetailsModal({
       usuariosAsignados: Array.isArray(equipment.usuariosAsignados) ? 
         equipment.usuariosAsignados : 
         (equipment.usuariosAsignados ? [equipment.usuariosAsignados] : []),
+        categoriasAsignacion: equipment.categoriasAsignacion || {},
       imageBase64: equipment.imageBase64 || ''
     };
     setEditedEquipment(initialData);
@@ -284,11 +289,16 @@ function EquipDetailsModal({
     );
   }, [editedEquipment.IpEquipo, parentAvailableIps, onAddNewIp]);
 
-  const renderUserSelect = useCallback(() => {
+  // En EquipDetailsModal.js, en la función renderUserSelect
+  // Función renderUserSelect actualizada para incluir categorías
+  const renderUserSelect = () => {
     const options = users.map(user => ({
       value: user.id,
-      label: `${user.name} - ${user.department}`
+      label: `${user.name} - ${user.department}`,
+      category: editedEquipment.categoriasAsignacion?.[user.id] || 'casa'
     }));
+
+   
 
     return (
       <div className="form-groupE">
@@ -300,22 +310,69 @@ function EquipDetailsModal({
             editedEquipment.usuariosAsignados?.includes(option.value)
           )}
           onChange={(selectedOptions) => {
+            const selectedUsers = selectedOptions ? selectedOptions.map(o => o.value) : [];
+            const newCategories = {};
+            
+            selectedOptions?.forEach(option => {
+              newCategories[option.value] = option.category || 'casa';
+            });
+
             setEditedEquipment(prev => ({
               ...prev,
-              usuariosAsignados: selectedOptions ? 
-                selectedOptions.map(option => option.value) : 
-                []
+              usuariosAsignados: selectedUsers,
+              categoriasAsignacion: newCategories
             }));
           }}
+          formatOptionLabel={(user) => (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>{user.label}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setCurrentUserForCategory(user.value);
+                  setShowCategoryModal(true);
+                }}
+                className="category-indicator"
+                style={{
+                  background: '#f0f0f0',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '0.8em',
+                  cursor: 'pointer'
+                }}
+              >
+                {editedEquipment.categoriasAsignacion?.[user.value] || 'casa'} ✏️
+              </button>
+            </div>
+          )}
           className="react-select-container"
           classNamePrefix="react-select"
-          placeholder="Seleccione usuarios..."
-          noOptionsMessage={() => "No hay usuarios disponibles"}
-          isSearchable
+        />
+        
+        <CategoryModal
+          isOpen={showCategoryModal}
+          onClose={() => setShowCategoryModal(false)}
+          currentUserId={currentUserForCategory}
+          users={users}
+          currentCategory={editedEquipment.categoriasAsignacion?.[currentUserForCategory]}
+          onCategoryChange={(userId, category) => {
+            const newCategories = {...editedEquipment.categoriasAsignacion};
+            newCategories[userId] = category;
+            setEditedEquipment(prev => ({
+              ...prev,
+              categoriasAsignacion: newCategories
+            }));
+          }}
         />
       </div>
     );
-  }, [users, editedEquipment.usuariosAsignados]);
+  };
+
+
+
+
 
   const renderSerialSelect = useCallback(() => {
     const currentSerial = editedEquipment.serialNumber || '';

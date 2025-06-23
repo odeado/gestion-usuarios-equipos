@@ -7,6 +7,7 @@ import AutocompleteInput from './AutocompleteInput';
 // Eliminé esta línea que causaba conflicto
 import { ref } from 'firebase/storage';
 import { useMutation } from '@tanstack/react-query';
+import CategoryModal from './CategoryModal';
 
 
 const AddEquipmentForm = forwardRef((props, ref) => {
@@ -31,7 +32,7 @@ const AddEquipmentForm = forwardRef((props, ref) => {
     nombre: '',
     type: '',
     ciudad: '',
-    estado: '',
+    estado: 'En uso',
     lugar: '',
     descripcion: '',
     marca: '',
@@ -49,6 +50,7 @@ office: '',
 
     IpEquipo: [],
     usuariosAsignados: [],
+    categoriasAsignacion: {}, // Nuevo: {userId: 'casa'|'remoto'|'oficina'}
     imageBase64: ''
   });
 
@@ -57,6 +59,11 @@ office: '',
   const [editedEquipment, setEditedEquipment] = useState({...equipment});
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef();
+
+
+const [showCategoryModal, setShowCategoryModal] = useState(false);
+const [currentUserForCategory, setCurrentUserForCategory] = useState(null);
+
 
  // Cargar datos del equipo a editar
   useEffect(() => {
@@ -77,7 +84,7 @@ office: '',
       nombre: equipmentToEdit.nombre || '',
       type: equipmentToEdit.type || '',
       ciudad: equipmentToEdit.ciudad || '',
-      estado: equipmentToEdit.estado || '',
+      estado: equipmentToEdit.estado || 'En uso',
       lugar: equipmentToEdit.lugar || '',
         descripcion: equipmentToEdit.descripcion || '',
         marca: equipmentToEdit.marca || '',
@@ -92,6 +99,7 @@ office: '',
         office: equipmentToEdit.office || '',
       IpEquipo: ipEquipoArray,  
       usuariosAsignados: usuariosAsignados,
+        categoriasAsignacion: equipmentToEdit.categoriasAsignacion || {},
       imageBase64: equipmentToEdit.imageBase64 || ''
     });
     setIsEditing(true);
@@ -105,7 +113,7 @@ office: '',
       nombre: '',
       type: '',
       ciudad: '',
-      estado: '',
+      estado: 'En uso',
       lugar: '',
       descripcion: '',
       marca: '',
@@ -123,6 +131,7 @@ procesador: '',
 
       IpEquipo: [],
       usuariosAsignados: [],
+    categoriasAsignacion: {}, // Nuevo: {userId: 'casa'|'remoto'|'oficina'}
       imageBase64: ''
     });
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -175,25 +184,44 @@ procesador: '',
     }
   };
 
+    // Modificar handleSubmit para incluir categoriasAsignacion
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    
+
+    if (!validateForm()) {
+     
+      return;
+    }
 
     try {
+      const equipmentData = {
+        ...formData,
+        categoriasAsignacion: formData.categoriasAsignacion
+      };
+
       if (isEditing && equipmentToEdit) {
         await onEditEquipment({
-          id: equipmentToEdit.id,
-          ...formData
+          ...equipmentData,
+          id: equipmentToEdit.id
         });
       } else {
-        await onEquipmentAdded(formData);
+        await onEquipmentAdded(equipmentData);
+        resetForm();
       }
-      resetForm();
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
+ 
     }
   };
+
+  
+
+
+
+
+   
 
  const renderUserSelect = () => {
   // Asegurarse que users tenga un valor por defecto
@@ -264,12 +292,75 @@ procesador: '',
   };
 
 
+const renderUserSelectWithCategories = () => {
+  const options = users.map(user => ({
+    value: user.id,
+    label: `${user.name} - ${user.department}`,
+    category: formData.categoriasAsignacion[user.id] || 'casa'
+  }));
 
+  return (
+    <div className="form-group">
+      <label className="form-label">Usuarios Asignados</label>
+      <Select
+        isMulti
+        options={options}
+        value={options.filter(option => 
+          formData.usuariosAsignados.includes(option.value)
+        )}
+        onChange={(selectedOptions) => {
+          const selectedUsers = selectedOptions ? selectedOptions.map(o => o.value) : [];
+          const newCategories = {};
+          
+          selectedOptions?.forEach(option => {
+            newCategories[option.value] = 
+              formData.categoriasAsignacion[option.value] || 'casa';
+          });
 
-
-
-
-
+          setFormData(prev => ({
+            ...prev,
+            usuariosAsignados: selectedUsers,
+            categoriasAsignacion: newCategories
+          }));
+        }}
+        formatOptionLabel={(user) => (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>{user.label}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setCurrentUserForCategory(user.value);
+                setShowCategoryModal(true);
+              }}
+              className="category-indicator"
+            >
+              {formData.categoriasAsignacion[user.value] || 'casa'} ✏️
+            </button>
+          </div>
+        )}
+        className="react-select-container"
+        classNamePrefix="react-select"
+      />
+      
+      <CategoryModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        currentUserId={currentUserForCategory}
+        users={users}
+        currentCategory={formData.categoriasAsignacion[currentUserForCategory]}
+        onCategoryChange={(userId, category) => {
+          const newCategories = {...formData.categoriasAsignacion};
+          newCategories[userId] = category;
+          setFormData(prev => ({
+            ...prev,
+            categoriasAsignacion: newCategories
+          }));
+        }}
+      />
+    </div>
+  );
+};
 
 
 
@@ -392,6 +483,15 @@ const renderSerialSelect = () => {
 
 
 
+
+
+
+
+
+
+
+
+
   return (
     <div className="eqipment-form" ref={ref}>
       <h3>{isEditing ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</h3>
@@ -405,6 +505,9 @@ const renderSerialSelect = () => {
           </div>
         )}
 
+<div className="form-group">
+{renderUserSelectWithCategories()}
+</div>
 
         <div className="form-row">
           <div className="form-group">

@@ -188,170 +188,45 @@ const handleAddNewIp = (newIp) => {
    // ==================== FUNCIONES DE USUARIOS ====================
 
  
-// Función para asignar equipo a usuario con categoría
-const assignEquipmentToUser = async (userId, equipmentId, category = 'casa') => {
-  try {
-    // Actualizar el equipo
-    await updateDoc(doc(db, 'equipment', equipmentId), {
-      usuariosAsignados: arrayUnion(userId),
-      [`categoriasAsignacion.${userId}`]: category,
-      updatedAt: new Date()
-    });
-
-    // Actualizar el usuario
-    await updateDoc(doc(db, 'users', userId), {
-      equiposAsignados: arrayUnion(equipmentId),
-      updatedAt: new Date()
-    });
-
-    // Actualizar estado local
-    setEquipment(prev => prev.map(eq => 
-      eq.id === equipmentId
-        ? {
-            ...eq,
-            usuariosAsignados: [...(eq.usuariosAsignados || []), userId],
-            categoriasAsignacion: {
-              ...(eq.categoriasAsignacion || {}),
-              [userId]: category
-            }
-          }
-        : eq
-    ));
-
-    setUsers(prev => prev.map(u => 
-      u.id === userId
-        ? {
-            ...u,
-            equiposAsignados: [...(u.equiposAsignados || []), equipmentId]
-          }
-        : u
-    ));
-  } catch (error) {
-    console.error("Error asignando equipo:", error);
-    throw error;
-  }
-};
-
-// Función para desasignar equipo de usuario
-const unassignEquipmentFromUser = async (userId, equipmentId) => {
-  try {
-    // Actualizar el equipo
-    const equipmentRef = doc(db, 'equipment', equipmentId);
-    const equipmentSnap = await getDoc(equipmentRef);
-    const categoriasAsignacion = equipmentSnap.data().categoriasAsignacion || {};
-    const updatedCategorias = {...categoriasAsignacion};
-    delete updatedCategorias[userId];
-
-    await updateDoc(equipmentRef, {
-      usuariosAsignados: arrayRemove(userId),
-      categoriasAsignacion: updatedCategorias,
-      updatedAt: new Date()
-    });
-
-    // Actualizar el usuario
-    await updateDoc(doc(db, 'users', userId), {
-      equiposAsignados: arrayRemove(equipmentId),
-      updatedAt: new Date()
-    });
-
-    // Actualizar estado local
-    setEquipment(prev => prev.map(eq => 
-      eq.id === equipmentId
-        ? {
-            ...eq,
-            usuariosAsignados: (eq.usuariosAsignados || []).filter(id => id !== userId),
-            categoriasAsignacion: updatedCategorias
-          }
-        : eq
-    ));
-
-    setUsers(prev => prev.map(u => 
-      u.id === userId
-        ? {
-            ...u,
-            equiposAsignados: (u.equiposAsignados || []).filter(id => id !== equipmentId)
-          }
-        : u
-    ));
-  } catch (error) {
-    console.error("Error desasignando equipo:", error);
-    throw error;
-  }
-};
-
-// Función para actualizar categoría de asignación
-const updateAssignmentCategory = async (userId, equipmentId, newCategory) => {
-  try {
-    // Actualizar el equipo
-    await updateDoc(doc(db, 'equipment', equipmentId), {
-      [`categoriasAsignacion.${userId}`]: newCategory,
-      updatedAt: new Date()
-    });
-
-    // Actualizar estado local
-    setEquipment(prev => prev.map(eq => 
-      eq.id === equipmentId
-        ? {
-            ...eq,
-            categoriasAsignacion: {
-              ...(eq.categoriasAsignacion || {}),
-              [userId]: newCategory
-            }
-          }
-        : eq
-    ));
-  } catch (error) {
-    console.error("Error actualizando categoría:", error);
-    throw error;
-  }
-};
 
 
+  const handleEditUser = async (userData) => {
+    try {
+      const oldUser = users.find(u => u.id === userData.id);
+      
+      // Obtener equipos antiguos y nuevos (siempre como arrays)
+      const oldEquipos = [
+      ...(Array.isArray(oldUser?.equiposCasa) ? oldUser.equiposCasa : []),
+      ...(Array.isArray(oldUser?.equiposRemoto) ? oldUser.equiposRemoto : []),
+      ...(Array.isArray(oldUser?.equiposOficina) ? oldUser.equiposOficina : [])
+    ];
+        
+      const newEquipos = [
+      ...(Array.isArray(userData.equiposCasa) ? userData.equiposCasa : []),
+      ...(Array.isArray(userData.equiposRemoto) ? userData.equiposRemoto : []),
+      ...(Array.isArray(userData.equiposOficina) ? userData.equiposOficina : [])
+    ];
 
+      // Equipos que ya no están asignados
+      const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
+      // Nuevos equipos asignados
+      const addedEquipos = newEquipos.filter(id => !oldEquipos.includes(id));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Función modificada handleEditUser
-const handleEditUser = async (userData) => {
-  try {
-    const oldUser = users.find(u => u.id === userData.id);
-    
-    // Obtener equipos antiguos y nuevos
-    const oldEquipos = oldUser.equiposAsignados || [];
-    const newEquipos = userData.equiposAsignados || [];
-    
-    // Equipos que ya no están asignados
-    const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
-    // Nuevos equipos asignados
-    const addedEquipos = newEquipos.filter(id => !oldEquipos.includes(id));
-
-    // Procesar cambios
-    await Promise.all([
-      ...removedEquipos.map(equipoId => 
-        unassignEquipmentFromUser(userData.id, equipoId)
-      ),
-      ...addedEquipos.map(equipoId => 
-        assignEquipmentToUser(
-          userData.id, 
-          equipoId, 
-          userData.categoriasTemporales?.[equipoId] || 'casa'
+      // Actualizar equipos en Firestore
+      await Promise.all([
+        ...removedEquipos.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayRemove(userData.id),
+            updatedAt: new Date()
+          })
+        ),
+        ...addedEquipos.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayUnion(userData.id),
+            updatedAt: new Date()
+          })
         )
-      )
-    ]);
+      ]);
 
       // Actualizar el usuario
       await updateDoc(doc(db, 'users', userData.id), {
@@ -361,55 +236,87 @@ const handleEditUser = async (userData) => {
         tipoVpn: userData.tipoVpn,
         department: userData.department,
         estado: userData.estado,
+        equiposCasa: userData.equiposCasa || [],
+        equiposRemoto: userData.equiposRemoto || [],
+        equiposOficina: userData.equiposOficina || [],
         imageBase64: userData.imageBase64,
         updatedAt: new Date()
       });
 
       // Actualizar estado local
-    setUsers(users.map(u => 
+      setUsers(users.map(u => 
       u.id === userData.id ? { 
-        ...userData,
-        equiposAsignados: newEquipos
+        ...u, 
+        equiposCasa: userData.equiposCasa || [],
+        equiposRemoto: userData.equiposRemoto || [],
+        equiposOficina: userData.equiposOficina || []
       } : u
     ));
 
-      return true;
-  } catch (error) {
-    console.error("Error editando usuario:", error);
-    throw error;
-  }
-};
+      setEquipment(prevEquipment => 
+        prevEquipment.map(eq => {
+          const usuarios = Array.isArray(eq.usuariosAsignados) ? eq.usuariosAsignados : [];
+          
+          if (removedEquipos.includes(eq.id)) {
+            return {
+              ...eq,
+              usuariosAsignados: usuarios.filter(id => id !== userData.id)
+            };
+          }
+          
+          if (addedEquipos.includes(eq.id) && !usuarios.includes(userData.id)) {
+            return {
+              ...eq,
+              usuariosAsignados: [...usuarios, userData.id]
+            };
+          }
+          
+          return eq;
+        })
+      );
 
- // Función modificada handleAddUser
-const handleAddUser = async (userData) => {
-  try {
-    // Crear usuario
-    const docRef = await addDoc(collection(db, 'users'), {
+      return true;
+    } catch (error) {
+      console.error("Error editando usuario:", error);
+      throw error;
+    }
+  };
+
+  const handleAddUser = async (userData) => {
+    try {
+       const allEquipmentIds = [
+      ...(Array.isArray(userData.equiposCasa) ? userData.equiposCasa : []),
+      ...(Array.isArray(userData.equiposRemoto) ? userData.equiposRemoto : []),
+      ...(Array.isArray(userData.equiposOficina) ? userData.equiposOficina : [])
+    ];
+
+      const docRef = await addDoc(collection(db, 'users'), {
       ...userData,
-      equiposAsignados: [],
+      equiposCasa: userData.equiposCasa || [],
+      equiposRemoto: userData.equiposRemoto || [],
+      equiposOficina: userData.equiposOficina || [],
       createdAt: new Date()
     });
 
-    // Asignar equipos si los hay
-    await Promise.all(
-      (userData.equiposAsignados || []).map(equipoId => 
-        assignEquipmentToUser(
-          docRef.id, 
-          equipoId, 
-          userData.categoriasTemporales?.[equipoId] || 'casa'
+      // Actualizar equipos asignados
+      await Promise.all(
+        allEquipmentIds.map(equipoId => 
+          updateDoc(doc(db, 'equipment', equipoId), {
+            usuariosAsignados: arrayUnion(docRef.id),
+            updatedAt: new Date()
+          })
         )
-      )
-    );
+      );
 
-  
-      
-  // Actualizar estado local
-    const newUser = { 
+      const newUser = { 
       id: docRef.id, 
       ...userData,
-      equiposAsignados: userData.equiposAsignados || []
+      equiposCasa: userData.equiposCasa || [],
+      equiposRemoto: userData.equiposRemoto || [],
+      equiposOficina: userData.equiposOficina || []
     };
-
+      
+      // Actualizar estado local
     setUsers([...users, newUser]);
     
     return newUser;

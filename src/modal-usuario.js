@@ -7,7 +7,8 @@ function UserDetailsModal({
   onClose, 
   onEdit, 
   users = [], 
-  equipment = [], 
+  equipment = [],
+  
   onNext, 
   onPrev,
   onOpenEquipmentModal,
@@ -29,8 +30,9 @@ const normalizeArray = (value) => {
   const [isEditing, setIsEditing] = useState(false);
  const [editedUser, setEditedUser] = useState({
     ...user,
-    equiposAsignados: user.equiposAsignados || [],
-    categoriasTemporales: {}
+    equiposCasa: normalizeArray(user.equiposCasa),
+    equiposRemoto: normalizeArray(user.equiposRemoto),
+    equiposOficina: normalizeArray(user.equiposOficina)
   });
   const [isMobile, setIsMobile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -38,14 +40,6 @@ const normalizeArray = (value) => {
   const [showAddDepartment, setShowAddDepartment] = useState(false);
   const [newDepartment, setNewDepartment] = useState('');
   const [isCompressing, setIsCompressing] = useState(false);
-
-
-
-
-
-
-
-
   
   // Función para touch events
   const [touchStart, setTouchStart] = useState(null);
@@ -80,20 +74,13 @@ const getEquipmentPurpose = (type) => {
 
 
 
-// Obtener equipos asignados por categoría
-  const assignedEquipment = useMemo(() => {
-    return equipment.reduce((acc, eq) => {
-      if (eq.usuariosAsignados?.includes(user.id)) {
-        const categoria = eq.categoriasAsignacion?.[user.id] || 'casa';
-        acc[categoria].push(eq);
-      }
-      return acc;
-    }, { casa: [], remoto: [], oficina: [] });
-  }, [equipment, user.id]);
+// Uso:
+const assignedEquipment = useMemo(() => ({
+  casa: equipment.filter(e => editedUser.equiposCasa.includes(e.id)),
+  remoto: equipment.filter(e => editedUser.equiposRemoto.includes(e.id)),
+  oficina: equipment.filter(e => editedUser.equiposOficina.includes(e.id))
+}), [editedUser, equipment]);
 
-
-
-  
 
   // Obtener estados de los equipos asignados
   const getEstadoColor = (estado) => {
@@ -105,18 +92,8 @@ const getEquipmentPurpose = (type) => {
     return colors[estado] || '#666';
   };
 
-
-
- // Inicializar datos del usuario
+  // Inicializar datos del usuario
   useEffect(() => {
-    // Inicializar categoriasTemporales con las categorías actuales
-    const initialCategories = {};
-    equipment.forEach(eq => {
-      if (eq.usuariosAsignados?.includes(user.id)) {
-        initialCategories[eq.id] = eq.categoriasAsignacion?.[user.id] || 'casa';
-      }
-    });
-
     setEditedUser({
       name: user.name || '',
       correo: user.correo || '',
@@ -124,14 +101,12 @@ const getEquipmentPurpose = (type) => {
       department: user.department || '',
       estado: user.estado || '',
       ciudad: user.ciudad || '',
-      equiposAsignados: user.equiposAsignados || [],
-      imageBase64: user.imageBase64 || '',
-      categoriasTemporales: initialCategories
+      equiposCasa: Array.isArray(user.equiposCasa) ? user.equiposCasa : [],
+      equiposRemoto: Array.isArray(user.equiposRemoto) ? user.equiposRemoto : [],
+      equiposOficina: Array.isArray(user.equiposOficina) ? user.equiposOficina : [],
+      imageBase64: user.imageBase64 || ''
     });
-  }, [user, equipment]);
-
-
-
+  }, [user]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -145,23 +120,27 @@ const getEquipmentPurpose = (type) => {
   };
 
 const handleSave = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
+  
+   setIsSaving(true);
+  try {
+    const userToUpdate = {
+      id: user.id,
+      ...editedUser,
+      equiposCasa: editedUser.equiposCasa || [],
+      equiposRemoto: editedUser.equiposRemoto || [],
+      equiposOficina: editedUser.equiposOficina || []
+    };
     
-    setIsSaving(true);
-    try {
-      await onEdit({
-        ...editedUser,
-        id: user.id,
-        categoriasTemporales: editedUser.categoriasTemporales
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      setErrors({ form: error.message || 'Error al guardar los cambios' });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    await onEdit(userToUpdate);
+    setIsEditing(false);
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    setErrors({ form: error.message || 'Error al guardar los cambios' });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -221,87 +200,61 @@ const handleSave = async () => {
 
 
 
-  // Función para renderizar selects de equipos por categoría
-  const renderEquipmentSelects = () => {
-    const categories = ['casa', 'remoto', 'oficina'];
-    
-    return (
-      <div className="equipment-selects-container">
-        {categories.map(category => (
-          <div key={category} className="form-group">
-            <label className="form-label">Equipos para {category}</label>
-            <Select
-              isMulti
-              options={equipment.map(eq => ({
-                value: eq.id,
-                label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
-              }))}
-              value={equipment
-                .filter(eq => 
-                  editedUser.equiposAsignados?.includes(eq.id) && 
-                  editedUser.categoriasTemporales[eq.id] === category
-                )
-                .map(eq => ({
-                  value: eq.id,
-                  label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
-                }))}
-              onChange={selected => {
-                const selectedIds = selected ? selected.map(item => item.value) : [];
-                
-                // Actualizar equipos asignados
-                const newEquipos = [
-                  ...editedUser.equiposAsignados.filter(id => 
-                    editedUser.categoriasTemporales[id] !== category
-                  ),
-                  ...selectedIds
-                ];
-                
-                // Actualizar categorías temporales
-                const newCategories = {...editedUser.categoriasTemporales};
-                selectedIds.forEach(id => {
-                  newCategories[id] = category;
-                });
-                
-                setEditedUser(prev => ({
-                  ...prev,
-                  equiposAsignados: [...new Set(newEquipos)], // Eliminar duplicados
-                  categoriasTemporales: newCategories
-                }));
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
+const renderEquipmentSelects = () => {
+  if (!equipment || !Array.isArray(equipment)) return null;
 
-   // Renderizado de equipos asignados en modo visualización
-  const renderAssignedEquipment = () => {
-    return (
-      <div className="assigned-equipment-section">
-        {['casa', 'remoto', 'oficina'].map(category => (
-          assignedEquipment[category].length > 0 && (
-            <div key={category} className="equipment-category">
-              <h4>Equipos para {category} ({assignedEquipment[category].length})</h4>
-              <div className="equipment-list">
-                {assignedEquipment[category].map(equipo => (
-                  <div 
-                    key={equipo.id} 
-                    className="equipment-item" 
-                    onClick={() => handleEquipmentClick(equipo)}
-                  >
-                    <span className="equipment-name">{equipo.nombre}</span>
-                    <span className="equipment-ip">{equipo.IpEquipo}</span>
-                    <span className="equipment-category-badge">{category}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        ))}
+  return (
+        <div className="equipment-selects-container">
+      <div className="form-group">
+        <label className="form-label">Equipos para Casa</label>
+        <Select
+          isMulti
+          options={equipment.map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))}
+          value={editedUser.equiposCasa?.map(id => {
+            const eq = equipment.find(e => e.id === id);
+            return {
+              value: eq?.id,
+              label: eq ? `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}` : 'Equipo no encontrado'
+            };
+          })}
+          onChange={selected => {
+            setEditedUser(prev => ({
+              ...prev,
+              equiposCasa: selected ? selected.map(item => item.value) : []
+            }));
+          }}
+        />
       </div>
-    );
-  };
+
+      <div className="form-group">
+        <label className="form-label">Equipos para Remoto</label>
+        <Select
+          isMulti
+          options={equipment.map(toOption)}
+          value={equipment
+            .filter(e => editedUser.equiposRemoto?.includes(e.id))
+            .map(toOption)}
+          onChange={selected => handleEquipmentChange('equiposRemoto', selected)}
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label">Equipos para Oficina</label>
+        <Select
+          isMulti
+          options={equipment.map(toOption)}
+          value={equipment
+            .filter(e => editedUser.equiposOficina?.includes(e.id))
+            .map(toOption)}
+          onChange={selected => handleEquipmentChange('equiposOficina', selected)}
+        />
+      </div>
+    </div>
+  );
+};
 
 const toOption = (eq) => ({
   value: eq.id,
@@ -682,11 +635,49 @@ const handlePrev = () => {
               </div>
 
          
-<div className="detail-rowU">
-    {renderAssignedEquipment()}
+<div className="assigned-equipment-section">
+            {assignedEquipment.casa.length > 0 && (
+              <div className="equipment-category">
+                <h4>Equipos para Casa ({assignedEquipment.casa.length})</h4>
+                <div className="equipment-list">
+                  {assignedEquipment.casa.map(equipo => (
+                    <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+                      <span className="equipment-name">{equipo.nombre}</span>
+                      <span className="equipment-ip">{equipo.IpEquipo}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+  
+  {assignedEquipment.remoto.length > 0 && (
+    <div className="equipment-category">
+      <h4>Equipos para Remoto ({assignedEquipment.remoto.length})</h4>
+      <div className="equipment-list">
+        {assignedEquipment.remoto.map(equipo => (
+          <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+            <span className="equipment-name">{equipo.nombre}</span>
+            <span className="equipment-ip">{equipo.IpEquipo}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+  
+  {assignedEquipment.oficina.length > 0 && (
+    <div className="equipment-category">
+      <h4>Equipos para Oficina ({assignedEquipment.oficina.length})</h4>
+      <div className="equipment-list">
+        {assignedEquipment.oficina.map(equipo => (
+          <div key={equipo.id} className="equipment-item" onClick={() => handleEquipmentClick(equipo)}>
+            <span className="equipment-name">{equipo.nombre}</span>
+            <span className="equipment-ip">{equipo.IpEquipo}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
 </div>
-
-
 
 
             <div className="modal-actionsU">
