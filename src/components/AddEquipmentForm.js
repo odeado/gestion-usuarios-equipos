@@ -229,7 +229,7 @@ procesador: '',
   
   const options = safeUsers.map(user => ({
     value: user.id,
-    label: `${user.name} - ${user.department}`
+    label: `${user.name}`
   }));
 
   return (
@@ -295,7 +295,7 @@ procesador: '',
 const renderUserSelectWithCategories = () => {
   const options = users.map(user => ({
     value: user.id,
-    label: `${user.name} - ${user.department}`,
+    label: `${user.name}`,
     category: formData.categoriasAsignacion[user.id] || 'casa'
   }));
 
@@ -334,6 +334,8 @@ const renderUserSelectWithCategories = () => {
                 setShowCategoryModal(true);
               }}
               className="category-indicator"
+
+
             >
               {formData.categoriasAsignacion[user.value] || 'casa'} ✏️
             </button>

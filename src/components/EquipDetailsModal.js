@@ -294,7 +294,7 @@ function EquipDetailsModal({
   const renderUserSelect = () => {
     const options = users.map(user => ({
       value: user.id,
-      label: `${user.name} - ${user.department}`,
+      label: `${user.name}`,
       category: editedEquipment.categoriasAsignacion?.[user.id] || 'casa'
     }));
 
