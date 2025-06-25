@@ -3,7 +3,7 @@ import imageCompression from 'browser-image-compression';
 import Select from 'react-select';
 import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
 
-function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit, departments = [], onAddDepartment, equipment = [] }) {
+function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onEquipmentCategoryChange, onCancelEdit, departments = [], onAddDepartment, equipment = [] }) {
   const [formData, setFormData] = useState({
     name: '',
     correo: '',
@@ -27,14 +27,16 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
   // Efecto para cargar datos del usuario a editar
   useEffect(() => {
-    if (userToEdit) {
-
-      const initialCategories = {};
-      equipment.forEach(eq => {
-        if (eq.usuariosAsignados?.includes(userToEdit.id)) {
-          initialCategories[eq.id] = eq.categoriasAsignacion?.[userToEdit.id] || 'casa';
+     if (userToEdit) {
+    const initialCategories = {};
+    equipment.forEach(eq => {
+      if (eq.usuariosAsignados?.includes(userToEdit.id)) {
+        // Solo asignar si existe una categoría definida
+        if (eq.categoriasAsignacion?.[userToEdit.id]) {
+          initialCategories[eq.id] = eq.categoriasAsignacion[userToEdit.id];
         }
-        });
+      }
+    });
 
       setFormData({
         name: userToEdit.name || '',
@@ -116,6 +118,31 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
     }
   };
 
+
+// En AddUserForm.js
+const handleEquipmentAssignment = (equipoId, category) => {
+  const newCategories = {...formData.categoriasTemporales};
+  
+  // Solo actualizar si se selecciona una categoría válida
+  if (category) {
+    newCategories[equipoId] = category;
+  } else {
+    delete newCategories[equipoId];
+  }
+
+  setFormData(prev => ({
+    ...prev,
+    categoriasTemporales: newCategories,
+    equiposAsignados: Object.keys(newCategories)
+  }));
+  
+  if (onEquipmentCategoryChange) {
+    onEquipmentCategoryChange(equipoId, userToEdit?.id || null, category);
+  }
+};
+
+
+
   const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       setIsCompressing(true);
@@ -153,7 +180,12 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
   
 
-   try {
+    try {
+    // Filtrar equipos que realmente existen
+    const validEquipmentIds = formData.equiposAsignados.filter(equipoId => 
+      equipment.some(eq => eq.id === equipoId)
+    );
+
       const userData = {
         name: formData.name,
         correo: formData.correo,
@@ -161,20 +193,21 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
         tipoVpn: formData.tipoVpn,
         department: formData.department,
         estado: formData.estado,
-        equiposAsignados: formData.equiposAsignados,
-        categoriasTemporales: formData.categoriasTemporales,
+        equiposAsignados: Object.keys(formData.categoriasTemporales),
+        categoriasAsignacion: formData.categoriasTemporales,
         imageBase64: formData.imageBase64
       };
 
-      if (isEditing && userToEdit) {
-        await onEditUser({
-          ...userData,
-          id: userToEdit.id
-        });
-      } else {
-        await onUserAdded(userData);
-        resetForm();
-      }
+       if (isEditing && userToEdit) {
+      await onEditUser({
+        ...userData,
+        id: userToEdit.id
+      });
+      onCancelEdit(); // Cerrar el formulario después de editar
+    } else {
+      await onUserAdded(userData);
+      resetForm(); // Resetear el formulario después de agregar
+    }
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
@@ -263,60 +296,53 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onCancelEdit,
 
 
 
-  const renderEquipmentSelects = () => {
-    const categories = ['casa', 'remoto', 'oficina'];
-    
-    return (
-      <div className="equipment-selects-container">
-        {categories.map(category => (
-          <div key={category} className="form-group">
-            <label className="form-label">Equipos para {category}</label>
-            <Select
-              isMulti
-              options={equipment.map(eq => ({
-                value: eq.id,
-                label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-              }))}
-              value={equipment
-                .filter(eq => 
-                  formData.equiposAsignados.includes(eq.id) && 
-                  formData.categoriasTemporales[eq.id] === category
-                )
-                .map(eq => ({
-                  value: eq.id,
-                  label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-                }))}
-              onChange={selected => {
-                const selectedIds = selected ? selected.map(item => item.value) : [];
-                
-                // Actualizar equipos asignados
-                const newEquipos = [
-                  ...formData.equiposAsignados.filter(id => 
-                    formData.categoriasTemporales[id] !== category
-                  ),
-                  ...selectedIds
-                ];
-                
-                // Actualizar categorías temporales
-                const newCategories = {...formData.categoriasTemporales};
-                selectedIds.forEach(id => {
-                  newCategories[id] = category;
-                });
-                
-                setFormData(prev => ({
-                  ...prev,
-                  equiposAsignados: [...new Set(newEquipos)], // Eliminar duplicados
-                  categoriasTemporales: newCategories
-                }));
-              }}
-              className="equipment-select"
-              classNamePrefix="select"
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
+ const renderEquipmentSelects = () => {
+  const categories = ['casa', 'remoto', 'oficina'];
+  
+  return categories.map(category => (
+    <div key={category} className="form-group">
+      <label className="form-label">Equipos para {category}</label>
+      <Select
+        isMulti
+        options={equipment.map(eq => ({
+          value: eq.id,
+          label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`,
+          category: category
+        }))}
+        value={equipment
+          .filter(eq => formData.categoriasTemporales[eq.id] === category)
+          .map(eq => ({
+            value: eq.id,
+            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
+          }))
+        }
+        onChange={(selectedOptions) => {
+          const selectedIds = (selectedOptions || []).map(option => option.value);
+          
+          // Actualizar todos los equipos de esta categoría
+          const newCategories = {...formData.categoriasTemporales};
+          
+          // Primero eliminar todos los equipos que estaban en esta categoría
+          Object.keys(newCategories).forEach(eqId => {
+            if (newCategories[eqId] === category) {
+              delete newCategories[eqId];
+            }
+          });
+          
+          // Luego agregar los nuevos seleccionados
+          selectedIds.forEach(eqId => {
+            newCategories[eqId] = category;
+          });
+          
+          setFormData(prev => ({
+            ...prev,
+            categoriasTemporales: newCategories
+          }));
+        }}
+      />
+    </div>
+  ));
+};
 
 const toOption = (eq) => ({
   value: eq.id,

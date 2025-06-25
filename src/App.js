@@ -20,6 +20,66 @@ function App() {
   const formRef = useRef(null);
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
+
+
+ // En el componente padre que maneja el estado global
+const handleEquipmentCategoryChange = (equipoId, userId, category) => {
+  setEquipment(prev => prev.map(eq => {
+    if (eq.id === equipoId) {
+      const newCategories = {...eq.categoriasAsignacion};
+      if (category) {
+        newCategories[userId] = category;
+      } else {
+        delete newCategories[userId];
+      }
+      return {...eq, categoriasAsignacion: newCategories};
+    }
+    return eq;
+  }));
+}; 
+
+
+const handleUserEquipmentChange = (userId, equipmentId, category) => {
+  // Actualizar el equipo correspondiente
+  setEquipment(prev => prev.map(eq => {
+    if (eq.id === equipmentId) {
+      const newUsers = eq.usuariosAsignados.includes(userId) 
+        ? eq.usuariosAsignados 
+        : [...eq.usuariosAsignados, userId];
+      
+      return {
+        ...eq,
+        usuariosAsignados: newUsers,
+        categoriasAsignacion: {
+          ...eq.categoriasAsignacion,
+          [userId]: category
+        }
+      };
+    }
+    return eq;
+  }));
+
+  // Actualizar el usuario correspondiente
+  setUsers(prev => prev.map(user => {
+    if (user.id === userId) {
+      const newEquipment = user.equiposAsignados.includes(equipmentId)
+        ? user.equiposAsignados
+        : [...user.equiposAsignados, equipmentId];
+      
+      return {
+        ...user,
+        equiposAsignados: newEquipment,
+        categoriasTemporales: {
+          ...user.categoriasTemporales,
+          [equipmentId]: category
+        }
+      };
+    }
+    return user;
+  }));
+};
+
+
   const [departments, setDepartments] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedEquipmentId, setSelectedEquipmentId] = useState(null);
@@ -930,6 +990,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               {showUserForm && (
                 <div className="forms-usuarios">
                   <AddUserForm 
+                  onEquipmentCategoryChange={handleUserEquipmentChange}
                     onUserAdded={(userData) => {
                       handleAddUser(userData);
                       setShowUserForm(false);
@@ -985,6 +1046,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
        {showEquipmentForm && (
                 <div className="forms-equipos">
                   <AddEquipmentForm 
+                  onUserCategoryChange={handleUserEquipmentChange}
                     ref={formRef}
                     users={users}
                     onEquipmentAdded={(equipData) => {

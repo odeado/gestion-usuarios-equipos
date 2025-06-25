@@ -1,89 +1,66 @@
+// AutocompleteInput.js
 import React, { useState, useEffect } from 'react';
-import './AutocompleteInput.css';
+import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 
 const AutocompleteInput = ({
   value,
   onChange,
-  options = [],
+  options,
   onAddNewOption,
-  placeholder = '',
-  label = '',
-  error = null
+  placeholder,
+  label,
+  error,
+  isMulti = false
 }) => {
-  const [inputValue, setInputValue] = useState(value || '');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredOptions, setFilteredOptions] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [localOptions, setLocalOptions] = useState(options);
 
   useEffect(() => {
-    setInputValue(value || '');
-  }, [value]);
+    setLocalOptions(options);
+  }, [options]);
 
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    onChange(e); // Propagar el cambio al formulario
-    
-    // Filtrar opciones
-    if (newValue.length > 0) {
-      const filtered = options.filter(option =>
-        option.toLowerCase().includes(newValue.toLowerCase())
-      );
-      setFilteredOptions(filtered);
-      setShowSuggestions(true);
+  const handleChange = (selectedOption) => {
+    if (isMulti) {
+      onChange(selectedOption ? selectedOption.map(o => o.value) : []);
     } else {
-      setShowSuggestions(false);
+      onChange(selectedOption?.value || '');
     }
   };
 
-  const handleSelectSuggestion = (suggestion) => {
-    setInputValue(suggestion);
-    onChange({ target: { value: suggestion } });
-    setShowSuggestions(false);
-  };
-
-  const handleAddNew = () => {
-    if (inputValue && !options.includes(inputValue)) {
-      onAddNewOption(inputValue);
+  const handleCreate = (inputValue) => {
+    const newOption = { value: inputValue, label: inputValue };
+    setLocalOptions(prev => [...prev, newOption]);
+    onAddNewOption(inputValue);
+    if (isMulti) {
+      onChange([...value, inputValue]);
+    } else {
+      onChange(inputValue);
     }
-    setShowSuggestions(false);
   };
 
-  const handleBlur = () => {
-    setTimeout(() => setShowSuggestions(false), 200);
+  const getValue = () => {
+    if (isMulti) {
+      return localOptions.filter(option => value.includes(option.value));
+    }
+    return localOptions.find(option => option.value === value);
   };
 
   return (
-    <div className="autocomplete-container">
+    <div className="form-group">
       {label && <label className="form-label">{label}</label>}
-      <div className="autocomplete-input-container">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onFocus={() => setShowSuggestions(true)}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          className={`form-input ${error ? 'input-error' : ''}`}
-        />
-        {showSuggestions && (filteredOptions.length > 0 || inputValue) && (
-          <div className="suggestions-dropdown">
-            {filteredOptions.map((option, index) => (
-              <div
-                key={index}
-                className="suggestion-item"
-                onClick={() => handleSelectSuggestion(option)}
-              >
-                {option}
-              </div>
-            ))}
-            {inputValue && !options.includes(inputValue) && (
-              <div className="suggestion-item new-item" onClick={handleAddNew}>
-                <span>Crear nuevo: "{inputValue}"</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <CreatableSelect
+        isClearable
+        isMulti={isMulti}
+        options={localOptions}
+        value={getValue()}
+        onChange={handleChange}
+        onCreateOption={handleCreate}
+        onInputChange={setInputValue}
+        inputValue={inputValue}
+        placeholder={placeholder}
+        noOptionsMessage={() => "No hay opciones. Escribe para crear una nueva."}
+      />
       {error && <div className="error-text">{error}</div>}
     </div>
   );

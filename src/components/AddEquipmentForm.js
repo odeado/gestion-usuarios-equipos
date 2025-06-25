@@ -293,72 +293,75 @@ procesador: '',
 
 
 const renderUserSelectWithCategories = () => {
-  const options = users.map(user => ({
-    value: user.id,
-    label: `${user.name}`,
-    category: formData.categoriasAsignacion[user.id] || 'casa'
-  }));
-
   return (
     <div className="form-group">
       <label className="form-label">Usuarios Asignados</label>
       <Select
         isMulti
-        options={options}
-        value={options.filter(option => 
-          formData.usuariosAsignados.includes(option.value)
-        )}
+        options={users.map(user => ({
+          value: user.id,
+          label: user.name,
+          category: formData.categoriasAsignacion[user.id] || 'casa'
+        }))}
+        value={users
+          .filter(user => formData.usuariosAsignados.includes(user.id))
+          .map(user => ({
+            value: user.id,
+            label: user.name,
+            category: formData.categoriasAsignacion[user.id] || 'casa'
+          }))
+        }
         onChange={(selectedOptions) => {
-          const selectedUsers = selectedOptions ? selectedOptions.map(o => o.value) : [];
-          const newCategories = {};
+          const selectedUsers = selectedOptions?.map(o => o.value) || [];
+          const newCategories = {...formData.categoriasAsignacion};
           
-          selectedOptions?.forEach(option => {
-            newCategories[option.value] = 
-              formData.categoriasAsignacion[option.value] || 'casa';
+          // Mantener solo los usuarios seleccionados
+          Object.keys(newCategories).forEach(userId => {
+            if (!selectedUsers.includes(userId)) {
+              delete newCategories[userId];
+            }
           });
-
+          
+          // Agregar nuevos usuarios con categoría por defecto
+          selectedUsers.forEach(userId => {
+            if (!newCategories[userId]) {
+              newCategories[userId] = 'casa';
+            }
+          });
+          
           setFormData(prev => ({
             ...prev,
             usuariosAsignados: selectedUsers,
             categoriasAsignacion: newCategories
           }));
         }}
-        formatOptionLabel={(user) => (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        formatOptionLabel={(user, { context }) => (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>{user.label}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setCurrentUserForCategory(user.value);
-                setShowCategoryModal(true);
-              }}
-              className="category-indicator"
-
-
-            >
-              {formData.categoriasAsignacion[user.value] || 'casa'} ✏️
-            </button>
+            {context === 'menu' ? (
+              <span className="category-badge">{user.category}</span>
+            ) : (
+              <select
+                className="category-select"
+                value={formData.categoriasAsignacion[user.value] || 'casa'}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setFormData(prev => ({
+                    ...prev,
+                    categoriasAsignacion: {
+                      ...prev.categoriasAsignacion,
+                      [user.value]: e.target.value
+                    }
+                  }));
+                }}
+              >
+                <option value="casa">Casa</option>
+                <option value="remoto">Remoto</option>
+                <option value="oficina">Oficina</option>
+              </select>
+            )}
           </div>
         )}
-        className="react-select-container"
-        classNamePrefix="react-select"
-      />
-      
-      <CategoryModal
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        currentUserId={currentUserForCategory}
-        users={users}
-        currentCategory={formData.categoriasAsignacion[currentUserForCategory]}
-        onCategoryChange={(userId, category) => {
-          const newCategories = {...formData.categoriasAsignacion};
-          newCategories[userId] = category;
-          setFormData(prev => ({
-            ...prev,
-            categoriasAsignacion: newCategories
-          }));
-        }}
       />
     </div>
   );

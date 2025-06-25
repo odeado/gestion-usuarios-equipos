@@ -2,19 +2,57 @@ import React, { useState, useRef } from 'react';
 import './EquipmentList.css';
 import EquipDetailsModal from './EquipDetailsModal';
 
+
+const normalizeIP = (ip) => {
+  if (ip === null || ip === undefined) return '';
+  if (typeof ip === 'number') return String(ip);
+  return ip;
+};
+
+// Función auxiliar para validar IPs
+const isValidIP = (ip) => {
+  ip = normalizeIP(ip);
+  // Verifica que ip exista y sea string
+  if (!ip || typeof ip !== 'string') return false;
+  
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  
+  return parts.every(part => {
+    const num = parseInt(part, 10);
+    return !isNaN(num) && num >= 0 && num <= 255;
+  });
+};
+
+// Función auxiliar para comparar IPs numéricas por subredes
+const compareNumericIPs = (ipA, ipB, direction) => {
+  // Asegúrate de que sean strings válidos
+  if (typeof ipA !== 'string' || typeof ipB !== 'string') return 0;
+  
+  const partsA = ipA.split('.').map(part => parseInt(part, 10));
+  const partsB = ipB.split('.').map(part => parseInt(part, 10));
+  
+  for (let i = 0; i < 4; i++) {
+    if (partsA[i] !== partsB[i]) {
+      const result = partsA[i] - partsB[i];
+      return direction === 'ascending' ? result : -result;
+    }
+  }
+  return 0;
+};
+
+
 function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment, onOpenUserModal }) {
 
   const [selectedEquipment, setSelectedEquipment] = useState(null);
-
-
-
-// inicio de la funcion ordenar
-
-
+  const [selectedUser, setSelectedUser] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
   });
+
+// inicio de la funcion ordenar
+
 
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -34,6 +72,11 @@ const getSortedItems = () => {
       const ipA = a.IpEquipo || '';
       const ipB = b.IpEquipo || '';
 
+      // Debug: Muestra valores problemáticos
+      if (typeof ipA !== 'string' || typeof ipB !== 'string') {
+        console.warn('Valores de IP no son strings:', { ipA, ipB, a, b });
+      }
+
       // Caso 1: Ambos son IPs numéricas
       if (isValidIP(ipA) && isValidIP(ipB)) {
         return compareNumericIPs(ipA, ipB, sortConfig.direction);
@@ -48,14 +91,15 @@ const getSortedItems = () => {
       }
       // Caso 4: Ninguno es IP numérica (ej. "dinámica")
       else {
-        return ipA.localeCompare(ipB) * (sortConfig.direction === 'ascending' ? 1 : -1);
+        return String(ipA).localeCompare(String(ipB)) * 
+               (sortConfig.direction === 'ascending' ? 1 : -1);
       }
     }
     // Ordenamiento normal para otras columnas
     else {
       const aValue = a[sortConfig.key] || '';
       const bValue = b[sortConfig.key] || '';
-      return aValue.toString().localeCompare(bValue.toString()) * 
+      return String(aValue).localeCompare(String(bValue)) * 
              (sortConfig.direction === 'ascending' ? 1 : -1);
     }
   });
@@ -63,31 +107,10 @@ const getSortedItems = () => {
   return sortableItems;
 };
 
-// Función auxiliar para validar IPs
-const isValidIP = (ip) => {
-  if (!ip) return false;
-  const parts = ip.split('.');
-  if (parts.length !== 4) return false;
-  return parts.every(part => {
-    const num = parseInt(part, 10);
-    return !isNaN(num) && num >= 0 && num <= 255;
-  });
-};
 
-// Función auxiliar para comparar IPs numéricas por subredes
-const compareNumericIPs = (ipA, ipB, direction) => {
-  const partsA = ipA.split('.').map(part => parseInt(part, 10));
-  const partsB = ipB.split('.').map(part => parseInt(part, 10));
-  
-  // Comparar octeto por octeto
-  for (let i = 0; i < 4; i++) {
-    if (partsA[i] !== partsB[i]) {
-      const result = partsA[i] - partsB[i];
-      return direction === 'ascending' ? result : -result;
-    }
-  }
-  return 0;
-};
+
+
+
   
 
 // final de la funcion ordenar
@@ -116,7 +139,7 @@ const getAssignedUserNames = (userIds) => {
 
 // función que maneje el clic en el usuario y muestre su información
 
-const [selectedUser, setSelectedUser] = useState(null);
+
 
  const handleUserClick = (user, e) => {
     e.stopPropagation(); // Evita que se active el clic en la fila del equipo
