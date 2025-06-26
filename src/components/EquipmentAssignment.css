@@ -1,0 +1,68 @@
+.equipment-assignment-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.equipment-select {
+  margin-bottom: 15px;
+}
+
+.assigned-equipment-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.assigned-equipment-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.equipment-info {
+  flex: 1;
+}
+
+.equipment-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.category-select {
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.unassign-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-edit-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-edit-btn.active {
+  background: #f44336;
+}

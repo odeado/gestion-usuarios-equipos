@@ -1,157 +1,59 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './UserDetailsModal.css';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 
 function UserDetailsModal({ 
   user = {}, 
   onClose, 
-  onEdit, 
-  users = [], 
-  equipment = [], 
-  onNext, 
+  onEdit,
+  users = [],
+  equipment = [],
+  onNext,
   onPrev,
   onOpenEquipmentModal,
-  imageCompression,
-  departments = [],
-  onAddDepartment
+  availableDepartments = []
 }) {
-
-
-
-
-const normalizeArray = (value) => {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') return value.split(',').map(item => item.trim());
-  return [String(value)];
-};
-  // Estado para manejar la edición del usuario
-  const [isEditing, setIsEditing] = useState(false);
- const [editedUser, setEditedUser] = useState({
-    ...user,
-    equiposAsignados: user.equiposAsignados || [],
-    categoriasTemporales: {}
-  });
   const [isMobile, setIsMobile] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
-  const [showAddDepartment, setShowAddDepartment] = useState(false);
-  const [newDepartment, setNewDepartment] = useState('');
-  const [isCompressing, setIsCompressing] = useState(false);
-
-
-
-
-
-
-
-
-  
-  // Función para touch events
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  const currentIndex = users.findIndex(u => u.id === user.id);
-const totalUsers = users.length;
-
-
-// Obtener etiqueta legible para el tipo de trabajo
-const getTrabajoLabel = (tipo) => {
-  const tipos = {
-    'remoto': 'Remoto',
-    'hibrido': 'Híbrido',
-    'oficina': 'Oficina'
-  };
-  return tipos[tipo] || tipo || 'No especificado';
-};
-
-// Obtener propósito del equipo
-const getEquipmentPurpose = (type) => {
-  const purposes = {
-    'laptop': 'Portátil',
-    'desktop': 'Computadora de escritorio',
-    'monitor': 'Monitor',
-    'dispositivo_remoto': 'Dispositivo remoto',
-    'accesorio': 'Accesorio'
-  };
-  return purposes[type] || type;
-};
-
-
-
-// Obtener equipos asignados por categoría
-  const assignedEquipment = useMemo(() => {
-    return equipment.reduce((acc, eq) => {
-      if (eq.usuariosAsignados?.includes(user.id)) {
-        const categoria = eq.categoriasAsignacion?.[user.id] || 'casa';
-        acc[categoria].push(eq);
-      }
-      return acc;
-    }, { casa: [], remoto: [], oficina: [] });
-  }, [equipment, user.id]);
-
-
-
+  const [editedUser, setEditedUser] = useState({
+    ...user,
+    equiposAsignados: user.equiposAsignados || [],
+    categoriasTemporales: user.categoriasTemporales || {}
+  });
   
 
-  // Obtener estados de los equipos asignados
-  const getEstadoColor = (estado) => {
-    const colors = {
-      'Teletrabajo': '#4caf50',
-      'Trabajando': '#ffeb3b',
-      'Eliminado': '#f44336',
-    };
-    return colors[estado] || '#666';
-  };
 
 
-
- // Inicializar datos del usuario
-  useEffect(() => {
-    // Inicializar categoriasTemporales con las categorías actuales
-    const initialCategories = {};
-    equipment.forEach(eq => {
-      if (eq.usuariosAsignados?.includes(user.id)) {
-        initialCategories[eq.id] = eq.categoriasAsignacion?.[user.id] || 'casa';
-      }
-    });
-
+ useEffect(() => {
     setEditedUser({
-      name: user.name || '',
-      correo: user.correo || '',
-      tipoVpn: user.tipoVpn || '',
-      department: user.department || '',
-      estado: user.estado || '',
-      ciudad: user.ciudad || '',
+      ...user,
       equiposAsignados: user.equiposAsignados || [],
-      imageBase64: user.imageBase64 || '',
-      categoriasTemporales: initialCategories
+      categoriasTemporales: user.categoriasTemporales || {}
     });
-  }, [user, equipment]);
-
-
-
+  }, [user]);
 
   const validateForm = () => {
     const newErrors = {};
     if (!editedUser.name?.trim()) newErrors.name = 'Nombre es requerido';
     if (!editedUser.correo?.trim()) newErrors.correo = 'Correo es requerido';
-    if (!editedUser.tipoVpn?.trim()) newErrors.tipoVpn = 'Tipo VPN es requerido';
     if (!editedUser.department?.trim()) newErrors.department = 'Departamento es requerido';
-    
-    setErrors(newErrors);
+
+     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
-    
+
     setIsSaving(true);
     try {
       await onEdit({
         ...editedUser,
         id: user.id,
+        equiposAsignados: editedUser.equiposAsignados,
         categoriasTemporales: editedUser.categoriasTemporales
       });
       setIsEditing(false);
@@ -163,340 +65,125 @@ const handleSave = async () => {
     }
   };
 
-  const handleInputChange = (e) => {
+
+ const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditedUser(prev => ({ ...prev, [name]: value }));
-    // Limpiar error del campo al modificar
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const handleImageChange = async (e) => {
-    if (e.target.files?.length) {
-      setIsCompressing(true);
-      try {
-        const file = e.target.files[0];
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 800,
-          useWebWorker: true
-        };
-        const compressedFile = await imageCompression(file, options);
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setEditedUser(prev => ({ ...prev, imageBase64: reader.result }));
-          setIsCompressing(false);
-        };
-        reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        console.error('Error comprimiendo imagen:', error);
-        setIsCompressing(false);
-        setErrors(prev => ({ ...prev, image: 'Error al procesar la imagen' }));
-      }
-    }
-  };
-
-  const handleAddNewDepartment = async () => {
-    if (!newDepartment.trim()) {
-      setErrors(prev => ({ ...prev, department: 'Nombre de departamento no puede estar vacío' }));
-      return;
-    }
-
-    try {
-      const { success, newDepartment: addedDept } = await onAddDepartment(newDepartment.trim());
-      
-      if (success) {
-        setEditedUser(prev => ({ ...prev, department: addedDept.name }));
-        setShowAddDepartment(false);
-        setNewDepartment('');
-        setErrors(prev => ({ ...prev, department: '' }));
-      }
-    } catch (error) {
-      console.error('Error adding department:', error);
-      setErrors(prev => ({ ...prev, department: 'Error al agregar departamento' }));
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedUser(prev => ({ ...prev, imageBase64: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
 
-
-  // Función para renderizar selects de equipos por categoría
-  const renderEquipmentSelects = () => {
-    const categories = ['casa', 'remoto', 'oficina'];
-    
-    return (
-      <div className="equipment-selects-container">
-        {categories.map(category => (
-          <div key={category} className="form-group">
-            <label className="form-label">Equipos para {category}</label>
-            <Select
-              isMulti
-              options={equipment.map(eq => ({
-                value: eq.id,
-                label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
-              }))}
-              value={equipment
-                .filter(eq => 
-                  editedUser.equiposAsignados?.includes(eq.id) && 
-                  editedUser.categoriasTemporales[eq.id] === category
-                )
-                .map(eq => ({
-                  value: eq.id,
-                  label: `${eq.nombre} (${eq.type}) - ${eq.IpEquipo || 'Sin IP'}`
-                }))}
-              onChange={selected => {
-                const selectedIds = selected ? selected.map(item => item.value) : [];
-                
-                // Actualizar equipos asignados
-                const newEquipos = [
-                  ...editedUser.equiposAsignados.filter(id => 
-                    editedUser.categoriasTemporales[id] !== category
-                  ),
-                  ...selectedIds
-                ];
-                
-                // Actualizar categorías temporales
-                const newCategories = {...editedUser.categoriasTemporales};
-                selectedIds.forEach(id => {
-                  newCategories[id] = category;
-                });
-                
-                setEditedUser(prev => ({
-                  ...prev,
-                  equiposAsignados: [...new Set(newEquipos)], // Eliminar duplicados
-                  categoriasTemporales: newCategories
-                }));
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-   // Renderizado de equipos asignados en modo visualización
-  const renderAssignedEquipment = () => {
-    return (
-      <div className="assigned-equipment-section">
-        {['casa', 'remoto', 'oficina'].map(category => (
-          assignedEquipment[category].length > 0 && (
-            <div key={category} className="equipment-category">
-              <h4>Equipos para {category} ({assignedEquipment[category].length})</h4>
-              <div className="equipment-list">
-                {assignedEquipment[category].map(equipo => (
-                  <div 
-                    key={equipo.id} 
-                    className="equipment-item" 
-                    onClick={() => handleEquipmentClick(equipo)}
-                  >
-                    <span className="equipment-name">{equipo.nombre}</span>
-                    <span className="equipment-ip">{equipo.IpEquipo}</span>
-                    <span className="equipment-category-badge">{category}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        ))}
-      </div>
-    );
-  };
-
-const toOption = (eq) => ({
-  value: eq.id,
-  label: `${eq.nombre} (${eq.IpEquipo || 'Sin IP'})`
-});
-
-const handleEquipmentChange = (field, selectedOptions) => {
-  setEditedUser(prev => ({
-    ...prev,
-    [field]: selectedOptions ? selectedOptions.map(o => o.value) : []
-  }));
-};
-
-
-
-
-  const renderDepartmentSelect = () => {
-    const currentDept = editedUser.department;
-    const deptExists = departments.some(d => (d.name || d) === currentDept);
-
-    return (
-      <div className="form-groupU">
-        <select
-          name="department"
-          value={currentDept}
-          onChange={(e) => {
-            if (e.target.value === "__add__") {
-              setShowAddDepartment(true);
-              setNewDepartment(currentDept || '');
-            } else {
-              handleInputChange(e);
-            }
-          }}
-          required
-          className={`form-inputU ${errors.department ? 'error' : ''}`}
-        >
-          <option value="">Selecciona un departamento</option>
-          
-          {currentDept && (
-            <option value={currentDept}>
-              {currentDept} {!deptExists && "(Actual)"}
-            </option>
-          )}
-          
-          {departments
-            .filter(dept => (dept.name || dept) !== currentDept)
-            .map(dept => (
-              <option key={dept.id || dept} value={dept.name || dept}>
-                {dept.name || dept}
-              </option>
-            ))
-          }
-          
-          <option value="__add__">+ Agregar nuevo departamento</option>
-        </select>
-
-        {showAddDepartment && (
-          <div className="add-department-form">
-            <input
-              type="text"
-              value={newDepartment}
-              onChange={(e) => setNewDepartment(e.target.value)}
-              placeholder="Nombre del nuevo departamento"
-              className="department-input"
-            />
-            <div className="department-form-buttons">
-              <button 
-                type="button" 
-                onClick={handleAddNewDepartment}
-                className="save-btn"
-              >
-                Agregar
-              </button>
-              <button 
-                type="button" 
-                onClick={() => setShowAddDepartment(false)}
-                className="cancel-btn"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        )}
-        {errors.department && <span className="error-message">{errors.department}</span>}
-      </div>
-    );
-  };
-
-  // Manejo de eventos táctiles
- const handleTouchStart = (e) => {
-  setTouchStart(e.targetTouches[0].clientX);
-  setTouchEnd(null); // Reset touchEnd
-};
-
- const handleTouchMove = (e) => {
-  if (!touchStart) return;
-  setTouchEnd(e.targetTouches[0].clientX);
-  e.preventDefault(); // Prevenir scroll horizontal
-};
-
-  const handleTouchEnd = () => {
-  if (!touchStart || !touchEnd || isEditing) return;
-  
-  const distance = touchStart - touchEnd;
-  const isLeftSwipe = distance > 50; // Umbral para "siguiente"
-  const isRightSwipe = distance < -50; // Umbral para "anterior"
-
-  if (isLeftSwipe && currentIndex < totalUsers - 1) {
-    onNext();
-  } else if (isRightSwipe && currentIndex > 0) {
-    onPrev();
-  }
-
-  setTouchStart(null);
-  setTouchEnd(null);
-};
-
-  // Efecto para detectar si es móvil
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+const getEstadoColor = (estado) => {
+    const colors = {
+      'Teletrabajo': '#4caf50',
+      'Trabajando': '#ffeb3b',
+      'Eliminado': '#f44336',
     };
-    
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
-
-  const handleNext = () => {
-  if (onNext) {
-    onNext();
-  }
-};
-
-const handlePrev = () => {
-  if (onPrev) {
-    onPrev();
-  }
-};
-
-  const handleClose = (e) => {
-    if (e) e.stopPropagation();
-    onClose();
+    return colors[estado] || '#666';
   };
 
- const handleEquipmentClick = (equipmentItem) => {
+
+
+   // Obtener equipos asignados
+  const assignedEquipment = useMemo(() => {
+    return equipment.filter(eq => 
+      editedUser.equiposAsignados?.includes(eq.id)
+    );
+  }, [equipment, editedUser.equiposAsignados]);
+
+  // Equipos disponibles para asignar
+  const availableEquipment = useMemo(() => {
+    return equipment.filter(eq => 
+      !editedUser.equiposAsignados?.includes(eq.id)
+    );
+  }, [equipment, editedUser.equiposAsignados]);
+
+  const handleEquipmentClick = (equipmentItem) => {
     onClose();
     if (onOpenEquipmentModal) {
       onOpenEquipmentModal(equipmentItem.id);
     }
   };
 
+  const handleAssignEquipment = (selectedOptions) => {
+    const selectedIds = selectedOptions.map(opt => opt.value);
+    const newCategories = {...editedUser.categoriasTemporales};
+    
+    selectedIds.forEach(id => {
+      newCategories[id] = 'casa'; // Categoría por defecto
+    });
+
+    setEditedUser(prev => ({
+      ...prev,
+      equiposAsignados: [...prev.equiposAsignados, ...selectedIds],
+      categoriasTemporales: newCategories
+    }));
+  };
+
+  const handleUnassignEquipment = (equipmentId) => {
+    const newCategories = {...editedUser.categoriasTemporales};
+    delete newCategories[equipmentId];
+
+    setEditedUser(prev => ({
+      ...prev,
+      equiposAsignados: prev.equiposAsignados.filter(id => id !== equipmentId),
+      categoriasTemporales: newCategories
+    }));
+  };
+
+  const handleCategoryChange = (equipmentId, category) => {
+    setEditedUser(prev => ({
+      ...prev,
+      categoriasTemporales: {
+        ...prev.categoriasTemporales,
+        [equipmentId]: category
+      }
+    }));
+  };
+
   return (
-    <div 
-      className="user-modalU" 
-      onClick={e => e.stopPropagation()}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="modal-contentU" onClick={e => e.stopPropagation()}>
+    <div className="user-modalU" onClick={e => e.stopPropagation()}>
+      <div className="modal-contentU">
         <div className="modal-headerU">
           <div className="user-counter">
-            {currentIndex + 1} / {totalUsers}
+            {users.findIndex(u => u.id === user.id) + 1} / {users.length}
           </div>
-          <button className="close-btnU" onClick={handleClose}>×</button>
+          <button className="close-btnU" onClick={onClose}>×</button>
           <h2>{isEditing ? 'Editar Usuario' : user.name}</h2>
         </div>
-        
+
         {isEditing ? (
           <div className="edit-form">
             {errors.form && <div className="error-message">{errors.form}</div>}
 
             <div className="image-upload-containerU">
-              <label>Foto del Usuario:</label>
+              <label>Imagen del Usuario:</label>
               {editedUser.imageBase64 ? (
                 <div className="image-previewU">
-                  {editedUser.imageBase64.startsWith('data:image/') ? (
-                    <img 
-                      src={editedUser.imageBase64}
-                      alt="Vista previa" 
-                      className="user-image-preview"
-                    />
-                  ) : (
-                    <p className="image-error">Formato de imagen no válido</p>
-                  )}
+                  <img 
+                    src={editedUser.imageBase64}
+                    alt="Vista previa" 
+                    className="user-image-preview"
+                  />
                   <div className="image-actions">
                     <label className="change-image-btn">
-                      Cambiar foto
+                      Cambiar imagen
                       <input 
                         type="file" 
                         accept="image/*" 
                         onChange={handleImageChange}
                         style={{ display: 'none' }}
-                        disabled={isCompressing}
                       />
                     </label>
                     <button 
@@ -504,25 +191,23 @@ const handlePrev = () => {
                       className="remove-image-btn"
                       onClick={() => setEditedUser(prev => ({ ...prev, imageBase64: '' }))}
                     >
-                      Eliminar foto
+                      Eliminar imagen
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="upload-image-containerU">
                   <label className="upload-image-labelU">
-                    <span>+ Seleccionar foto</span>
+                    <span>+ Seleccionar imagen</span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
                       style={{ display: 'none' }}
-                      disabled={isCompressing}
                     />
                   </label>
                 </div>
               )}
-              {isCompressing && <p className="compressing-message">Comprimiendo imagen...</p>}
             </div>
 
             <div className="form-fields-container">
@@ -543,30 +228,27 @@ const handlePrev = () => {
                   <label>Correo:</label>
                   <input
                     name="correo"
-                    type="email"
                     value={editedUser.correo}
                     onChange={handleInputChange}
                     className={`form-inputU ${errors.correo ? 'error' : ''}`}
-                    placeholder="Correo electrónico"
                   />
                   {errors?.correo && <span className="error-message">{errors.correo}</span>}
                 </div>
 
                 <div className="form-groupU">
-                  <label>Tipo VPN:</label>
-                  <input
-                    name="tipoVpn"
-                    value={editedUser.tipoVpn}
-                    onChange={handleInputChange}
-                    className={`form-inputU ${errors.tipoVpn ? 'error' : ''}`}
-                    placeholder="Tipo de VPN"
-                  />
-                  {errors?.tipoVpn && <span className="error-message">{errors.tipoVpn}</span>}
-                </div>
-
-                <div className="form-groupU">
                   <label>Departamento:</label>
-                  {renderDepartmentSelect()}
+                  <select
+                    name="department"
+                    value={editedUser.department}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.department ? 'error' : ''}`}
+                  >
+                    <option value="">Seleccione departamento</option>
+                    {availableDepartments.map(dept => (
+                      <option key={dept.id} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
+                  {errors?.department && <span className="error-message">{errors.department}</span>}
                 </div>
 
                 <div className="form-groupU">
@@ -577,14 +259,24 @@ const handlePrev = () => {
                     onChange={handleInputChange}
                     className={`form-inputU ${errors.estado ? 'error' : ''}`}
                   >
-                    <option value="">Seleccione estado</option>
                     <option value="Teletrabajo">Teletrabajo</option>
                     <option value="Trabajando">Trabajando</option>
                     <option value="Eliminado">Eliminado</option>
                   </select>
                   {errors?.estado && <span className="error-message">{errors.estado}</span>}
                 </div>
-              
+
+                <div className="form-groupU">
+                  <label>Tipo VPN:</label>
+                  <input
+                    name="tipoVpn"
+                    value={editedUser.tipoVpn}
+                    onChange={handleInputChange}
+                    className={`form-inputU ${errors.tipoVpn ? 'error' : ''}`}
+                  />
+                  {errors?.tipoVpn && <span className="error-message">{errors.tipoVpn}</span>}
+                </div>
+
                 <div className="form-groupU">
                   <label>Ciudad:</label>
                   <input
@@ -596,28 +288,71 @@ const handlePrev = () => {
                   {errors?.ciudad && <span className="error-message">{errors.ciudad}</span>}
                 </div>
 
- <div className="form-groupU">
-   <label>equipos:</label>
-                 {renderEquipmentSelects()}
-        </div>
-       
-                
+                <div className="form-groupU">
+                  <label>Equipos Asignados:</label>
+                  <div className="equipment-assignment-container">
+                    <Select
+                      isMulti
+                      options={availableEquipment.map(eq => ({
+                        value: eq.id,
+                        label: `${eq.nombre} (${eq.type})`
+                      }))}
+                      onChange={handleAssignEquipment}
+                      placeholder="Seleccione equipos para asignar..."
+                      className="equipment-select"
+                    />
+                    
+                    <div className="assigned-equipment-list">
+                      {assignedEquipment.length === 0 ? (
+                        <p>No hay equipos asignados</p>
+                      ) : (
+                        <ul>
+                          {assignedEquipment.map(eq => (
+                            <li key={eq.id}>
+                              <div className="equipment-info">
+                                <span className="name">{eq.nombre}</span>
+                                <span className="type">{eq.type}</span>
+                                <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
+                              </div>
+                              
+                              <div className="equipment-actions">
+                                <select
+                                  value={editedUser.categoriasTemporales[eq.id] || 'casa'}
+                                  onChange={(e) => handleCategoryChange(eq.id, e.target.value)}
+                                  className="category-select"
+                                >
+                                  <option value="casa">Casa</option>
+                                  <option value="oficina">Oficina</option>
+                                  <option value="remoto">Remoto</option>
+                                </select>
+                                
+                                <button 
+                                  onClick={() => handleUnassignEquipment(eq.id)}
+                                  className="unassign-btn"
+                                >
+                                  Desasignar
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="modal-actionsU">
                 <button
                   className="save-btn"
                   onClick={handleSave}
-                  disabled={isSaving || isCompressing}
+                  disabled={isSaving}
                 >
                   {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
                 <button 
                   className="cancel-btn"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setEditedUser({...user});
-                  }}
+                  onClick={() => setIsEditing(false)}
                   disabled={isSaving}
                 >
                   Cancelar
@@ -626,112 +361,130 @@ const handlePrev = () => {
             </div>
           </div>
         ) : (
-          <div className="view-mode-container">
-            <div className="user-details-container">
-              <div className="user-header">
-                {user.imageBase64?.startsWith('data:image/') && (
-                  <div className="user-image-section">
-                    <img
-                      src={user.imageBase64}
-                      alt={user.name}
-                      className="user-image-view"
-                    />
-                  </div>
-                )}
-              
-                
-                  <div className="detail-nameU">
-                    <div className='nombre-apellidoM'>
-                      <div className="nombreM">{user.name.split(' ')[0]}</div> {/* Primer nombre */}
-                    <div className="apellidoM">{user.name.split(' ').slice(1).join(' ')}</div>
-                 </div>
-                  </div>
-</div>
-<div className="user-data-section">
-                  <div className="detail-rowU">
-                    <span className="detail-labelU">Correo:</span>
-                    <span>{user.correo}</span>
-                  </div>
 
-                  <div className="detail-rowU">
-                    <span className="detail-labelU">Tipo VPN:</span>
-                    <span>{user.tipoVpn}</span>
-                  </div>
 
-                  <div className="detail-rowU">
-                    <span className="detail-labelU">Departamento:</span>
-                    <span>{user.department}</span>
-                  </div>
-
-                  <div className="detail-rowU">
-                    <span className="status-badge">Estado:</span> 
-                    <span style={{ 
-                      color: getEstadoColor(user.estado), 
-                      backgroundColor: `${getEstadoColor(user.estado)}20`, 
-                      width: 'max-content' 
-                    }}>
-                      {user.estado}
-                    </span>
-                  </div>
-
-                  <div className="detail-rowU">
-                    <span className="detail-labelU">Ciudad:</span>
-                    <span>{user.ciudad || 'No especificada'}</span>
-                  </div>
+        <div className="view-mode-container">
+          <div className="user-details-container">
+            <div className="user-header">
+              {user.imageBase64?.startsWith('data:image/') && (
+                <div className="user-image-section">
+                  <img
+                    src={user.imageBase64}
+                    alt={user.name}
+                    className="user-image-view"
+                  />
+                </div>
+              )}
+            
+              <div className="detail-nameU">
+                <div className='nombre-apellidoM'>
+                  <div className="nombreM">{user.name.split(' ')[0]}</div>
+                  <div className="apellidoM">{user.name.split(' ').slice(1).join(' ')}</div>
                 </div>
               </div>
+            </div>
+            
+            <div className="user-data-section">
+              <div className="detail-rowU">
+                <span className="detail-labelU">Correo:</span>
+                <span>{user.correo}</span>
+              </div>
 
-         
-<div className="detail-rowU">
-    {renderAssignedEquipment()}
-</div>
+              <div className="detail-rowU">
+                <span className="detail-labelU">Tipo VPN:</span>
+                <span>{user.tipoVpn}</span>
+              </div>
 
+              <div className="detail-rowU">
+                <span className="detail-labelU">Departamento:</span>
+                <span>{user.department}</span>
+              </div>
 
+              <div className="detail-rowU">
+                <span className="status-badge">Estado:</span> 
+                <span style={{ 
+                  color: getEstadoColor(user.estado), 
+                  backgroundColor: `${getEstadoColor(user.estado)}20`, 
+                  width: 'max-content' 
+                }}>
+                  {user.estado}
+                </span>
+              </div>
 
+              <div className="detail-rowU">
+                <span className="detail-labelU">Ciudad:</span>
+                <span>{user.ciudad || 'No especificada'}</span>
+              </div>
+            </div>
+          </div>
 
-            <div className="modal-actionsU">
-               {isMobile ? (
-    // Solo muestra el botón de editar en móvil
-    <div className="mobile-edit-button">
-      <button 
-        onClick={() => setIsEditing(true)} 
-        className="edit-btn"
-      >
-        Editar
-      </button>
-    </div>
-  ) : (
-    // Versión desktop
+          <div className="assigned-equipment-section">
+            <h4>Equipos Asignados ({assignedEquipment.length})</h4>
+            {assignedEquipment.length > 0 ? (
+              <div className="equipment-list">
+                {assignedEquipment.map(equipo => (
+                  <div 
+                    key={equipo.id} 
+                    className="equipment-item"
+                    onClick={() => handleEquipmentClick(equipo)}
+                  >
+                    <div className="equipment-info">
+                      <span className="equipment-name">{equipo.nombre}</span>
+                      <span className="equipment-type">{equipo.type}</span>
+                      <span className="equipment-ip">{equipo.IpEquipo || 'Sin IP'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No hay equipos asignados</p>
+            )}
+          </div>
+
+          <div className="modal-actionsU">
+            {isMobile ? (
+              <div className="mobile-edit-button">
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="edit-btn"
+                >
+                  Editar
+                </button>
+              </div>
+            ) : (
               <div className="navigation-buttonsU">
                 <button 
-                  onClick={handlePrev} 
-                  disabled={currentIndex === 0}
+                  onClick={onPrev} 
+                  disabled={users.findIndex(u => u.id === user.id) === 0}
                   className="nav-button prev-button"
                 >
                   &larr; Anterior
                 </button>
 
                 <button 
-                  onClick={() => setIsEditing(true)} 
+                  onClick={() => setIsEditing(true)}
                   className="edit-btn"
                 >
                   Editar
                 </button>
 
                 <button 
-                  onClick={handleNext} 
-                  disabled={currentIndex === totalUsers - 1}
+                  onClick={onNext} 
+                  disabled={users.findIndex(u => u.id === user.id) === users.length - 1}
                   className="nav-button next-button"
                 >
                   Siguiente &rarr;
                 </button>
               </div>
             )}
-          </div>
-          </div>
-        )}
-      </div>
+           
+          
+        </div>
     </div>
+        )}
+  </div>
+  </div>
+    
   );
 }
 

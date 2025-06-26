@@ -7,6 +7,7 @@ import AddUserForm from './components/AddUserForm';
 import AddEquipmentForm from './components/AddEquipmentForm';
 import UserDetailsModal from './components/UserDetailsModal';
 import EquipDetailsModal from './components/EquipDetailsModal';
+import EquipmentAssignment from './components/EquipmentAssignment';
 import './App.css';
 import './components/UserList.css';
 import { useSpring, animated } from 'react-spring';
@@ -113,6 +114,61 @@ const handleSelectEquipment = (equipmentId) => {
 
 
 
+// En el componente padre (App.js)
+const handleAssignmentChange = async (userId, equipmentId, category = null) => {
+  try {
+    if (category) {
+      // Asignar o actualizar categoría
+      await assignEquipmentToUser(userId, equipmentId, category);
+    } else {
+      // Desasignar
+      await unassignEquipmentFromUser(userId, equipmentId);
+    }
+    
+    // Actualizar estado local
+    setUsers(prevUsers => prevUsers.map(u => {
+      if (u.id === userId) {
+        const newEquipos = category 
+          ? [...(u.equiposAsignados || []).filter(id => id !== equipmentId), equipmentId]
+          : (u.equiposAsignados || []).filter(id => id !== equipmentId);
+        
+        return {
+          ...u,
+          equiposAsignados: newEquipos,
+          categoriasTemporales: category 
+            ? { ...(u.categoriasTemporales || {}), [equipmentId]: category }
+            : Object.fromEntries(
+                Object.entries(u.categoriasTemporales || {}).filter(([id]) => id !== equipmentId)
+              )
+        };
+      }
+      return u;
+    }));
+
+    setEquipment(prevEquipment => prevEquipment.map(eq => {
+      if (eq.id === equipmentId) {
+        const newUsers = category 
+          ? [...(eq.usuariosAsignados || []).filter(id => id !== userId), userId]
+          : (eq.usuariosAsignados || []).filter(id => id !== userId);
+        
+        return {
+          ...eq,
+          usuariosAsignados: newUsers,
+          categoriasAsignacion: category 
+            ? { ...(eq.categoriasAsignacion || {}), [userId]: category }
+            : Object.fromEntries(
+                Object.entries(eq.categoriasAsignacion || {}).filter(([id]) => id !== userId)
+              )
+        };
+      }
+      return eq;
+    }));
+
+  } catch (error) {
+    console.error("Error actualizando asignación:", error);
+  }
+};
+
 const handleAddNewSerial = (newSerial) => {
   if (!allAvailableSerials.includes(newSerial)) {
     setAllAvailableSerials([...allAvailableSerials, newSerial]);
@@ -202,6 +258,8 @@ const handleAddNewIp = (newIp) => {
   setCurrentEquipmentIndex(0);
 }, []);
 
+
+
   // ==================== FUNCIONES DE ASIGNACIÓN ====================
   const updateUserEquipment = async (userId, equipmentId) => {
     try {
@@ -247,7 +305,19 @@ const handleAddNewIp = (newIp) => {
 
    // ==================== FUNCIONES DE USUARIOS ====================
 
+
+  const handleEditFromModal = (user) => {
+  if (!user?.id) {
+    console.error("Intento de editar usuario inválido:", user);
+    return;
+  }
+  setShowUserModal(false);
+  setEditingUser(user);
+  setShowUserForm(true);
+  scrollToView('users');
+};
  
+
 // Función para asignar equipo a usuario con categoría
 const assignEquipmentToUser = async (userId, equipmentId, category = 'casa') => {
   try {
@@ -288,6 +358,33 @@ const assignEquipmentToUser = async (userId, equipmentId, category = 'casa') => 
     ));
   } catch (error) {
     console.error("Error asignando equipo:", error);
+    throw error;
+  }
+};
+
+// Función para actualizar categoría de asignación
+const updateAssignmentCategory = async (userId, equipmentId, newCategory) => {
+  try {
+    // Actualizar el equipo
+    await updateDoc(doc(db, 'equipment', equipmentId), {
+      [`categoriasAsignacion.${userId}`]: newCategory,
+      updatedAt: new Date()
+    });
+
+    // Actualizar estado local
+    setEquipment(prev => prev.map(eq => 
+      eq.id === equipmentId
+        ? {
+            ...eq,
+            categoriasAsignacion: {
+              ...(eq.categoriasAsignacion || {}),
+              [userId]: newCategory
+            }
+          }
+        : eq
+    ));
+  } catch (error) {
+    console.error("Error actualizando categoría:", error);
     throw error;
   }
 };
@@ -339,46 +436,6 @@ const unassignEquipmentFromUser = async (userId, equipmentId) => {
   }
 };
 
-// Función para actualizar categoría de asignación
-const updateAssignmentCategory = async (userId, equipmentId, newCategory) => {
-  try {
-    // Actualizar el equipo
-    await updateDoc(doc(db, 'equipment', equipmentId), {
-      [`categoriasAsignacion.${userId}`]: newCategory,
-      updatedAt: new Date()
-    });
-
-    // Actualizar estado local
-    setEquipment(prev => prev.map(eq => 
-      eq.id === equipmentId
-        ? {
-            ...eq,
-            categoriasAsignacion: {
-              ...(eq.categoriasAsignacion || {}),
-              [userId]: newCategory
-            }
-          }
-        : eq
-    ));
-  } catch (error) {
-    console.error("Error actualizando categoría:", error);
-    throw error;
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -398,42 +455,56 @@ const handleEditUser = async (userData) => {
     const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
     // Nuevos equipos asignados
     const addedEquipos = newEquipos.filter(id => !oldEquipos.includes(id));
+    // Equipos que permanecen asignados (puede que cambie su categoría)
+    const keptEquipos = newEquipos.filter(id => oldEquipos.includes(id));
 
     // Procesar cambios
     await Promise.all([
+      // Eliminar asignaciones que ya no están
       ...removedEquipos.map(equipoId => 
         unassignEquipmentFromUser(userData.id, equipoId)
       ),
+      // Agregar nuevas asignaciones
       ...addedEquipos.map(equipoId => 
         assignEquipmentToUser(
           userData.id, 
           equipoId, 
           userData.categoriasTemporales?.[equipoId] || 'casa'
         )
-      )
+      ),
+      // Actualizar categorías de equipos que permanecen asignados
+      ...keptEquipos.map(equipoId => {
+        const newCategory = userData.categoriasTemporales?.[equipoId];
+        return updateAssignmentCategory(
+          userData.id, 
+          equipoId, 
+          newCategory
+        );
+      })
     ]);
 
-      // Actualizar el usuario
-      await updateDoc(doc(db, 'users', userData.id), {
-        name: userData.name,
-        correo: userData.correo,
-        ciudad: userData.ciudad,
-        tipoVpn: userData.tipoVpn,
-        department: userData.department,
-        estado: userData.estado,
-        imageBase64: userData.imageBase64,
-        updatedAt: new Date()
-      });
+    // Actualizar el usuario
+    await updateDoc(doc(db, 'users', userData.id), {
+      name: userData.name,
+      correo: userData.correo,
+      ciudad: userData.ciudad,
+      tipoVpn: userData.tipoVpn,
+      department: userData.department,
+      estado: userData.estado,
+      imageBase64: userData.imageBase64,
+      updatedAt: new Date()
+    });
 
-      // Actualizar estado local
+    // Actualizar estado local
     setUsers(users.map(u => 
       u.id === userData.id ? { 
         ...userData,
-        equiposAsignados: newEquipos
+        equiposAsignados: newEquipos,
+        categoriasTemporales: userData.categoriasTemporales
       } : u
     ));
 
-      return true;
+    return true;
   } catch (error) {
     console.error("Error editando usuario:", error);
     throw error;
@@ -514,9 +585,64 @@ const handleAddUser = async (userData) => {
     }
   };
 
- 
+ const closeUserModal = useCallback(() => {
+  setShowUserModal(false);
+  setSelectedUserId(null);
+  setSelectedUser(null);
+}, []);
 
     // ==================== FUNCIONES DE EQUIPOS ====================
+
+
+const handleAssignEquipment = async (userId, equipmentIds) => {
+  try {
+    await Promise.all(
+      equipmentIds.map(equipmentId => 
+        assignEquipmentToUser(userId, equipmentId, 'casa') // Asignar con categoría por defecto
+      )
+    );
+    
+    // Actualizar estado local
+    setUsers(prevUsers => prevUsers.map(u => 
+      u.id === userId
+        ? {
+            ...u,
+            equiposAsignados: [...u.equiposAsignados, ...equipmentIds],
+            categoriasTemporales: {
+              ...u.categoriasTemporales,
+              ...equipmentIds.reduce((acc, id) => ({ ...acc, [id]: 'casa' }), {})
+            }
+          }
+        : u
+    ));
+  } catch (error) {
+    console.error("Error asignando equipos:", error);
+  }
+};
+
+const handleUnassignEquipment = async (userId, equipmentId) => {
+  try {
+    await unassignEquipmentFromUser(userId, equipmentId);
+    
+    // Actualizar estado local
+    setUsers(prevUsers => prevUsers.map(u => 
+      u.id === userId
+        ? {
+            ...u,
+            equiposAsignados: u.equiposAsignados.filter(id => id !== equipmentId),
+            categoriasTemporales: Object.fromEntries(
+              Object.entries(u.categoriasTemporales).filter(([id]) => id !== equipmentId)
+            )
+          }
+        : u
+    ));
+  } catch (error) {
+    console.error("Error desasignando equipo:", error);
+  }
+};
+
+
+
 
   const handleEditEquipment = async (equipmentData) => {
     try {
@@ -731,9 +857,14 @@ const handleAddUser = async (userData) => {
 };
 
 const handleOpenUserModal = (userId) => {
-  console.log("handleOpenUserModal called with userId:", userId);
-  setSelectedUserId(userId);
-  setShowUserModal(true);
+  const user = users.find(u => u.id === userId);
+  if (user) {
+    setSelectedUser(user);
+    setSelectedUserId(userId);
+    setShowUserModal(true);
+  } else {
+    console.error("Usuario no encontrado con ID:", userId);
+  }
 };
 
   // ==================== EFECTOS Paginas ====================
@@ -990,6 +1121,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               {showUserForm && (
                 <div className="forms-usuarios">
                   <AddUserForm 
+                  onAssignmentChange={handleAssignmentChange}
                   onEquipmentCategoryChange={handleUserEquipmentChange}
                     onUserAdded={(userData) => {
                       handleAddUser(userData);
@@ -1046,6 +1178,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
        {showEquipmentForm && (
                 <div className="forms-equipos">
                   <AddEquipmentForm 
+                  onAssignmentChange={handleAssignmentChange}
                   onUserCategoryChange={handleUserEquipmentChange}
                     ref={formRef}
                     users={users}
@@ -1096,27 +1229,43 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       </div>
 
           {showUserModal && selectedUserId && (
-            <UserDetailsModal 
-            
-              user={{
-      ...users.find(u => u.id === selectedUserId),
-      equiposCasa: users.find(u => u.id === selectedUserId)?.equiposCasa || [],
-      equiposRemoto: users.find(u => u.id === selectedUserId)?.equiposRemoto || [],
-      equiposOficina: users.find(u => u.id === selectedUserId)?.equiposOficina || []
-    }}
-              users={users}
-              equipment={equipment}
-              onClose={() => setShowUserModal(false)}
-              onEdit={handleEditUser}
-              onOpenEquipmentModal={handleOpenEquipmentModal}
-              onDelete={handleDeleteUser}
-              onNext={handleNextUser}
-              onPrev={handlePrevUser}
-              departments={departments}
-              onAddDepartment={handleAddDepartment}
-              imageCompression={imageCompression}
-              
-            />
+            <>
+           <div className="user-management-container">
+    <UserDetailsModal 
+      user={users.find(u => u.id === selectedUserId) || {}}
+      users={users}
+      equipment={equipment}
+      availableDepartments={departments}
+      onClose={closeUserModal}
+      onEdit={handleEditUser} // Usamos handleEditUser directamente
+      onNext={handleNextUser}
+      onPrev={handlePrevUser}
+      onOpenEquipmentModal={handleOpenEquipmentModal}
+    />
+  </div>
+    
+     <EquipmentAssignment
+      userId={selectedUserId}  // Usar el ID del usuario seleccionado
+      users={equipment}       // Pasar la lista de equipos disponibles
+      assignedUsers={users.find(u => u.id === selectedUserId)?.equiposAsignados?.map(id => 
+        equipment.find(e => e.id === id)
+      ).filter(Boolean) || []}  // Pasar los equipos asignados al usuario
+      onAssign={(userId, equipmentIds) => {
+        // Asignar equipos al usuario
+        equipmentIds.forEach(equipId => 
+          handleAssignmentChange(userId, equipId, 'casa')
+        );
+      }}
+      onUnassign={(userId, equipmentId) => {
+        // Desasignar equipo del usuario
+        handleAssignmentChange(userId, equipmentId);
+      }}
+      onCategoryChange={(equipmentId, category) => {
+        handleUserEquipmentChange(selectedUserId, equipmentId, category);
+      }}
+    />
+    </>
+  
           )}
 
           {showEquipmentModal && selectedEquipmentId && (

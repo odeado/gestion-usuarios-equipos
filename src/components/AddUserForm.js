@@ -1,20 +1,26 @@
+// AddUserForm.js
 import React, { useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
-import Select from 'react-select';
-import './AddUserForm.css'; // Asegúrate de tener este archivo CSS
+import './AddUserForm.css';
 
-function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onEquipmentCategoryChange, onCancelEdit, departments = [], onAddDepartment, equipment = [] }) {
+function AddUserForm({ 
+  onUserAdded, 
+  userToEdit = null, 
+  onEditUser, 
+  onCancelEdit, 
+  departments = [], 
+  onAddDepartment 
+}) {
   const [formData, setFormData] = useState({
     name: '',
     correo: '',
     ciudad: '',
     tipoVpn: '',
     department: '',
-    estado: 'Teletrabajo', // Estado por defecto
-    equiposAsignados: [],
-    categoriasTemporales: {}, // {equipoId: 'casa'|'remoto'|'oficina'}
+    estado: 'Teletrabajo',
     imageBase64: ''
   });
+
   const [imagePreview, setImagePreview] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -23,30 +29,15 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onEquipmentCa
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
-
-  // Efecto para cargar datos del usuario a editar
   useEffect(() => {
-     if (userToEdit) {
-    const initialCategories = {};
-    equipment.forEach(eq => {
-      if (eq.usuariosAsignados?.includes(userToEdit.id)) {
-        // Solo asignar si existe una categoría definida
-        if (eq.categoriasAsignacion?.[userToEdit.id]) {
-          initialCategories[eq.id] = eq.categoriasAsignacion[userToEdit.id];
-        }
-      }
-    });
-
+    if (userToEdit) {
       setFormData({
         name: userToEdit.name || '',
         correo: userToEdit.correo || '',
         ciudad: userToEdit.ciudad || '',
         tipoVpn: userToEdit.tipoVpn || '',
         department: userToEdit.department || '',
-        estado: userToEdit.estado || 'Teletrabajo', // Estado por defecto
-        equiposAsignados: userToEdit.equiposAsignados || [],
-        categoriasTemporales: initialCategories,
+        estado: userToEdit.estado || 'Teletrabajo',
         imageBase64: userToEdit.imageBase64 || ''
       });
       setImagePreview(userToEdit.imageBase64 || null);
@@ -63,9 +54,7 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onEquipmentCa
       ciudad: '',
       tipoVpn: '',
       department: '',
-      estado: 'Teletrabajo', // Estado por defecto
-     equiposAsignados: [],
-      categoriasTemporales: {},
+      estado: 'Teletrabajo',
       imageBase64: ''
     });
     setImagePreview(null);
@@ -78,70 +67,21 @@ function AddUserForm({ onUserAdded, userToEdit = null, onEditUser, onEquipmentCa
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpiar error cuando el usuario escribe
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Nombre es requerido';
-    if (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'tipo vpn requerido';
-    if (!formData.ciudad.trim()) newErrors.ciudad = 'ciudad';
-    if (!formData.correo.trim()) newErrors.correo = 'correo es requerido';
-    else if (!/\S+@\S+\.\S+/.test(formData.correo)) newErrors.correo = 'correo inválido';
+    if (!formData.tipoVpn.trim()) newErrors.tipoVpn = 'Tipo VPN requerido';
+    if (!formData.ciudad.trim()) newErrors.ciudad = 'Ciudad es requerida';
+    if (!formData.correo.trim()) newErrors.correo = 'Correo es requerido';
+    else if (!/\S+@\S+\.\S+/.test(formData.correo)) newErrors.correo = 'Correo inválido';
     if (!formData.department.trim()) newErrors.department = 'Departamento es requerido';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const handleAddNewDepartment = async () => {
-    if (!newDepartment.trim()) {
-      setErrors(prev => ({ ...prev, department: 'Nombre de departamento no puede estar vacío' }));
-      return;
-    }
-
-    try {
-      const { success, newDepartment: addedDept } = await onAddDepartment(newDepartment.trim());
-      
-      if (success) {
-        setFormData(prev => ({ ...prev, department: addedDept.name }));
-        setShowAddDepartment(false);
-        setNewDepartment('');
-        setErrors(prev => ({ ...prev, department: '' }));
-      }
-    } catch (error) {
-      console.error('Error adding department:', error);
-      setErrors(prev => ({ ...prev, department: 'Error al agregar departamento' }));
-    }
-  };
-
-
-// En AddUserForm.js
-const handleEquipmentAssignment = (equipoId, category) => {
-  const newCategories = {...formData.categoriasTemporales};
-  
-  // Solo actualizar si se selecciona una categoría válida
-  if (category) {
-    newCategories[equipoId] = category;
-  } else {
-    delete newCategories[equipoId];
-  }
-
-  setFormData(prev => ({
-    ...prev,
-    categoriasTemporales: newCategories,
-    equiposAsignados: Object.keys(newCategories)
-  }));
-  
-  if (onEquipmentCategoryChange) {
-    onEquipmentCategoryChange(equipoId, userToEdit?.id || null, category);
-  }
-};
-
-
 
   const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -178,36 +118,17 @@ const handleEquipmentAssignment = (equipoId, category) => {
       return;
     }
 
-  
-
     try {
-    // Filtrar equipos que realmente existen
-    const validEquipmentIds = formData.equiposAsignados.filter(equipoId => 
-      equipment.some(eq => eq.id === equipoId)
-    );
-
-      const userData = {
-        name: formData.name,
-        correo: formData.correo,
-        ciudad: formData.ciudad,
-        tipoVpn: formData.tipoVpn,
-        department: formData.department,
-        estado: formData.estado,
-        equiposAsignados: Object.keys(formData.categoriasTemporales),
-        categoriasAsignacion: formData.categoriasTemporales,
-        imageBase64: formData.imageBase64
-      };
-
-       if (isEditing && userToEdit) {
-      await onEditUser({
-        ...userData,
-        id: userToEdit.id
-      });
-      onCancelEdit(); // Cerrar el formulario después de editar
-    } else {
-      await onUserAdded(userData);
-      resetForm(); // Resetear el formulario después de agregar
-    }
+      if (isEditing && userToEdit) {
+        await onEditUser({
+          ...formData,
+          id: userToEdit.id
+        });
+        onCancelEdit();
+      } else {
+        await onUserAdded(formData);
+        resetForm();
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
@@ -215,7 +136,6 @@ const handleEquipmentAssignment = (equipoId, category) => {
       setIsSubmitting(false);
     }
   };
-
 
   const renderDepartmentSelect = () => {
     const currentDept = formData.department;
@@ -241,22 +161,18 @@ const handleEquipmentAssignment = (equipoId, category) => {
           className={`form-input ${errors.department ? 'input-error' : ''}`}
         >
           <option value="">Selecciona un departamento</option>
-          
           {currentDept && (
             <option value={currentDept}>
               {currentDept} {!deptExists && "(Actual)"}
             </option>
           )}
-          
           {departments
             .filter(dept => (dept.name || dept) !== currentDept)
             .map(dept => (
               <option key={dept.id || dept} value={dept.name || dept}>
                 {dept.name || dept}
               </option>
-            ))
-          }
-          
+            ))}
           <option value="__add__">+ Agregar nuevo departamento</option>
         </select>
 
@@ -272,7 +188,24 @@ const handleEquipmentAssignment = (equipoId, category) => {
             <div className="department-form-buttons">
               <button 
                 type="button" 
-                onClick={handleAddNewDepartment}
+                onClick={async () => {
+                  if (!newDepartment.trim()) {
+                    setErrors(prev => ({ ...prev, department: 'Nombre de departamento no puede estar vacío' }));
+                    return;
+                  }
+                  try {
+                    const { success, newDepartment: addedDept } = await onAddDepartment(newDepartment.trim());
+                    if (success) {
+                      setFormData(prev => ({ ...prev, department: addedDept.name }));
+                      setShowAddDepartment(false);
+                      setNewDepartment('');
+                      setErrors(prev => ({ ...prev, department: '' }));
+                    }
+                  } catch (error) {
+                    console.error('Error adding department:', error);
+                    setErrors(prev => ({ ...prev, department: 'Error al agregar departamento' }));
+                  }
+                }}
                 className="add-button"
                 disabled={isSubmitting}
               >
@@ -293,70 +226,6 @@ const handleEquipmentAssignment = (equipoId, category) => {
     );
   };
 
-
-
-
- const renderEquipmentSelects = () => {
-  const categories = ['casa', 'remoto', 'oficina'];
-  
-  return categories.map(category => (
-    <div key={category} className="form-group">
-      <label className="form-label">Equipos para {category}</label>
-      <Select
-        isMulti
-        options={equipment.map(eq => ({
-          value: eq.id,
-          label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`,
-          category: category
-        }))}
-        value={equipment
-          .filter(eq => formData.categoriasTemporales[eq.id] === category)
-          .map(eq => ({
-            value: eq.id,
-            label: `${eq.nombre} (${eq.type || 'Sin tipo'}) - ${eq.IpEquipo || 'Sin IP'}`
-          }))
-        }
-        onChange={(selectedOptions) => {
-          const selectedIds = (selectedOptions || []).map(option => option.value);
-          
-          // Actualizar todos los equipos de esta categoría
-          const newCategories = {...formData.categoriasTemporales};
-          
-          // Primero eliminar todos los equipos que estaban en esta categoría
-          Object.keys(newCategories).forEach(eqId => {
-            if (newCategories[eqId] === category) {
-              delete newCategories[eqId];
-            }
-          });
-          
-          // Luego agregar los nuevos seleccionados
-          selectedIds.forEach(eqId => {
-            newCategories[eqId] = category;
-          });
-          
-          setFormData(prev => ({
-            ...prev,
-            categoriasTemporales: newCategories
-          }));
-        }}
-      />
-    </div>
-  ));
-};
-
-const toOption = (eq) => ({
-  value: eq.id,
-  label: `${eq.nombre} (${eq.IpEquipo || 'Sin IP'})`
-});
-
-const handleEquipmentChange = (field, selectedOptions) => {
-  setFormData(prev => ({
-    ...prev,
-    [field]: selectedOptions ? selectedOptions.map(o => o.value) : []
-  }));
-};
-
-
   return (
     <form onSubmit={handleSubmit} className="user-form">
       <h2 className="form-title">{isEditing ? 'Editar Usuario' : 'Agregar Usuario'}</h2>
@@ -367,51 +236,73 @@ const handleEquipmentChange = (field, selectedOptions) => {
       <div className="form-row">
         <div className="form-group">
           <label htmlFor="name" className="form-label">Nombre</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          placeholder="Nombre completo"
-          value={formData.name}
-          onChange={handleChange}
-          required
-          className={`form-input ${errors.name ? 'input-error' : ''}`}
-        />
-        {errors.name && <div className="error-text">{errors.name}</div>}
-      </div>
-          
-      
-      <div className="form-group">
-      <label htmlFor="correo" className="form-label">Correo electrónico</label>
-        <input
-          id="correo"
-          name="correo"
-          type="text"
-          placeholder="correo@ejemplo.com"
-          value={formData.correo}
-          onChange={handleChange}
-          required
-          className={`form-input ${errors.correo ? 'input-error' : ''}`}
-        />
-        {errors.correo && <div className="error-text">{errors.correo}</div>}
-      </div>
-
-          <div className="form-group">
-      <label htmlFor="ciudad" className="form-label">Ciudad</label>
-        <input
-          id="ciudad"
-          name="ciudad"
-          type="text"
-          placeholder="ciudades"
-          value={formData.ciudad}
-          onChange={handleChange}
-          required
-          className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
-        />
-        {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
+          <input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Nombre completo"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className={`form-input ${errors.name ? 'input-error' : ''}`}
+          />
+          {errors.name && <div className="error-text">{errors.name}</div>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="correo" className="form-label">Correo electrónico</label>
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="correo@ejemplo.com"
+            value={formData.correo}
+            onChange={handleChange}
+            required
+            className={`form-input ${errors.correo ? 'input-error' : ''}`}
+          />
+          {errors.correo && <div className="error-text">{errors.correo}</div>}
+        </div>
       </div>
 
-          
+      <div className="form-row">
+        <div className="form-group">
+          <label htmlFor="ciudad" className="form-label">Ciudad</label>
+          <input
+            id="ciudad"
+            name="ciudad"
+            type="text"
+            placeholder="Ciudad"
+            value={formData.ciudad}
+            onChange={handleChange}
+            required
+            className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
+          />
+          {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="tipoVpn" className="form-label">Tipo de VPN</label>
+          <input
+            id="tipoVpn"
+            name="tipoVpn"
+            type="text"
+            placeholder="Perfil VPN"
+            value={formData.tipoVpn}
+            onChange={handleChange}
+            required
+            className={`form-input ${errors.tipoVpn ? 'input-error' : ''}`}
+          />
+          {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
+        </div>
+      </div>
+
+      <div className="form-row">
+        <div className="form-group department-group">
+          <label className="form-label">Departamento</label>
+          {renderDepartmentSelect()}
+        </div>
+        
         <div className="form-group">
           <label htmlFor="estado" className="form-label">Estado</label>
           <select
@@ -428,66 +319,25 @@ const handleEquipmentChange = (field, selectedOptions) => {
           </select>
           {errors.estado && <div className="error-text">{errors.estado}</div>}
         </div>
-    
-
-          <div className="form-group">
-      <label htmlFor="tipoVpn" className="form-label">Tpo de vpn</label>
-        <input
-          id="tipoVpn"
-          name="tipoVpn"
-          type="tipoVpn"
-          placeholder="Perfil VPN"
-          value={formData.tipoVpn}
-          onChange={handleChange}
-          required
-          className={`form-input ${errors.tipoVpn ? 'input-error' : ''}`}
-        />
-        {errors.tipoVpn && <div className="error-text">{errors.tipoVpn}</div>}
-      </div>
-    
-</div>
-
-          
-      
-      <div className="form-row">
-        <div className="form-group department-group">
-          <label className="form-label">Departamento</label>
-        {renderDepartmentSelect()}
       </div>
 
-     
-
-      <div className="form-group">
-    {renderEquipmentSelects()}
-  </div>
-        </div>
-
-
-     
-
-      
       <div className="form-group image-upload-group">
-          <label className="form-label">Imagen de perfil</label>
-          <div className="image-upload-container">
-            <label htmlFor="image-upload" className="image-upload-label">
-              Seleccionar imagen
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                disabled={isCompressing}
-                className="image-upload-input"
-              />
-            </label>
-
-            
-            {errors.image && <span className="error-text">{errors.image}</span>}
-
-
+        <label className="form-label">Imagen de perfil</label>
+        <div className="image-upload-container">
+          <label htmlFor="image-upload" className="image-upload-label">
+            Seleccionar imagen
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              disabled={isCompressing}
+              className="image-upload-input"
+            />
+          </label>
+          {errors.image && <span className="error-text">{errors.image}</span>}
         </div>
-        </div>
-      
+      </div>
 
       {imagePreview && (
         <div className="image-preview-container">
@@ -512,7 +362,7 @@ const handleEquipmentChange = (field, selectedOptions) => {
             Cancelar
           </button>
         )}
-          <button 
+        <button 
           type="submit" 
           className={`btn btn-submit ${isSubmitting ? 'btn-loading' : ''}`}
           disabled={isCompressing || isSubmitting}
