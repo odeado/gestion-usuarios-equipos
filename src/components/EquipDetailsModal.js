@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './EquipDetailsModal.css';
-import EquipmentAssignment from './EquipmentAssignment';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import AutocompleteInput from './AutocompleteInput';
 
 function EquipDetailsModal({
   equipment = {},
@@ -20,7 +20,10 @@ function EquipDetailsModal({
   onAddNewSerial,
   availableModels = [],
   availableProcessors = [],
-  availableBrands = []
+  setAvailableProcessors,
+  availableBrands = [],
+  onAssignmentChange,
+  onBulkAssignmentChange
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEquipment, setEditedEquipment] = useState({
@@ -59,8 +62,8 @@ function EquipDetailsModal({
       await onEdit({
         ...editedEquipment,
         id: equipment.id,
-         usuariosAsignados: editedEquipment.usuariosAsignados,
-      categoriasAsignacion: editedEquipment.categoriasAsignacion
+        usuariosAsignados: editedEquipment.usuariosAsignados,
+        categoriasAsignacion: editedEquipment.categoriasAsignacion
       });
       setIsEditing(false);
     } catch (error) {
@@ -85,6 +88,89 @@ function EquipDetailsModal({
         setEditedEquipment(prev => ({ ...prev, imageBase64: reader.result }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Obtener usuarios asignados
+  const assignedUsers = useMemo(() => {
+    return users
+      .filter(user => editedEquipment.usuariosAsignados?.includes(user.id))
+      .map(user => ({
+        ...user,
+        categoria: editedEquipment.categoriasAsignacion?.[user.id] || 'casa'
+      }));
+  }, [users, editedEquipment.usuariosAsignados, editedEquipment.categoriasAsignacion]);
+
+  // Usuarios disponibles para asignar
+  const availableUsers = useMemo(() => {
+    return users.filter(
+      user => !editedEquipment.usuariosAsignados?.includes(user.id)
+    );
+  }, [users, editedEquipment.usuariosAsignados]);
+
+  // Funciones de asignación
+const handleAssignUsers = (selectedOptions) => {
+  const selectedIds = selectedOptions.map(opt => opt.value);
+  
+  const updates = selectedIds.map(userId => ({
+    userId,
+    equipmentId: equipment.id,
+    category: 'casa' // Valor por defecto
+  }));
+
+  // Notificar al padre
+  if (typeof onBulkAssignmentChange === 'function') {
+    onBulkAssignmentChange(updates);
+  }
+
+  // Actualizar estado local
+  const newCategories = {...editedEquipment.categoriasAsignacion};
+  selectedIds.forEach(id => newCategories[id] = 'casa');
+  
+  setEditedEquipment(prev => ({
+    ...prev,
+    usuariosAsignados: [...new Set([...prev.usuariosAsignados, ...selectedIds])],
+    categoriasAsignacion: newCategories
+  }));
+};
+
+const handleUnassignUser = (userId) => {
+  // Notificar al padre
+  if (typeof onAssignmentChange === 'function') {
+    onAssignmentChange(userId, equipment.id, null);
+  }
+
+  // Actualizar estado local
+  const newCategories = {...editedEquipment.categoriasAsignacion};
+  delete newCategories[userId];
+  
+  setEditedEquipment(prev => ({
+    ...prev,
+    usuariosAsignados: prev.usuariosAsignados.filter(id => id !== userId),
+    categoriasAsignacion: newCategories
+  }));
+};
+
+const handleUserCategoryChange = (userId, category) => {
+  // Notificar al padre
+  if (typeof onAssignmentChange === 'function') {
+    onAssignmentChange(userId, equipment.id, category);
+  }
+
+  // Actualizar estado local
+  setEditedEquipment(prev => ({
+    ...prev,
+    categoriasAsignacion: {
+      ...prev.categoriasAsignacion,
+      [userId]: category
+    }
+  }));
+};
+
+  const handleUserClick = (userId) => {
+    onClose();
+    if (onOpenUserModal) {
+      onOpenUserModal(userId);
     }
   };
 
@@ -176,18 +262,29 @@ function EquipDetailsModal({
     return colors[estado] || '#666';
   };
 
-  const assignedUsers = useMemo(() => {
-    return users.filter(user => 
-      editedEquipment.usuariosAsignados?.includes(user.id)
-    );
-  }, [users, editedEquipment.usuariosAsignados]);
-
-  const handleUserClick = (userId) => {
-    onClose();
-    if (onOpenUserModal) {
-      onOpenUserModal(userId);
+  // Verificación de consistencia de IDs
+  useEffect(() => {
+    if (editedEquipment.usuariosAsignados) {
+      const invalidUsers = editedEquipment.usuariosAsignados.filter(
+        userId => !users.some(u => u.id === userId)
+      );
+      
+      if (invalidUsers.length > 0) {
+        console.warn("Equipo tiene asignados usuarios que no existen:", invalidUsers);
+        setEditedEquipment(prev => ({
+          ...prev,
+          usuariosAsignados: prev.usuariosAsignados.filter(
+            userId => !invalidUsers.includes(userId)
+          ),
+          categoriasAsignacion: Object.fromEntries(
+            Object.entries(prev.categoriasAsignacion || {}).filter(
+              ([userId]) => !invalidUsers.includes(userId)
+            )
+          )
+        }));
+      }
     }
-  };
+  }, [users, editedEquipment.usuariosAsignados]);
 
   return (
     <div className="equipment-modalE" onClick={e => e.stopPropagation()}>
@@ -324,6 +421,43 @@ function EquipDetailsModal({
                   {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
                 </div>
 
+               <div className="form-groupE">
+  <AutocompleteInput
+   key={`processor-select-${editedEquipment.id}-${availableProcessors.length}`}  // Fuerza recreación al cambiar equipo
+    value={editedEquipment.procesador || ''}
+    onChange={(value) => {
+      setEditedEquipment(prev => ({ ...prev, procesador: value }));
+    }}
+    options={availableProcessors.map(p => ({ 
+      value: p, 
+      label: p  
+    }))}
+    onAddNewOption={(newOption) => {
+       console.log("ADD - Prev processors:", availableProcessors); // 🕵️‍♂️ Debug
+      // Actualizar lista global de procesadores
+       if (!availableProcessors.includes(newOption)) {
+        setAvailableProcessors(prev => [...prev, newOption]);
+      }
+      // Actualizar el procesador en el equipo editado
+      setEditedEquipment(prev => ({ ...prev, procesador: newOption }));
+    }}
+    onRemoveOption={(optionToRemove) => {
+      setAvailableProcessors(prev => prev.filter(p => p !== optionToRemove));
+      console.log("REMOVE - Prev processors:", availableProcessors); // 🕵️‍♂️ Debug
+      // Actualizar lista global de procesadores
+       if (editedEquipment.procesador === optionToRemove) {
+        setEditedEquipment(prev => ({ ...prev, procesador: '' }));
+      }
+      
+    }}
+    placeholder="Ej: Intel i7, AMD Ryzen 5"
+    label="Procesador"
+    error={errors.procesador}
+    enableDelete={true}
+    
+  />
+</div>
+
                 <div className="form-groupE">
                   <label>Descripción:</label>
                   <textarea
@@ -337,47 +471,86 @@ function EquipDetailsModal({
 
                 <div className="form-groupE">
                   <label>Usuarios Asignados:</label>
-                  <EquipmentAssignment
-                    userId={equipment.id}
-                    users={users}
-                    assignedUsers={assignedUsers}
-                    onAssign={(equipmentId, userIds) => {
-                      const newCategories = {...editedEquipment.categoriasAsignacion};
-                      userIds.forEach(id => {
-                        newCategories[id] = 'casa'; // Categoría por defecto
-                      });
+                  <div className="user-assignment-container">
+                    <Select
+                      isMulti
+                      options={availableUsers.map(user => ({
+                        value: user.id,
+                        label: `${user.name} (${user.department})`
+                      }))}
+                      onChange={handleAssignUsers}
+                      placeholder="Seleccionar usuarios para asignar..."
+                      className="user-select"
+                    />
+                    
+                    <div className="assigned-users-list">
+                      {assignedUsers.length === 0 ? (
+                        <p>No hay usuarios asignados</p>
+                      ) : (
+                        <div>
+                          {['casa', 'oficina', 'remoto'].map(category => {
+                            const categoryUsers = assignedUsers.filter(
+                              user => (editedEquipment.categoriasAsignacion[user.id] || 'casa') === category
+                            );
 
-                    const updatedEquipment = {
-                            ...editedEquipment,
-                            usuariosAsignados: [...editedEquipment.usuariosAsignados, ...userIds],
-                            categoriasAsignacion: newCategories
-                          };
+                            return categoryUsers.length > 0 && (
+                              <div key={category} className="user-category-section">
+                                <h4 className="user-category-title">
+                                  {category === 'casa' && '🏠 En Casa'}
+                                  {category === 'oficina' && '🏢 En Oficina'}
+                                  {category === 'remoto' && '🌐 Remotos'}
+                                </h4>
+                                
+                                <ul>
+                                  {categoryUsers.map(user => (
+                                    <li key={user.id} className="assigned-user-item">
+                                      <div 
+                                        className="user-info clickable-user"
+                                        onClick={() => handleUserClick(user.id)}
+                                      >
+                                        {user.imageBase64 ? (
+                                          <img 
+                                            src={user.imageBase64} 
+                                            alt={user.name}
+                                            className="user-avatar"
+                                          />
+                                        ) : (
+                                          <div className="user-avatar-placeholder">
+                                            {user.name.charAt(0)}
+                                          </div>
+                                        )}
+                                        <span className="user-name">{user.name}</span>
+                                        <span className="user-department">{user.department}</span>
+                                      </div>
 
-                      
-                      setEditedEquipment(prev => ({
-                        ...prev,
-                        usuariosAsignados: [...prev.usuariosAsignados, ...userIds],
-                        categoriasAsignacion: newCategories
-                      }));
-                    }}
-                    onUnassign={(equipmentId, userId) => {
-                      const newCategories = {...editedEquipment.categoriasAsignacion};
-                      delete newCategories[userId];
+                                      <div className="user-actions">
+                                        <select
+                                          value={editedEquipment.categoriasAsignacion[user.id] || 'casa'}
+                                          onChange={(e) => handleUserCategoryChange(user.id, e.target.value)}
+                                          className="category-select"
+                                        >
+                                          <option value="casa">Casa</option>
+                                          <option value="oficina">Oficina</option>
+                                          <option value="remoto">Remoto</option>
+                                        </select>
 
-                       setEditedEquipment(prev => ({
-    ...prev,
-    usuariosAsignados: prev.usuariosAsignados.filter(id => id !== userId),
-    categoriasAsignacion: newCategories
-                       }));
-                      }}
-
-                   
-
-
-
-                      
-                
-                  />
+                                        <button
+                                          onClick={() => handleUnassignUser(user.id)}
+                                          className="unassign-btn"
+                                        >
+                                          Quitar
+                                        </button>
+                                      </div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -510,32 +683,49 @@ function EquipDetailsModal({
               <div className="assigned-users-section">
                 <h4>Usuarios Asignados ({assignedUsers.length})</h4>
                 <div className="assigned-users-list">
-                  {assignedUsers.map(user => (
-                    <div 
-                      key={user.id} 
-                      className="user-infoE clickable-user"
-                      onClick={() => handleUserClick(user.id)}
-                    >
-                      {user.imageBase64 ? (
-                        <img 
-                          src={user.imageBase64} 
-                          alt={user.name}
-                          className="user-photo"
-                        />
-                      ) : (
-                        <div className="user-photo-placeholder">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="user-details">
-                        <div className="user-name">{user.name}</div>
-                        <div className="user-department">{user.department}</div>
-                        <div className="user-category">
-                          {editedEquipment.categoriasAsignacion[user.id] || 'casa'}
+                  {['casa', 'oficina', 'remoto'].map(category => {
+                    const categoryUsers = assignedUsers.filter(
+                      user => (editedEquipment.categoriasAsignacion[user.id] || 'casa') === category
+                    );
+
+                    return categoryUsers.length > 0 && (
+                      <div key={category} className="user-category-section-view">
+                        <h5 className="user-category-title-view">
+                          {category === 'casa' && '🏠 En Casa'}
+                          {category === 'oficina' && '🏢 En Oficina'}
+                          {category === 'remoto' && '🌐 Remotos'}
+                        </h5>
+                        <div className="user-list-view">
+                          {categoryUsers.map(user => (
+                            <div 
+                              key={user.id} 
+                              className="user-infoE clickable-user"
+                              onClick={() => handleUserClick(user.id)}
+                            >
+                              {user.imageBase64 ? (
+                                <img 
+                                  src={user.imageBase64} 
+                                  alt={user.name}
+                                  className="user-photo"
+                                />
+                              ) : (
+                                <div className="user-photo-placeholder">
+                                  {user.name.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="user-details">
+                                <div className="user-name">{user.name}</div>
+                                <div className="user-department">{user.department}</div>
+                                <div className="user-category">
+                                  {user.categoria}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -583,5 +773,6 @@ function EquipDetailsModal({
     </div>
   );
 }
+
 
 export default EquipDetailsModal;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, getDoc, arrayUnion, writeBatch, deleteField, arrayRemove } from 'firebase/firestore';
 import { db } from './firebase';
 import UserList from './components/UserList';
 import EquipmentList from './components/EquipmentList';
@@ -12,6 +12,7 @@ import './App.css';
 import './components/UserList.css';
 import { useSpring, animated } from 'react-spring';
 import imageCompression from 'browser-image-compression';
+import ResetDataPanel from './components/ResetDataPanel';
 
 function App() {
   // Referencias y estados
@@ -21,6 +22,42 @@ function App() {
   const formRef = useRef(null);
   const [users, setUsers] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [userIsAdmin, setUserIsAdmin] = useState(false); // Cambia esto según tu lógica de autenticación
+  const [availableProcessors, setAvailableProcessors] = useState([]);
+  
+
+// Función para añadir procesador
+const handleAddProcessor = (newProcessor) => {
+  setAvailableProcessors(prev => {
+    const newProcessors = [...new Set([...prev, newProcessor])]; // Elimina duplicados
+    console.log("Después de añadir procesador:", newProcessors);
+    return newProcessors;
+  });
+};
+
+// Función para eliminar procesador
+const handleRemoveProcessor = (processorToRemove) => {
+  setAvailableProcessors(prev => {
+    const newProcessors = prev.filter(p => p !== processorToRemove);
+    console.log("Después de eliminar procesador:", newProcessors);
+    return newProcessors;
+  });
+};
+
+
+
+
+  // Si usas Firebase Auth, podrías hacer algo como esto:
+useEffect(() => {
+  // Esta es una implementación básica - ajústala a tu sistema
+  const checkAdminStatus = async () => {
+    // Aquí verificarías si el usuario actual es admin
+    // Por ejemplo, podrías tener una colección de admins en Firestore
+    setUserIsAdmin(true); // Temporalmente siempre true para desarrollo
+  };
+  
+  checkAdminStatus();
+}, []);
 
 
  // En el componente padre que maneja el estado global
@@ -115,59 +152,114 @@ const handleSelectEquipment = (equipmentId) => {
 
 
 // En el componente padre (App.js)
-const handleAssignmentChange = async (userId, equipmentId, category = null) => {
+const handleAssignmentChange = async (userId, equipmentId, category) => {
   try {
+    // 1. Verificar que el usuario existe
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      console.warn(`Usuario ${userId} no existe, limpiando asignación...`);
+      
+      // Limpiar referencia en el equipo
+      await updateDoc(doc(db, 'equipment', equipmentId), {
+        usuariosAsignados: arrayRemove(userId),
+        [`categoriasAsignacion.${userId}`]: deleteField()
+      });
+      
+      return;
+    }
+
+    // 2. Verificar que el equipo existe
+    const equipmentRef = doc(db, 'equipment', equipmentId);
+    const equipmentDoc = await getDoc(equipmentRef);
+    
+    if (!equipmentDoc.exists()) {
+      console.warn(`Equipo ${equipmentId} no existe`);
+      return;
+    }
+
+    // 3. Actualizar con batch
+    const batch = writeBatch(db);
+
     if (category) {
-      // Asignar o actualizar categoría
-      await assignEquipmentToUser(userId, equipmentId, category);
+      // Asignar/actualizar
+      batch.update(equipmentRef, {
+        usuariosAsignados: arrayUnion(userId),
+        [`categoriasAsignacion.${userId}`]: category
+      });
+
+      batch.update(userRef, {
+        equiposAsignados: arrayUnion(equipmentId),
+        [`categoriasTemporales.${equipmentId}`]: category
+      });
     } else {
       // Desasignar
-      await unassignEquipmentFromUser(userId, equipmentId);
-    }
-    
-    // Actualizar estado local
-    setUsers(prevUsers => prevUsers.map(u => {
-      if (u.id === userId) {
-        const newEquipos = category 
-          ? [...(u.equiposAsignados || []).filter(id => id !== equipmentId), equipmentId]
-          : (u.equiposAsignados || []).filter(id => id !== equipmentId);
-        
-        return {
-          ...u,
-          equiposAsignados: newEquipos,
-          categoriasTemporales: category 
-            ? { ...(u.categoriasTemporales || {}), [equipmentId]: category }
-            : Object.fromEntries(
-                Object.entries(u.categoriasTemporales || {}).filter(([id]) => id !== equipmentId)
-              )
-        };
-      }
-      return u;
-    }));
+      batch.update(equipmentRef, {
+        usuariosAsignados: arrayRemove(userId),
+        [`categoriasAsignacion.${userId}`]: deleteField()
+      });
 
-    setEquipment(prevEquipment => prevEquipment.map(eq => {
-      if (eq.id === equipmentId) {
-        const newUsers = category 
-          ? [...(eq.usuariosAsignados || []).filter(id => id !== userId), userId]
-          : (eq.usuariosAsignados || []).filter(id => id !== userId);
-        
+      batch.update(userRef, {
+        equiposAsignados: arrayRemove(equipmentId),
+        [`categoriasTemporales.${equipmentId}`]: deleteField()
+      });
+    }
+
+    await batch.commit();
+
+    // Actualizar estado local de manera optimista
+    setEquipment(prev => prev.map(eq => {
+      if (eq.id !== equipmentId) return eq;
+      
+      if (category) {
         return {
           ...eq,
-          usuariosAsignados: newUsers,
-          categoriasAsignacion: category 
-            ? { ...(eq.categoriasAsignacion || {}), [userId]: category }
-            : Object.fromEntries(
-                Object.entries(eq.categoriasAsignacion || {}).filter(([id]) => id !== userId)
-              )
+          usuariosAsignados: [...new Set([...(eq.usuariosAsignados || []), userId])],
+          categoriasAsignacion: {
+            ...(eq.categoriasAsignacion || {}),
+            [userId]: category
+          }
+        };
+      } else {
+        const { [userId]: _, ...restCategories } = eq.categoriasAsignacion || {};
+        return {
+          ...eq,
+          usuariosAsignados: (eq.usuariosAsignados || []).filter(id => id !== userId),
+          categoriasAsignacion: restCategories
         };
       }
-      return eq;
+    }));
+
+    setUsers(prev => prev.map(u => {
+      if (u.id !== userId) return u;
+      
+      if (category) {
+        return {
+          ...u,
+          equiposAsignados: [...new Set([...(u.equiposAsignados || []), equipmentId])],
+          categoriasTemporales: {
+            ...(u.categoriasTemporales || {}),
+            [equipmentId]: category
+          }
+        };
+      } else {
+        const { [equipmentId]: _, ...restCategories } = u.categoriasTemporales || {};
+        return {
+          ...u,
+          equiposAsignados: (u.equiposAsignados || []).filter(id => id !== equipmentId),
+          categoriasTemporales: restCategories
+        };
+      }
     }));
 
   } catch (error) {
-    console.error("Error actualizando asignación:", error);
+    console.error("Error en cambio de asignación:", error);
+    // Aquí podrías revertir los cambios en el estado local si falla
+    throw error;
   }
 };
+
 
 const handleAddNewSerial = (newSerial) => {
   if (!allAvailableSerials.includes(newSerial)) {
@@ -392,43 +484,49 @@ const updateAssignmentCategory = async (userId, equipmentId, newCategory) => {
 // Función para desasignar equipo de usuario
 const unassignEquipmentFromUser = async (userId, equipmentId) => {
   try {
-    // Actualizar el equipo
-    const equipmentRef = doc(db, 'equipment', equipmentId);
-    const equipmentSnap = await getDoc(equipmentRef);
-    const categoriasAsignacion = equipmentSnap.data().categoriasAsignacion || {};
-    const updatedCategorias = {...categoriasAsignacion};
-    delete updatedCategorias[userId];
-
-    await updateDoc(equipmentRef, {
+    const batch = writeBatch(db);
+    
+    // 1. Actualizar equipo
+    const equipoRef = doc(db, 'equipment', equipmentId);
+    batch.update(equipoRef, {
       usuariosAsignados: arrayRemove(userId),
-      categoriasAsignacion: updatedCategorias,
+      [`categoriasAsignacion.${userId}`]: deleteField(),
       updatedAt: new Date()
     });
 
-    // Actualizar el usuario
-    await updateDoc(doc(db, 'users', userId), {
+    // 2. Actualizar usuario
+    const userRef = doc(db, 'users', userId);
+    batch.update(userRef, {
       equiposAsignados: arrayRemove(equipmentId),
+      [`categoriasTemporales.${equipmentId}`]: deleteField(),
       updatedAt: new Date()
     });
 
-    // Actualizar estado local
+    await batch.commit();
+
+    // 3. Actualizar estado local
+    setUsers(prev => prev.map(u => 
+      u.id === userId
+        ? {
+            ...u,
+            equiposAsignados: (u.equiposAsignados || []).filter(id => id !== equipmentId),
+            categoriasTemporales: Object.fromEntries(
+              Object.entries(u.categoriasTemporales || {}).filter(([id]) => id !== equipmentId)
+            )
+          }
+        : u
+    ));
+
     setEquipment(prev => prev.map(eq => 
       eq.id === equipmentId
         ? {
             ...eq,
             usuariosAsignados: (eq.usuariosAsignados || []).filter(id => id !== userId),
-            categoriasAsignacion: updatedCategorias
+            categoriasAsignacion: Object.fromEntries(
+              Object.entries(eq.categoriasAsignacion || {}).filter(([id]) => id !== userId)
+            )
           }
         : eq
-    ));
-
-    setUsers(prev => prev.map(u => 
-      u.id === userId
-        ? {
-            ...u,
-            equiposAsignados: (u.equiposAsignados || []).filter(id => id !== equipmentId)
-          }
-        : u
     ));
   } catch (error) {
     console.error("Error desasignando equipo:", error);
@@ -437,72 +535,93 @@ const unassignEquipmentFromUser = async (userId, equipmentId) => {
 };
 
 
-
-
-
-
-
 // Función modificada handleEditUser
 const handleEditUser = async (userData) => {
   try {
-    const oldUser = users.find(u => u.id === userData.id);
+    const userRef = doc(db, 'users', userData.id);
     
-    // Obtener equipos antiguos y nuevos
-    const oldEquipos = oldUser.equiposAsignados || [];
-    const newEquipos = userData.equiposAsignados || [];
-    
-    // Equipos que ya no están asignados
-    const removedEquipos = oldEquipos.filter(id => !newEquipos.includes(id));
-    // Nuevos equipos asignados
-    const addedEquipos = newEquipos.filter(id => !oldEquipos.includes(id));
-    // Equipos que permanecen asignados (puede que cambie su categoría)
-    const keptEquipos = newEquipos.filter(id => oldEquipos.includes(id));
+    // 1. Limpiar categorías temporales de equipos no asignados
+    const cleanedCategories = Object.entries(userData.categoriasTemporales || {})
+      .reduce((acc, [equipoId, categoria]) => {
+        if (userData.equiposAsignados?.includes(equipoId)) {
+          acc[equipoId] = categoria;
+        }
+        return acc;
+      }, {});
 
-    // Procesar cambios
-    await Promise.all([
-      // Eliminar asignaciones que ya no están
-      ...removedEquipos.map(equipoId => 
-        unassignEquipmentFromUser(userData.id, equipoId)
-      ),
-      // Agregar nuevas asignaciones
-      ...addedEquipos.map(equipoId => 
-        assignEquipmentToUser(
-          userData.id, 
-          equipoId, 
-          userData.categoriasTemporales?.[equipoId] || 'casa'
-        )
-      ),
-      // Actualizar categorías de equipos que permanecen asignados
-      ...keptEquipos.map(equipoId => {
-        const newCategory = userData.categoriasTemporales?.[equipoId];
-        return updateAssignmentCategory(
-          userData.id, 
-          equipoId, 
-          newCategory
-        );
-      })
-    ]);
-
-    // Actualizar el usuario
-    await updateDoc(doc(db, 'users', userData.id), {
-      name: userData.name,
-      correo: userData.correo,
-      ciudad: userData.ciudad,
-      tipoVpn: userData.tipoVpn,
-      department: userData.department,
-      estado: userData.estado,
-      imageBase64: userData.imageBase64,
+    // 2. Preparar datos para actualización
+    const updateData = {
+      ...userData,
+      equiposAsignados: userData.equiposAsignados || [],
+      categoriasTemporales: cleanedCategories,
       updatedAt: new Date()
+    };
+
+    // 3. Actualizar en Firestore usando batch para atomicidad
+    const batch = writeBatch(db);
+    
+    // Actualizar usuario
+    batch.update(userRef, updateData);
+
+    // Actualizar relaciones con equipos
+    const currentUser = users.find(u => u.id === userData.id);
+    const currentEquipos = currentUser?.equiposAsignados || [];
+    const newEquipos = userData.equiposAsignados || [];
+
+    // Equipos a remover
+    currentEquipos.forEach(equipoId => {
+      if (!newEquipos.includes(equipoId)) {
+        const equipoRef = doc(db, 'equipment', equipoId);
+        batch.update(equipoRef, {
+          usuariosAsignados: arrayRemove(userData.id),
+          [`categoriasAsignacion.${userData.id}`]: deleteField(),
+          updatedAt: new Date()
+        });
+      }
     });
 
-    // Actualizar estado local
-    setUsers(users.map(u => 
-      u.id === userData.id ? { 
-        ...userData,
-        equiposAsignados: newEquipos,
-        categoriasTemporales: userData.categoriasTemporales
-      } : u
+    // Equipos a añadir/actualizar
+    newEquipos.forEach(equipoId => {
+      const equipoRef = doc(db, 'equipment', equipoId);
+      const categoria = cleanedCategories[equipoId] || 'casa';
+      
+      batch.update(equipoRef, {
+        usuariosAsignados: arrayUnion(userData.id),
+        [`categoriasAsignacion.${userData.id}`]: categoria,
+        updatedAt: new Date()
+      });
+    });
+
+    await batch.commit();
+
+    // 4. Actualizar estado local
+    setUsers(prev => prev.map(u => 
+      u.id === userData.id ? { ...u, ...updateData } : u
     ));
+
+    setEquipment(prev => prev.map(eq => {
+      const shouldAssign = newEquipos.includes(eq.id);
+      const wasAssigned = currentEquipos.includes(eq.id);
+      
+      if (shouldAssign && !wasAssigned) {
+        return {
+          ...eq,
+          usuariosAsignados: [...(eq.usuariosAsignados || []), userData.id],
+          categoriasAsignacion: {
+            ...(eq.categoriasAsignacion || {}),
+            [userData.id]: cleanedCategories[eq.id] || 'casa'
+          }
+        };
+      } else if (!shouldAssign && wasAssigned) {
+        const { [userData.id]: _, ...restCategorias } = eq.categoriasAsignacion || {};
+        return {
+          ...eq,
+          usuariosAsignados: (eq.usuariosAsignados || []).filter(id => id !== userData.id),
+          categoriasAsignacion: restCategorias
+        };
+      }
+      return eq;
+    }));
 
     return true;
   } catch (error) {
@@ -592,6 +711,68 @@ const handleAddUser = async (userData) => {
 }, []);
 
     // ==================== FUNCIONES DE EQUIPOS ====================
+
+const handleBulkAssignmentChanges = async (updates) => {
+  try {
+    const batch = writeBatch(db);
+    
+    updates.forEach(({ userId, equipmentId, category }) => {
+      // Actualizar equipo
+      const equipmentRef = doc(db, 'equipment', equipmentId);
+      batch.update(equipmentRef, {
+        usuariosAsignados: arrayUnion(userId),
+        [`categoriasAsignacion.${userId}`]: category,
+        updatedAt: new Date()
+      });
+
+      // Actualizar usuario
+      const userRef = doc(db, 'users', userId);
+      batch.update(userRef, {
+        equiposAsignados: arrayUnion(equipmentId),
+        [`categoriasTemporales.${equipmentId}`]: category,
+        updatedAt: new Date()
+      });
+    });
+
+    await batch.commit();
+
+    // Actualizar estado local
+    setEquipment(prev => prev.map(eq => {
+      const update = updates.find(u => u.equipmentId === eq.id);
+      if (update) {
+        return {
+          ...eq,
+          usuariosAsignados: [...new Set([...(eq.usuariosAsignados || []), update.userId])],
+          categoriasAsignacion: {
+            ...eq.categoriasAsignacion,
+            [update.userId]: update.category
+          }
+        };
+      }
+      return eq;
+    }));
+
+    setUsers(prev => prev.map(user => {
+      const update = updates.find(u => u.userId === user.id);
+      if (update) {
+        return {
+          ...user,
+          equiposAsignados: [...new Set([...(user.equiposAsignados || []), update.equipmentId])],
+          categoriasTemporales: {
+            ...user.categoriasTemporales,
+            [update.equipmentId]: update.category
+          }
+        };
+      }
+      return user;
+    }));
+
+  } catch (error) {
+    console.error("Error en actualizaciones masivas:", error);
+  }
+};
+
+
 
 
 const handleAssignEquipment = async (userId, equipmentIds) => {
@@ -914,8 +1095,12 @@ const [counters, setCounters] = useState({
   assignedEquipment: 0
 });
 
-  // ==================== EFECTOS ====================
+ // ==================== EFECTOS ====================
 useEffect(() => {
+  setAvailableProcessors([
+    "QuadCore Intel Core i5-2400, 3200 MHz",
+    "DualCore AMD Athlon X2 3250e 1500 Mhz"
+  ]);
   const fetchData = async () => {
     try {
       const [usersSnapshot, equipmentSnapshot, departmentsSnapshot] = await Promise.all([
@@ -924,45 +1109,117 @@ useEffect(() => {
         getDocs(collection(db, 'departments'))
       ]);
 
-      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const equipmentData = equipmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      console.log("Datos recibidos de Firebase:", {
+        users: usersSnapshot.docs.length,
+        equipment: equipmentSnapshot.docs.length,
+        departments: departmentsSnapshot.docs.length
+      });
 
+
+      // Procesar usuarios
+      const usersData = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Procesar equipos con limpieza de referencias
+      const equipmentData = equipmentSnapshot.docs.map(doc => {
+        const data = doc.data();
+
+        
+        
+        // Limpiar usuarios asignados que no existen
+        const usuariosAsignados = Array.isArray(data.usuariosAsignados) 
+          ? data.usuariosAsignados.filter(userId => 
+              usersData.some(u => u.id === userId))
+          : [];
+          
+        // Limpiar categoriasAsignacion
+        const categoriasAsignacion = data.categoriasAsignacion 
+          ? Object.fromEntries(
+              Object.entries(data.categoriasAsignacion).filter(
+                ([userId]) => usersData.some(u => u.id === userId)
+              )
+            )
+          : {};
+
+         
+          
+        // Si hubo cambios, actualizar en Firestore (opcional)
+        const needsUpdate = 
+          JSON.stringify(usuariosAsignados) !== JSON.stringify(data.usuariosAsignados) ||
+          JSON.stringify(categoriasAsignacion) !== JSON.stringify(data.categoriasAsignacion || {});
+          
+        if (needsUpdate) {
+          console.log(`Limpiando referencias inválidas en equipo ${doc.id}`);
+          // Actualizar en Firestore solo si es necesario
+          updateDoc(doc.ref, {
+            usuariosAsignados,
+            categoriasAsignacion
+          });
+        }
+        
+        return { 
+          id: doc.id, 
+          ...data,
+          usuariosAsignados,
+          categoriasAsignacion
+        };
+      });
+
+
+
+        const allProcessors = equipmentData
+        .map(equip => equip.procesador)
+        .filter(procesador => procesador && typeof procesador === 'string' && procesador.trim() !== '');
+
+        // Eliminar duplicados y ordenar
+      const uniqueProcessors = [...new Set(allProcessors)].sort();
+      console.log("Procesadores cargados desde Firebase:", uniqueProcessors);
+      setAvailableProcessors(uniqueProcessors);
+        
+
+
+      // Procesar departamentos
+      const departmentsData = departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      // Actualizar estados
       setUsers(usersData);
       setEquipment(equipmentData);
-      setDepartments(departmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setDepartments(departmentsData);
 
-
-// Extraer todas las IPs únicas de los equipos
+      // Extraer todas las IPs únicas de los equipos (usando datos ya limpiados)
       const allIps = equipmentData.reduce((acc, equip) => {
         const equipIps = Array.isArray(equip.IpEquipo) ? equip.IpEquipo : [];
         return [...acc, ...equipIps];
       }, ['192.168.1.1', '192.168.1.2', '10.0.0.1']);
 
-      setAllAvailableIps([...new Set(allIps.filter(ip => ip))]); // Elimina duplicados y valores nulos
+      setAllAvailableIps([...new Set(allIps.filter(ip => ip))]);
 
-// Extraer todos los números de serie únicos de los equipos
+      // Extraer todos los números de serie únicos de los equipos
       const allSerials = equipmentData
         .map(equip => equip.serialNumber)
-        .filter(serial => serial); // Filtrar valores nulos o vacíos
+        .filter(serial => serial);
 
-      setAllAvailableSerials([...new Set(allSerials)]); // Eliminar duplicados
+      setAllAvailableSerials([...new Set(allSerials)]);
 
-      // Actualizar contadores
+      // Actualizar contadores con datos limpios
       setCounters({
         totalUsers: usersData.length,
         activeUsers: usersData.filter(u => u.estado === 'Activo').length,
         MercurioAntofagastaUsers: usersData.filter(u => u.department === 'Mercurio Antofagasta').length,
         totalEquipment: equipmentData.length,
-        availableEquipment: equipmentData.filter(e => !e.usuariosAsignados).length,
-        assignedEquipment: equipmentData.filter(e => e.usuariosAsignados).length
+        availableEquipment: equipmentData.filter(e => 
+          !e.usuariosAsignados || e.usuariosAsignados.length === 0).length,
+        assignedEquipment: equipmentData.filter(e => 
+          e.usuariosAsignados && e.usuariosAsignados.length > 0).length
       });
     } catch (error) {
       console.error("Error fetching data:", error);
+      console.log("Después de añadir:", availableProcessors);
     } finally {
       setLoading(false);
     }
   };
-
+  
+console.log("Procesadores actuales:", availableProcessors);
   fetchData();
 }, []);
 
@@ -1039,7 +1296,26 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
     <div className="app-background">
       <div className="app-container">
         <div className="app">
-          
+          {/* Solo mostrar en desarrollo o para usuarios admin */}
+      <div className="admin-tools">
+          {(process.env.NODE_ENV === 'development' || userIsAdmin) && (
+            <ResetDataPanel 
+            onResetComplete={() => {
+    // Actualizar el estado local
+    setUsers(prev => prev.map(u => ({
+      ...u,
+      equiposAsignados: [],
+      categoriasTemporales: {}
+    })));
+    
+    setEquipment(prev => prev.map(e => ({
+      ...e,
+      usuariosAsignados: [],
+      categoriasAsignacion: {}
+    })));
+  }}/>
+          )}
+        </div>
           {/* Encabezado de la aplicación */}
           <div className="app-header">
             <h2>Gestión de Usuarios y Equipos</h2>
@@ -1121,22 +1397,29 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               {showUserForm && (
                 <div className="forms-usuarios">
                   <AddUserForm 
-                  onAssignmentChange={handleAssignmentChange}
-                  onEquipmentCategoryChange={handleUserEquipmentChange}
-                    onUserAdded={(userData) => {
-                      handleAddUser(userData);
-                      setShowUserForm(false);
-                    }} 
-                    userToEdit={editingUser}
-                    onEditUser={handleEditUser}
-                    onCancelEdit={() => {
-                      setEditingUser(null);
-                      setShowUserForm(false);
-                    }}
-                    departments={departments}
-                    onAddDepartment={handleAddDepartment}
-                    equipment={equipment}
-                  />
+  onSave={async (userData) => {
+    try {
+      const newUser = await handleAddUser(userData);
+      setShowUserForm(false);
+      return newUser;
+    } catch (error) {
+      console.error("Error al agregar usuario:", error);
+      throw error;
+    }
+  }}
+  onCancel={() => setShowUserForm(false)}
+  equipment={equipment}
+  availableDepartments={departments}
+  onAddDepartment={handleAddDepartment}
+  onAssignmentChange={(equipmentId, category) => {
+    // Implementar lógica para asignación individual
+    // Puedes usar handleAssignmentChange adaptado
+  }}
+  onBulkAssignmentChange={(updates) => {
+    // Implementar lógica para asignación masiva
+    // Puedes usar handleBulkAssignmentChanges adaptado
+  }}
+/>
                 </div>
               )}
 
@@ -1177,31 +1460,25 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
 
        {showEquipmentForm && (
                 <div className="forms-equipos">
-                  <AddEquipmentForm 
-                  onAssignmentChange={handleAssignmentChange}
-                  onUserCategoryChange={handleUserEquipmentChange}
-                    ref={formRef}
-                    users={users}
-                    onEquipmentAdded={(equipData) => {
-                      handleAddEquipment(equipData);
-                      setShowEquipmentForm(false);
-                    }}
-                    equipmentToEdit={editingEquipment}
-                    onEditEquipment={handleEditEquipment}
-                    onCancelEdit={() => {
-                      setEditingEquipment(null);
-                      setShowEquipmentForm(false);
-                    }}
-                    
-                    parentAvailableIps={allAvailableIps}
-                    onAddNewIp={handleAddNewIp}
-                    parentAvailableSerials={allAvailableSerials}
-                    onAddNewSerial={handleAddNewSerial}
-
-                    availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
-                    availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
-                    availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
-                  />
+                 <AddEquipmentForm 
+  onEquipmentAdded={(equipData) => {
+    handleAddEquipment(equipData);
+    setShowEquipmentForm(false);
+  }}
+  equipmentToEdit={editingEquipment}
+  onEditEquipment={handleEditEquipment}
+  onCancelEdit={() => {
+    setEditingEquipment(null);
+    setShowEquipmentForm(false);
+  }}
+  parentAvailableIps={allAvailableIps || []} // Asegurar que siempre es array
+  onAddNewIp={handleAddNewIp}
+  parentAvailableSerials={allAvailableSerials || []} // Asegurar que siempre es array
+  onAddNewSerial={handleAddNewSerial}
+  availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
+  availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
+  availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
+/>
                 </div>
               )}
 
@@ -1229,7 +1506,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       </div>
 
           {showUserModal && selectedUserId && (
-            <>
+           
            <div className="user-management-container">
     <UserDetailsModal 
       user={users.find(u => u.id === selectedUserId) || {}}
@@ -1244,32 +1521,15 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
     />
   </div>
     
-     <EquipmentAssignment
-      userId={selectedUserId}  // Usar el ID del usuario seleccionado
-      users={equipment}       // Pasar la lista de equipos disponibles
-      assignedUsers={users.find(u => u.id === selectedUserId)?.equiposAsignados?.map(id => 
-        equipment.find(e => e.id === id)
-      ).filter(Boolean) || []}  // Pasar los equipos asignados al usuario
-      onAssign={(userId, equipmentIds) => {
-        // Asignar equipos al usuario
-        equipmentIds.forEach(equipId => 
-          handleAssignmentChange(userId, equipId, 'casa')
-        );
-      }}
-      onUnassign={(userId, equipmentId) => {
-        // Desasignar equipo del usuario
-        handleAssignmentChange(userId, equipmentId);
-      }}
-      onCategoryChange={(equipmentId, category) => {
-        handleUserEquipmentChange(selectedUserId, equipmentId, category);
-      }}
-    />
-    </>
+    
+   
   
           )}
 
           {showEquipmentModal && selectedEquipmentId && (
             <EquipDetailsModal 
+              onAssignmentChange={handleAssignmentChange}
+              onBulkAssignmentChange={handleBulkAssignmentChanges}
               equipment={equipment.find(e => e.id === selectedEquipmentId)}
               onEdit={handleEditEquipment}
               onClose={closeModal}
@@ -1284,8 +1544,13 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               availableSerials={allAvailableSerials}
               onAddNewSerial={handleAddNewSerial}
               availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
-  availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
-  availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
+              onAddProcessor={handleAddProcessor}
+              onRemoveProcessor={handleRemoveProcessor}
+              availableProcessors={availableProcessors}
+              
+              setAvailableProcessors={setAvailableProcessors}
+              availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
+           
             />
           )}
         

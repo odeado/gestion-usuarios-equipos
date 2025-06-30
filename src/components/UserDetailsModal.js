@@ -12,7 +12,9 @@ function UserDetailsModal({
   onNext,
   onPrev,
   onOpenEquipmentModal,
-  availableDepartments = []
+  availableDepartments = [],
+  onAssignmentChange,
+  onBulkAssignmentChange
 }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -46,24 +48,35 @@ function UserDetailsModal({
   };
 
   const handleSave = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsSaving(true);
-    try {
-      await onEdit({
-        ...editedUser,
-        id: user.id,
-        equiposAsignados: editedUser.equiposAsignados,
-        categoriasTemporales: editedUser.categoriasTemporales
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      setErrors({ form: error.message || 'Error al guardar los cambios' });
-    } finally {
-      setIsSaving(false);
-    }
+  // Crear objeto final asegurando todos los campos
+  const userToSave = {
+    ...editedUser,
+    id: user.id,
+    equiposAsignados: editedUser.equiposAsignados || [],
+    categoriasTemporales: Object.entries(editedUser.categoriasTemporales || {})
+      .reduce((acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value || 'casa';
+        }
+        return acc;
+      }, {})
   };
+
+  console.log('Datos finales a guardar:', userToSave); // Verificar en consola
+
+setIsSaving(true);
+  try {
+    await onEdit(userToSave);
+    setIsEditing(false);
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    setErrors({ form: error.message || 'Error al guardar los cambios' });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
 
  const handleInputChange = (e) => {
@@ -116,41 +129,68 @@ const getEstadoColor = (estado) => {
     }
   };
 
-  const handleAssignEquipment = (selectedOptions) => {
-    const selectedIds = selectedOptions.map(opt => opt.value);
-    const newCategories = {...editedUser.categoriasTemporales};
-    
-    selectedIds.forEach(id => {
-      newCategories[id] = 'casa'; // Categoría por defecto
-    });
+const handleAssignEquipment = (selectedOptions) => {
+  const selectedIds = selectedOptions.map(opt => opt.value);
+  
+  if (editedUser.equiposAsignados.length + selectedIds.length > 10) {
+    alert('Máximo 10 equipos por usuario');
+    return;
+  }
 
-    setEditedUser(prev => ({
-      ...prev,
-      equiposAsignados: [...prev.equiposAsignados, ...selectedIds],
-      categoriasTemporales: newCategories
-    }));
-  };
+  const updates = selectedIds.map(equipmentId => ({
+    userId: user.id,
+    equipmentId,
+    category: 'casa' // Valor por defecto
+  }));
 
-  const handleUnassignEquipment = (equipmentId) => {
-    const newCategories = {...editedUser.categoriasTemporales};
-    delete newCategories[equipmentId];
+  // Notificar al padre
+  if (typeof onBulkAssignmentChange === 'function') {
+    onBulkAssignmentChange(updates);
+  }
 
-    setEditedUser(prev => ({
-      ...prev,
-      equiposAsignados: prev.equiposAsignados.filter(id => id !== equipmentId),
-      categoriasTemporales: newCategories
-    }));
-  };
+  // Actualizar estado local
+  const newCategories = {...editedUser.categoriasTemporales};
+  selectedIds.forEach(id => newCategories[id] = 'casa');
+  
+  setEditedUser(prev => ({
+    ...prev,
+    equiposAsignados: [...new Set([...prev.equiposAsignados, ...selectedIds])],
+    categoriasTemporales: newCategories
+  }));
+};
 
-  const handleCategoryChange = (equipmentId, category) => {
-    setEditedUser(prev => ({
-      ...prev,
-      categoriasTemporales: {
-        ...prev.categoriasTemporales,
-        [equipmentId]: category
-      }
-    }));
-  };
+const handleUnassignEquipment = (equipmentId) => {
+  // Notificar al padre
+  if (typeof onAssignmentChange === 'function') {
+    onAssignmentChange(user.id, equipmentId, null);
+  }
+
+  // Actualizar estado local
+  const newCategories = {...editedUser.categoriasTemporales};
+  delete newCategories[equipmentId];
+  
+  setEditedUser(prev => ({
+    ...prev,
+    equiposAsignados: prev.equiposAsignados.filter(id => id !== equipmentId),
+    categoriasTemporales: newCategories
+  }));
+};
+
+const handleCategoryChange = (equipmentId, category) => {
+  // Notificar al padre
+  if (typeof onAssignmentChange === 'function') {
+    onAssignmentChange(user.id, equipmentId, category);
+  }
+
+  // Actualizar estado local
+  setEditedUser(prev => ({
+    ...prev,
+    categoriasTemporales: {
+      ...prev.categoriasTemporales,
+      [equipmentId]: category
+    }
+  }));
+};
 
   return (
     <div className="user-modalU" onClick={e => e.stopPropagation()}>
@@ -287,7 +327,7 @@ const getEstadoColor = (estado) => {
                   />
                   {errors?.ciudad && <span className="error-message">{errors.ciudad}</span>}
                 </div>
-
+ {/* codigo de edicion modal */}
                 <div className="form-groupU">
                   <label>Equipos Asignados:</label>
                   <div className="equipment-assignment-container">
@@ -302,42 +342,123 @@ const getEstadoColor = (estado) => {
                       className="equipment-select"
                     />
                     
-                    <div className="assigned-equipment-list">
-                      {assignedEquipment.length === 0 ? (
-                        <p>No hay equipos asignados</p>
-                      ) : (
-                        <ul>
-                          {assignedEquipment.map(eq => (
-                            <li key={eq.id}>
-                              <div className="equipment-info">
-                                <span className="name">{eq.nombre}</span>
-                                <span className="type">{eq.type}</span>
-                                <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
-                              </div>
-                              
-                              <div className="equipment-actions">
-                                <select
-                                  value={editedUser.categoriasTemporales[eq.id] || 'casa'}
-                                  onChange={(e) => handleCategoryChange(eq.id, e.target.value)}
-                                  className="category-select"
-                                >
-                                  <option value="casa">Casa</option>
-                                  <option value="oficina">Oficina</option>
-                                  <option value="remoto">Remoto</option>
-                                </select>
-                                
-                                <button 
-                                  onClick={() => handleUnassignEquipment(eq.id)}
-                                  className="unassign-btn"
-                                >
-                                  Desasignar
-                                </button>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+<div className="assigned-equipment-list">
+  {assignedEquipment.length === 0 ? (
+    <p>No hay equipos asignados</p>
+  ) : (
+    <div>
+      {/* Sección de Equipos en Casa */}
+      <div className="equipment-category-section">
+        <h4 className="equipment-category-title">Equipos en Casa</h4>
+        <ul>
+          {assignedEquipment
+            .filter(eq => (editedUser.categoriasTemporales[eq.id] || 'casa') === 'casa')
+            .map(eq => (
+              <li key={eq.id}>
+                <div className="equipment-info">
+                  <span className="name">{eq.nombre}</span>
+                  <span className="type">{eq.type}</span>
+                  <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
+                </div>
+                
+                <div className="equipment-actions">
+                  <select
+                    value={editedUser.categoriasTemporales[eq.id] || 'casa'}
+                    onChange={(e) => handleCategoryChange(eq.id, e.target.value)}
+                    className="category-select"
+                  >
+                    <option value="casa">Casa</option>
+                    <option value="oficina">Oficina</option>
+                    <option value="remoto">Remoto</option>
+                  </select>
+                  
+                  <button 
+                    onClick={() => handleUnassignEquipment(eq.id)}
+                    className="unassign-btn"
+                  >
+                    Desasignar
+                  </button>
+                </div>
+              </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Sección de Equipos en Oficina */}
+      <div className="equipment-category-section">
+        <h4 className="equipment-category-title">Equipos en Oficina</h4>
+        <ul>
+          {assignedEquipment
+            .filter(eq => editedUser.categoriasTemporales[eq.id] === 'oficina')
+            .map(eq => (
+              <li key={eq.id}>
+                <div className="equipment-info">
+                  <span className="name">{eq.nombre}</span>
+                  <span className="type">{eq.type}</span>
+                  <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
+                </div>
+                   <div className="equipment-actions">
+                  <select
+                    value={editedUser.categoriasTemporales[eq.id] || 'oficina'}
+                    onChange={(e) => handleCategoryChange(eq.id, e.target.value)}
+                    className="category-select"
+                  >
+                    <option value="casa">Casa</option>
+                    <option value="oficina">Oficina</option>
+                    <option value="remoto">Remoto</option>
+                  </select>
+                  
+                  <button 
+                    onClick={() => handleUnassignEquipment(eq.id)}
+                    className="unassign-btn"
+                  >
+                    Desasignar
+                  </button>
+                </div>
+              </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Sección de Equipos Remotos */}
+      <div className="equipment-category-section">
+        <h4 className="equipment-category-title">Equipos Remotos</h4>
+        <ul>
+          {assignedEquipment
+            .filter(eq => editedUser.categoriasTemporales[eq.id] === 'remoto')
+            .map(eq => (
+              <li key={eq.id}>
+                          <div className="equipment-info">
+                  <span className="name">{eq.nombre}</span>
+                  <span className="type">{eq.type}</span>
+                  <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
+                </div>
+                
+                <div className="equipment-actions">
+                  <select
+                    value={editedUser.categoriasTemporales[eq.id] || 'remoto'}
+                    onChange={(e) => handleCategoryChange(eq.id, e.target.value)}
+                    className="category-select"
+                  >
+                    <option value="casa">Casa</option>
+                    <option value="oficina">Oficina</option>
+                    <option value="remoto">Remoto</option>
+                  </select>
+                  
+                  <button 
+                    onClick={() => handleUnassignEquipment(eq.id)}
+                    className="unassign-btn"
+                  >
+                    Desasignar
+                  </button>
+                </div>
+              </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )}
+</div>
                   </div>
                 </div>
               </div>
@@ -417,12 +538,30 @@ const getEstadoColor = (estado) => {
               </div>
             </div>
           </div>
+ {/* codigo visual del modal*/}
+<div className="assigned-equipment-section">
+  <h4>Equipos Asignados ({assignedEquipment.length})</h4>
+  {assignedEquipment.length > 0 ? (
+    <div>
+      {['casa', 'oficina', 'remoto'].map(category => {
+        const categoryEquipments = assignedEquipment.filter(
+          eq => (user.categoriasTemporales?.[eq.id] || 'casa') === category
+        );
 
-          <div className="assigned-equipment-section">
-            <h4>Equipos Asignados ({assignedEquipment.length})</h4>
-            {assignedEquipment.length > 0 ? (
-              <div className="equipment-list">
-                {assignedEquipment.map(equipo => (
+        return categoryEquipments.length > 0 && (
+          <div key={category} className="equipment-category-section">
+            <h5 className="equipment-category-title">
+              {category === 'casa' && '🏠 Equipos en Casa'}
+              {category === 'oficina' && '🏢 Equipos en Oficina'}
+              {category === 'remoto' && '🌐 Equipos Remotos'}
+            </h5>
+            <div className="equipment-list">
+              {categoryEquipments.map(equipo => {
+                const ip = Array.isArray(equipo.IpEquipo) 
+                  ? equipo.IpEquipo[0] || 'Sin IP' 
+                  : equipo.IpEquipo || 'Sin IP';
+
+                return (
                   <div 
                     key={equipo.id} 
                     className="equipment-item"
@@ -431,15 +570,20 @@ const getEstadoColor = (estado) => {
                     <div className="equipment-info">
                       <span className="equipment-name">{equipo.nombre}</span>
                       <span className="equipment-type">{equipo.type}</span>
-                      <span className="equipment-ip">{equipo.IpEquipo || 'Sin IP'}</span>
+                      <span className="equipment-ip">{ip}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p>No hay equipos asignados</p>
-            )}
+                );
+              })}
+            </div>
           </div>
+        );
+      })}
+    </div>
+  ) : (
+    <p>No hay equipos asignados</p>
+  )}
+</div>
 
           <div className="modal-actionsU">
             {isMobile ? (

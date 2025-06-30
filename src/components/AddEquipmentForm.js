@@ -1,25 +1,21 @@
-// AddEquipmentForm.js
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import imageCompression from 'browser-image-compression';
 import CreatableSelect from 'react-select/creatable';
-import './AddEquipmentForm.css';
 import AutocompleteInput from './AutocompleteInput';
+import './AddEquipmentForm.css';
 
-const AddEquipmentForm = forwardRef((props, ref) => {
-  const { 
-    onEquipmentAdded, 
-    equipmentToEdit, 
-    onEditEquipment, 
-    onCancelEdit,
-    parentAvailableIps = [],
-    onAddNewIp,
-    parentAvailableSerials = [],
-    onAddNewSerial,
-    availableModels = [],
-    availableProcessors = [],
-    availableBrands = []
-  } = props;
-
+const AddEquipmentForm = ({
+  onEquipmentAdded,
+  onCancel,
+  parentAvailableIps = [],
+  onAddNewIp,
+  parentAvailableSerials = [],
+  onAddNewSerial,
+  setAvailableProcessors = () => console.warn('setAvailableProcessors no está definido'),
+  availableModels = [],
+  availableProcessors = [],
+  availableBrands = []
+}) => {
   const [formData, setFormData] = useState({
     nombre: '',
     type: '',
@@ -42,78 +38,8 @@ const AddEquipmentForm = forwardRef((props, ref) => {
   });
 
   const [isCompressing, setIsCompressing] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef();
-  const [localOptions, setLocalOptions] = useState({
-    model: availableModels,
-    procesador: availableProcessors,
-    marca: availableBrands
-  });
-
-  useEffect(() => {
-    if (equipmentToEdit) {
-      const ipEquipoArray = Array.isArray(equipmentToEdit.IpEquipo) ? 
-        equipmentToEdit.IpEquipo : 
-        (equipmentToEdit.IpEquipo ? [equipmentToEdit.IpEquipo] : []);
-
-      setFormData({
-        nombre: equipmentToEdit.nombre || '',
-        type: equipmentToEdit.type || '',
-        ciudad: equipmentToEdit.ciudad || '',
-        estado: equipmentToEdit.estado || 'En uso',
-        lugar: equipmentToEdit.lugar || '',
-        descripcion: equipmentToEdit.descripcion || '',
-        marca: equipmentToEdit.marca || '',
-        model: equipmentToEdit.model || '',
-        serialNumber: equipmentToEdit.serialNumber || '',
-        procesador: equipmentToEdit.procesador || '',
-        ram: equipmentToEdit.ram || '',
-        discoDuro: equipmentToEdit.discoDuro || '',
-        tarjetaGrafica: equipmentToEdit.tarjetaGrafica || '',
-        windows: equipmentToEdit.windows || '',
-        antivirus: equipmentToEdit.antivirus || '',
-        office: equipmentToEdit.office || '',
-        IpEquipo: ipEquipoArray,
-        imageBase64: equipmentToEdit.imageBase64 || ''
-      });
-      setIsEditing(true);
-    } else {
-      resetForm();
-    }
-  }, [equipmentToEdit]);
-
-  const resetForm = () => {
-    setFormData({
-      nombre: '',
-      type: '',
-      ciudad: '',
-      estado: 'En uso',
-      lugar: '',
-      descripcion: '',
-      marca: '',
-      model: '',
-      serialNumber: '',
-      procesador: '',
-      ram: '',
-      discoDuro: '',
-      tarjetaGrafica: '',
-      windows: '',
-      antivirus: '',
-      office: '',
-      IpEquipo: [],
-      imageBase64: ''
-    });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    setIsEditing(false);
-    setErrors({});
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -125,6 +51,12 @@ const AddEquipmentForm = forwardRef((props, ref) => {
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleImageChange = async (e) => {
@@ -162,52 +94,55 @@ const AddEquipmentForm = forwardRef((props, ref) => {
     }
 
     try {
-      if (isEditing && equipmentToEdit) {
-        await onEditEquipment({
-          ...formData,
-          id: equipmentToEdit.id
-        });
-      } else {
-        await onEquipmentAdded(formData);
-        resetForm();
-      }
+      await onEquipmentAdded(formData);
+      resetForm();
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors(prev => ({ ...prev, form: 'Error al guardar los datos' }));
     }
   };
 
-  const updateLocalOptions = (field, value) => {
-    if (value && !localOptions[field].includes(value)) {
-      setLocalOptions(prev => ({
-        ...prev,
-        [field]: [...prev[field], value]
-      }));
-    }
-  };
-
-  const handleAutocompleteChange = (field) => (e) => {
-    const value = e.target.value;
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
-    e.target.name = field;
-    handleChange(e);
+  const resetForm = () => {
+    setFormData({
+      nombre: '',
+      type: '',
+      ciudad: '',
+      estado: 'En uso',
+      lugar: '',
+      descripcion: '',
+      marca: '',
+      model: '',
+      serialNumber: '',
+      procesador: '',
+      ram: '',
+      discoDuro: '',
+      tarjetaGrafica: '',
+      windows: '',
+      antivirus: '',
+      office: '',
+      IpEquipo: [],
+      imageBase64: ''
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setErrors({});
   };
 
   const renderIpSelect = () => {
-    const currentIps = Array.isArray(formData.IpEquipo) ? formData.IpEquipo : 
-                     (formData.IpEquipo ? [formData.IpEquipo] : []);
+    const currentIp = Array.isArray(formData.IpEquipo) && formData.IpEquipo.length > 0 
+      ? formData.IpEquipo[0] 
+      : '';
 
     const options = [
-      ...parentAvailableIps.map(ip => ({
-        value: ip,
-        label: ip
+      ...parentAvailableIps.map(ip => ({ 
+        value: ip, 
+        label: ip 
       })),
-      ...(currentIps.length > 0 && !parentAvailableIps.includes(currentIps[0]) ? [{
-        value: currentIps[0],
-        label: currentIps[0]
-      }] : [])
-    ].filter(option => option.value);
+      ...(currentIp && !parentAvailableIps.includes(currentIp) ? 
+        [{ 
+          value: currentIp, 
+          label: currentIp 
+        }] : [])
+    ].filter(option => option.value && option.value.trim() !== '');
 
     return (
       <div className="form-groupE">
@@ -215,7 +150,7 @@ const AddEquipmentForm = forwardRef((props, ref) => {
         <CreatableSelect  
           isMulti={false}
           options={options}
-          value={currentIps.length > 0 ? options.find(option => option.value === currentIps[0]) : null}
+          value={options.find(option => option.value === currentIp) || null}
           onChange={(selectedOption) => {
             const ipValue = selectedOption?.value || '';
             setFormData(prev => ({
@@ -230,14 +165,14 @@ const AddEquipmentForm = forwardRef((props, ref) => {
                 ...prev,
                 IpEquipo: [newIp]
               }));
-              onAddNewIp(newIp);
+              onAddNewIp && onAddNewIp(newIp);
             }
           }}
           className="react-select-container"
           classNamePrefix="react-select"
           placeholder="Seleccione o cree una IP..."
           noOptionsMessage={() => "No hay IPs disponibles. Escriba para crear una nueva."}
-          isSearchable
+          isClearable
           formatCreateLabel={(inputValue) => `Crear nueva IP: ${inputValue}`}
         />
       </div>
@@ -248,15 +183,16 @@ const AddEquipmentForm = forwardRef((props, ref) => {
     const currentSerial = formData.serialNumber || '';
 
     const options = [
-      ...parentAvailableSerials.map(serial => ({
-        value: serial,
-        label: serial
+      ...parentAvailableSerials.map(serial => ({ 
+        value: serial, 
+        label: serial 
       })),
-      ...(currentSerial && !parentAvailableSerials.includes(currentSerial) ? [{
-        value: currentSerial,
-        label: currentSerial
-      }] : [])
-    ].filter(option => option.value);
+      ...(currentSerial && !parentAvailableSerials.includes(currentSerial) ? 
+        [{ 
+          value: currentSerial, 
+          label: currentSerial 
+        }] : [])
+    ].filter(option => option.value && option.value.trim() !== '');
 
     return (
       <div className="form-groupE">
@@ -264,7 +200,7 @@ const AddEquipmentForm = forwardRef((props, ref) => {
         <CreatableSelect  
           isMulti={false}
           options={options}
-          value={options.find(option => option.value === currentSerial)}
+          value={options.find(option => option.value === currentSerial) || null}
           onChange={(selectedOption) => {
             const serialValue = selectedOption?.value || '';
             setFormData(prev => ({
@@ -279,14 +215,14 @@ const AddEquipmentForm = forwardRef((props, ref) => {
                 ...prev,
                 serialNumber: newSerial
               }));
-              onAddNewSerial(newSerial);
+              onAddNewSerial && onAddNewSerial(newSerial);
             }
           }}
           className="react-select-container"
           classNamePrefix="react-select"
           placeholder="Seleccione o ingrese un número de serie..."
           noOptionsMessage={() => "No hay números de serie disponibles. Escriba para crear uno nuevo."}
-          isSearchable
+          isClearable
           formatCreateLabel={(inputValue) => `Usar nuevo serial: ${inputValue}`}
         />
         {errors.serialNumber && <div className="error-text">{errors.serialNumber}</div>}
@@ -295,298 +231,278 @@ const AddEquipmentForm = forwardRef((props, ref) => {
   };
 
   return (
-    <div className="eqipment-form" ref={ref}>
-      <h3>{isEditing ? 'Editar Equipo' : 'Agregar Nuevo Equipo'}</h3>
-      <form onSubmit={handleSubmit}>
-        {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
-        {errors.form && <div className="error-message">{errors.form}</div>}
+    <div className="equipment-form-modal">
+      <div className="modal-contentE">
+        <div className="modal-headerE">
+          <button className="close-btnE" onClick={onCancel}>×</button>
+          <h2>Agregar Nuevo Equipo</h2>
+        </div>
         
-        {formData.imageBase64 && !isCompressing && (
-          <div className="image-preview-container">
-            <img src={formData.imageBase64} alt="Vista previa del equipo" />
-          </div>
-        )}
+        <form onSubmit={handleSubmit}>
+          {isCompressing && <div className="loading-message">Comprimiendo imagen...</div>}
+          {errors.form && <div className="error-message">{errors.form}</div>}
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="nombre" className="form-label">Nombre de Equipo</label>
-            <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="Ej: Nombre de equipo"
-              required
-              className={`form-input ${errors.nombre ? 'input-error' : ''}`}
-            />
-            {errors.nombre && <div className="error-text">{errors.nombre}</div>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="type" className="form-label">Tipo de Equipo</label>
-            <input
-              id="type"
-              name="type"
-              type="text"
-              value={formData.type}
-              onChange={handleChange}
-              placeholder="Ej: Laptop, Teléfono, Monitor"
-              required
-              className={`form-input ${errors.type ? 'input-error' : ''}`}
-            />
-            {errors.type && <div className="error-text">{errors.type}</div>}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="ciudad" className="form-label">Ciudad</label>
-            <input
-              id="ciudad"
-              name="ciudad"
-              type="text"
-              value={formData.ciudad}
-              onChange={handleChange}
-              placeholder="Ej: Ciudad de México, Bogotá"
-              required
-              className={`form-input ${errors.ciudad ? 'input-error' : ''}`}
-            />
-            {errors.ciudad && <div className="error-text">{errors.ciudad}</div>}
-          </div>
-
-          <div className="form-group department-group">
-            <label htmlFor="estado" className="form-label">Estado</label>
-            <select
-              id="estado"
-              name="estado"
-              value={formData.estado}
-              onChange={handleChange}
-              required
-              className={`user-selector ${errors.estado ? 'input-error' : ''}`}
-            >
-              <option value="Disponible">Disponible</option>
-              <option value="En uso">En uso</option>
-              <option value="Mantenimiento">Mantenimiento</option>
-              <option value="Eliminado">Eliminado</option>
-            </select>
-            {errors.estado && <div className="error-text">{errors.estado}</div>}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="lugar" className="form-label">Lugar</label>
-            <input
-              id="lugar"
-              name="lugar"
-              type="text"
-              value={formData.lugar}
-              onChange={handleChange}
-              placeholder="Ej: Oficina, Casa"
-              required
-              className={`form-input ${errors.lugar ? 'input-error' : ''}`}
-            />
-            {errors.lugar && <div className="error-text">{errors.lugar}</div>}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="descripcion" className="form-label">Descripción</label>
-          <textarea
-            id="descripcion"
-            name="descripcion"
-            value={formData.descripcion}
-            onChange={handleChange}
-            placeholder="Descripción del equipo"
-            className={`form-textarea ${errors.descripcion ? 'input-error' : ''}`}
-          />
-          {errors.descripcion && <div className="error-text">{errors.descripcion}</div>}
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <AutocompleteInput
-              value={formData.marca}
-              onChange={handleAutocompleteChange('marca')}
-              options={localOptions.marca}
-              onAddNewOption={(newOption) => updateLocalOptions('marca', newOption)}
-              placeholder="Ej: Dell, Apple, Samsung"
-              label="Marca"
-              error={errors.marca}
-            />
+          <div className="image-upload-containerE">
+            <label>Imagen del Equipo:</label>
+            {formData.imageBase64 ? (
+              <div className="image-previewE">
+                <img 
+                  src={formData.imageBase64}
+                  alt="Vista previa" 
+                  className="equipment-image-preview"
+                />
+                <div className="image-actions">
+                  <label className="change-image-btn">
+                    Cambiar imagen
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageChange}
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <button 
+                    type="button" 
+                    className="remove-image-btn"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, imageBase64: '' }));
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    Eliminar imagen
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="upload-image-containerE">
+                <label className="upload-image-labelE">
+                  <span>+ Seleccionar imagen</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {errors.image && <div className="error-text">{errors.image}</div>}
+              </div>
+            )}
           </div>
 
-          <div className="form-group">
-            <AutocompleteInput
-              value={formData.model}
-              onChange={handleAutocompleteChange('model')}
-              options={localOptions.model}
-              onAddNewOption={(newOption) => updateLocalOptions('model', newOption)}
-              placeholder="Ej: XPS 13, MacBook Pro"
-              label="Modelo"
-              error={errors.model}
-            />
-          </div>
-        </div>
+          <div className="form-fields-container">
+            <div className="form-groupDatosE">
+              <div className="form-groupE">
+                <label>Nombre:</label>
+                <input
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.nombre ? 'error' : ''}`}
+                  placeholder="Ingrese el nombre del equipo"
+                />
+                {errors.nombre && <div className="error-text">{errors.nombre}</div>}
+              </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            {renderSerialSelect()}
-          </div>
-          
-          <div className="form-group">
-            {renderIpSelect()}
-            {errors?.IpEquipo && <span className="error-message">{errors.IpEquipo}</span>}
-          </div>
-        </div>
+              <div className="form-groupE">
+                <label>Tipo:</label>
+                <input
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.type ? 'error' : ''}`}
+                  placeholder="Ej: Laptop, Teléfono, Monitor"
+                />
+                {errors.type && <div className="error-text">{errors.type}</div>}
+              </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <AutocompleteInput
-              value={formData.procesador}
-              onChange={handleAutocompleteChange('procesador')}
-              options={localOptions.procesador}
-              onAddNewOption={(newOption) => updateLocalOptions('procesador', newOption)}
-              placeholder="Ej: Intel i7, AMD Ryzen 5"
-              label="Procesador"
-              error={errors.procesador}
-            />
+              <div className="form-groupE">
+                <label>Marca:</label>
+                <input
+                  name="marca"
+                  value={formData.marca}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.marca ? 'error' : ''}`}
+                  placeholder="Ej: Dell, Apple, Samsung"
+                />
+                {errors.marca && <div className="error-text">{errors.marca}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Modelo:</label>
+                <input
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.model ? 'error' : ''}`}
+                  placeholder="Ej: XPS 13, MacBook Pro"
+                />
+                {errors.model && <div className="error-text">{errors.model}</div>}
+              </div>
+
+              {renderSerialSelect()}
+              {renderIpSelect()}
+
+              <div className="form-groupE">
+                <label>Estado:</label>
+                <select
+                  name="estado"
+                  value={formData.estado}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.estado ? 'error' : ''}`}
+                >
+                  <option value="Disponible">Disponible</option>
+                  <option value="En uso">En uso</option>
+                  <option value="Mantenimiento">Mantenimiento</option>
+                  <option value="Eliminado">Eliminado</option>
+                </select>
+                {errors.estado && <div className="error-text">{errors.estado}</div>}
+              </div>
+            
+              <div className="form-groupE">
+                <label>Lugar:</label>
+                <input
+                  name="lugar"
+                  value={formData.lugar}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.lugar ? 'error' : ''}`}
+                  placeholder="Ej: Oficina, Casa"
+                />
+                {errors.lugar && <div className="error-text">{errors.lugar}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Descripción:</label>
+                <textarea
+                  name="descripcion"
+                  value={formData.descripcion}
+                  onChange={handleChange}
+                  className={`form-textareaE ${errors.descripcion ? 'error' : ''}`}
+                  placeholder="Descripción del equipo"
+                />
+                {errors.descripcion && <div className="error-text">{errors.descripcion}</div>}
+              </div>
+            </div>
+
+            <div className="form-groupDatosE">
+              <div className="form-groupE">
+  <AutocompleteInput
+  value={formData.procesador}
+  onChange={(value) => {
+    // Esto actualiza el formulario directamente
+    setFormData(prev => ({ ...prev, procesador: value }));
+  }}
+  options={availableProcessors.map(p => ({ value: p, label: p }))}
+  onAddNewOption={(newOption) => {
+    // Opcional: actualiza la lista global si está disponible
+    if (typeof setAvailableProcessors === 'function') {
+      setAvailableProcessors(prev => [...prev, newOption]);
+    }
+    // Actualiza el formulario inmediatamente
+    setFormData(prev => ({ ...prev, procesador: newOption }));
+  }}
+  placeholder="Ej: Intel i7, AMD Ryzen 5"
+  label="Procesador"
+  error={errors.procesador}
+  enableDelete={false} // Desactiva temporalmente la eliminación para simplificar
+/>
+</div>
+
+              <div className="form-groupE">
+                <label>RAM:</label>
+                <input
+                  name="ram"
+                  value={formData.ram}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.ram ? 'error' : ''}`}
+                  placeholder="Ej: 16GB, 32GB"
+                />
+                {errors.ram && <div className="error-text">{errors.ram}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Disco Duro:</label>
+                <input
+                  name="discoDuro"
+                  value={formData.discoDuro}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.discoDuro ? 'error' : ''}`}
+                  placeholder="Ej: 512GB SSD, 1TB HDD"
+                />
+                {errors.discoDuro && <div className="error-text">{errors.discoDuro}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Tarjeta Gráfica:</label>
+                <input
+                  name="tarjetaGrafica"
+                  value={formData.tarjetaGrafica}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.tarjetaGrafica ? 'error' : ''}`}
+                  placeholder="Ej: NVIDIA GTX 1660, AMD Radeon RX 580"
+                />
+                {errors.tarjetaGrafica && <div className="error-text">{errors.tarjetaGrafica}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Windows:</label>
+                <input
+                  name="windows"
+                  value={formData.windows}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.windows ? 'error' : ''}`}
+                  placeholder="Ej: Windows 10 Pro"
+                />
+                {errors.windows && <div className="error-text">{errors.windows}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Antivirus:</label>
+                <input
+                  name="antivirus"
+                  value={formData.antivirus}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.antivirus ? 'error' : ''}`}
+                  placeholder="Ej: Norton, McAfee"
+                />
+                {errors.antivirus && <div className="error-text">{errors.antivirus}</div>}
+              </div>
+
+              <div className="form-groupE">
+                <label>Office:</label>
+                <input
+                  name="office"
+                  value={formData.office}
+                  onChange={handleChange}
+                  className={`form-inputE ${errors.office ? 'error' : ''}`}
+                  placeholder="Ej: Office 2019"
+                />
+                {errors.office && <div className="error-text">{errors.office}</div>}
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="ram" className="form-label">RAM</label>
-            <input
-              id="ram"
-              name="ram"
-              type="text"
-              value={formData.ram}
-              onChange={handleChange}
-              placeholder="Ej: 16GB, 32GB"
-              className={`form-input ${errors.ram ? 'input-error' : ''}`}
-            />
-            {errors.ram && <div className="error-text">{errors.ram}</div>}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="discoDuro" className="form-label">Disco Duro</label>
-            <input
-              id="discoDuro"
-              name="discoDuro"
-              type="text"
-              value={formData.discoDuro}
-              onChange={handleChange}
-              placeholder="Ej: 512GB SSD, 1TB HDD"
-              className={`form-input ${errors.discoDuro ? 'input-error' : ''}`}
-            />
-            {errors.discoDuro && <div className="error-text">{errors.discoDuro}</div>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="tarjetaGrafica" className="form-label">Tarjeta Gráfica</label>
-            <input
-              id="tarjetaGrafica"
-              name="tarjetaGrafica"
-              type="text"
-              value={formData.tarjetaGrafica}
-              onChange={handleChange}
-              placeholder="Ej: NVIDIA GTX 1660, AMD Radeon RX 580"
-              className={`form-input ${errors.tarjetaGrafica ? 'input-error' : ''}`}
-            />
-            {errors.tarjetaGrafica && <div className="error-text">{errors.tarjetaGrafica}</div>}
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="windows" className="form-label">Windows</label>
-            <input
-              id="windows"
-              name="windows"
-              type="text"
-              value={formData.windows}
-              onChange={handleChange}
-              placeholder="Ej: Windows 10 Pro"
-              className={`form-input ${errors.windows ? 'input-error' : ''}`}
-            />
-            {errors.windows && <div className="error-text">{errors.windows}</div>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="antivirus" className="form-label">Antivirus</label>
-            <input
-              id="antivirus"
-              name="antivirus"
-              type="text"
-              value={formData.antivirus}
-              onChange={handleChange}
-              placeholder="Ej: Norton, McAfee"
-              className={`form-input ${errors.antivirus ? 'input-error' : ''}`}
-            />
-            {errors.antivirus && <div className="error-text">{errors.antivirus}</div>}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="office" className="form-label">Office</label>
-          <input
-            id="office"
-            name="office"
-            type="text"
-            value={formData.office}
-            onChange={handleChange}
-            placeholder="Ej: Office 2019"
-            className={`form-input ${errors.office ? 'input-error' : ''}`}
-          />
-          {errors.office && <div className="error-text">{errors.office}</div>}
-        </div>
-
-        <div className="form-group image-upload-group">
-          <label className="form-label">Imagen del Equipo</label>
-          <div className="image-upload-container">
-            <label htmlFor="image-upload" className="image-upload-label">
-              Seleccionar imagen
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                ref={fileInputRef}
-                disabled={isCompressing}
-                className="image-upload-input"
-              />
-            </label>
-            {errors.image && <div className="error-text">{errors.image}</div>}
-          </div>
-        </div>
-
-        <div className="form-actions">
-          {isEditing && (
-            <button 
-              type="button" 
-              onClick={() => {
-                onCancelEdit();
-                resetForm();
-              }}
-              className="btn btn-cancel"
+          <div className="modal-actionsE">
+            <button
+              type="button"
+              className="cancel-btn"
+              onClick={onCancel}
             >
               Cancelar
             </button>
-          )}
-          
-          <button 
-            type="submit" 
-            disabled={isCompressing}
-            className="btn btn-submit"
-          >
-            {isCompressing ? 'Guardando...' : (isEditing ? 'Actualizar Equipo' : 'Guardar Equipo')}
-          </button>
-        </div>
-      </form>
+            <button
+              type="submit"
+              className="save-btn"
+              disabled={isCompressing}
+            >
+              {isCompressing ? 'Guardando...' : 'Guardar Equipo'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
-});
+};
 
 export default AddEquipmentForm;
