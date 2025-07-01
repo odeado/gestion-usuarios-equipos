@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import AutocompleteInput from './AutocompleteInput';
 import imageCompression from 'browser-image-compression';
 import './AddUserForm.css';
 
@@ -12,7 +13,9 @@ function AddUserForm({
   availableDepartments = [],
   onAddDepartment,
   onAssignmentChange,
-  onBulkAssignmentChange
+  onBulkAssignmentChange,
+  availableCorreos,
+  setAvailableCorreos
 }) {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -323,16 +326,35 @@ function AddUserForm({
             {errors?.name && <span className="error-message">{errors.name}</span>}    
           </div>
 
-          <div className="form-group">
-            <label>Correo:</label>
-            <input
-              name="correo"
-              value={newUser.correo}
-              onChange={handleInputChange}
-              className={`form-input ${errors.correo ? 'input-error' : ''}`}
-            />
-            {errors?.correo && <span className="error-message">{errors.correo}</span>}
-          </div>
+         <div className="form-group">
+  
+  <AutocompleteInput
+  key={`correo-select-form-${availableCorreos.length}`}
+    value={newUser.correo || ''} 
+    onChange={(value) => {
+      setNewUser(prev => ({ ...prev, correo: value }));
+      if (errors.correo) setErrors(prev => ({ ...prev, correo: '' }));
+    }}
+    options={availableCorreos.map(p => ({ value: p, label: p }))}
+    onAddNewOption={(newOption) => {
+      if (typeof setAvailableCorreos === 'function') {
+        setAvailableCorreos(prev => [...prev, newOption]);
+      }
+      setNewUser(prev => ({ ...prev, correo: newOption }));
+    }}
+    onRemoveOption={(optionToRemove) => {
+      setAvailableCorreos(prev => prev.filter(p => p !== optionToRemove));
+      if (newUser.correo === optionToRemove) {
+        setNewUser(prev => ({ ...prev, correo: '' }));
+      }
+      }}
+    placeholder="Ej: usuario@dominio.com"
+    label="Correo electrónico"
+    error={errors.correo}
+    enableDelete={true}
+  />
+  
+</div>
 
           <div className="form-group">
             <label>Departamento:</label>

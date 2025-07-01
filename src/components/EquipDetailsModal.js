@@ -18,9 +18,14 @@ function EquipDetailsModal({
   onAddNewIp,
   availableSerials = [],
   onAddNewSerial,
+  availableMarcas = [],
+  onAddNewMarca,
   availableModels = [],
+  onAddNewModel,
   availableProcessors = [],
   setAvailableProcessors,
+  availableRams = [],
+  onAddNewRam,
   availableBrands = [],
   onAssignmentChange,
   onBulkAssignmentChange
@@ -75,11 +80,6 @@ const handleTouchMove = (e) => {
 const handleTouchEnd = () => {
   setTouchStartX(null);
 };
-
-
-
-
-
 
 
 
@@ -263,44 +263,53 @@ const handleUserCategoryChange = (userId, category) => {
     );
   };
 
-  const renderSerialSelect = () => {
-    const currentSerial = editedEquipment.serialNumber || '';
 
-    const options = [
-      ...availableSerials.map(serial => ({ value: serial, label: serial })),
-      ...(currentSerial && !availableSerials.includes(currentSerial) ? 
-        [{ value: currentSerial, label: currentSerial }] : [])
-    ].filter(option => option.value);
 
-    return (
-      <div className="form-groupE">
-        <label>Número de Serie:</label>
-        <CreatableSelect  
-          isMulti={false}
-          options={options}
-          value={options.find(option => option.value === currentSerial)}
-          onChange={(selectedOption) => {
-            const serialValue = selectedOption?.value || '';
-            setEditedEquipment(prev => ({
-              ...prev,
-              serialNumber: serialValue
-            }));
-          }}
-          onCreateOption={(inputValue) => {
-            const newSerial = inputValue.trim();
-            if (newSerial) {
-              setEditedEquipment(prev => ({
-                ...prev,
-                serialNumber: newSerial
-              }));
-              onAddNewSerial?.(newSerial);
-            }
-          }}
-        />
-        {errors?.serialNumber && <span className="error-message">{errors.serialNumber}</span>}
-      </div>
-    );
-  };
+const renderCreatableInput = ({
+  label,
+  value,
+  availableOptions = [],
+  onChange,
+  onCreateNew,
+  error,
+  placeholder = 'Ingrese un valor'
+}) => {
+  const currentValue = value || '';
+  
+  const options = [
+    ...availableOptions.map(option => ({ value: option, label: option })),
+    ...(currentValue && !availableOptions.includes(currentValue) ? 
+      [{ value: currentValue, label: currentValue }] : [])
+  ].filter(option => option.value);
+
+  return (
+    <div className="form-groupE">
+      <label>{label}:</label>
+      <CreatableSelect  
+        isMulti={false}
+        options={options}
+        value={options.find(option => option.value === currentValue)}
+        onChange={(selectedOption) => {
+          const newValue = selectedOption?.value || '';
+          onChange(newValue);
+        }}
+        onCreateOption={(inputValue) => {
+          const newOption = inputValue.trim();
+          if (newOption) {
+            onCreateNew(newOption);
+            onChange(newOption);
+          }
+        }}
+        placeholder={placeholder}
+      />
+      {error && <span className="error-message">{error}</span>}
+    </div>
+  );
+};
+
+
+
+ 
 
   const getEstadoColor = (estado) => {
     const colors = {
@@ -423,29 +432,32 @@ const handleUserCategoryChange = (userId, category) => {
                   {errors?.type && <span className="error-message">{errors.type}</span>}
                 </div>
 
-                <div className="form-groupE">
-                  <label>Marca:</label>
-                  <input
-                    name="marca"
-                    value={editedEquipment.marca}
-                    onChange={handleInputChange}
-                    className={`form-inputE ${errors.marca ? 'error' : ''}`}
-                  />
-                  {errors?.marca && <span className="error-message">{errors.marca}</span>}
-                </div>
+             {renderCreatableInput({
+  label: "Marca",
+  value: editedEquipment.marca,
+  availableOptions: availableMarcas,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, marca: newValue })),
+  onCreateNew: onAddNewMarca,
+  error: errors.marca
+})}
 
-                <div className="form-groupE">
-                  <label>Modelo:</label>
-                  <input
-                    name="model"
-                    value={editedEquipment.model}
-                    onChange={handleInputChange}
-                    className={`form-inputE ${errors.model ? 'error' : ''}`}
-                  />
-                  {errors?.model && <span className="error-message">{errors.model}</span>}
-                </div>
+                {renderCreatableInput({
+  label: "Modelo",
+  value: editedEquipment.modelo,
+  availableOptions: availableModels,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, modelo: newValue })),
+  onCreateNew: onAddNewModel,
+  error: errors.modelo
+})}
 
-                {renderSerialSelect()}
+                {renderCreatableInput({
+  label: "Número de Serie",
+  value: editedEquipment.serialNumber,
+  availableOptions: availableSerials,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, serialNumber: newValue })),
+  onCreateNew: onAddNewSerial,
+  error: errors.serialNumber
+})}
                 {renderIpSelect()}
 
                 <div className="form-groupE">
@@ -511,6 +523,15 @@ const handleUserCategoryChange = (userId, category) => {
     
   />
 </div>
+
+ {renderCreatableInput({
+  label: "Ram",
+  value: editedEquipment.ram,
+  availableOptions: availableRams,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, ram: newValue })),
+  onCreateNew: onAddNewRam,
+  error: errors.ram
+})}
 
                 <div className="form-groupE">
                   <label>Descripción:</label>

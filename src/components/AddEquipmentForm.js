@@ -11,6 +11,10 @@ const AddEquipmentForm = ({
   onAddNewIp,
   parentAvailableSerials = [],
   onAddNewSerial,
+  parentAvailableMarcas = [],
+  onAddNewMarca,
+  parentAvailableModels = [],
+  onAddNewModel,
   setAvailableProcessors = () => console.warn('setAvailableProcessors no está definido'),
   availableModels = [],
   availableProcessors = [],
@@ -38,6 +42,7 @@ const AddEquipmentForm = ({
   });
 
   const [isCompressing, setIsCompressing] = useState(false);
+  
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef();
 
@@ -179,56 +184,89 @@ const AddEquipmentForm = ({
     );
   };
 
-  const renderSerialSelect = () => {
-    const currentSerial = formData.serialNumber || '';
 
-    const options = [
-      ...parentAvailableSerials.map(serial => ({ 
-        value: serial, 
-        label: serial 
-      })),
-      ...(currentSerial && !parentAvailableSerials.includes(currentSerial) ? 
-        [{ 
-          value: currentSerial, 
-          label: currentSerial 
-        }] : [])
-    ].filter(option => option.value && option.value.trim() !== '');
 
-    return (
-      <div className="form-groupE">
-        <label className="form-label">Número de Serie</label>
-        <CreatableSelect  
-          isMulti={false}
-          options={options}
-          value={options.find(option => option.value === currentSerial) || null}
-          onChange={(selectedOption) => {
-            const serialValue = selectedOption?.value || '';
-            setFormData(prev => ({
-              ...prev,
-              serialNumber: serialValue
-            }));
-          }}
-          onCreateOption={(inputValue) => {
-            const newSerial = inputValue.trim();
-            if (newSerial) {
-              setFormData(prev => ({
-                ...prev,
-                serialNumber: newSerial
-              }));
-              onAddNewSerial && onAddNewSerial(newSerial);
-            }
-          }}
-          className="react-select-container"
-          classNamePrefix="react-select"
-          placeholder="Seleccione o ingrese un número de serie..."
-          noOptionsMessage={() => "No hay números de serie disponibles. Escriba para crear uno nuevo."}
-          isClearable
-          formatCreateLabel={(inputValue) => `Usar nuevo serial: ${inputValue}`}
-        />
-        {errors.serialNumber && <div className="error-text">{errors.serialNumber}</div>}
-      </div>
-    );
-  };
+const CreatableInput = ({
+  label,
+  value,
+  options = [],
+  onChange,
+  onCreateNew,
+  error,
+  placeholder = 'Seleccione o ingrese un valor',
+  noOptionsMessage = "No hay opciones disponibles. Escriba para crear una nueva.",
+  formatCreateLabel = (inputValue) => `Crear nuevo: ${inputValue}`,
+  isClearable = true
+}) => {
+  const currentValue = value || '';
+  
+  const selectOptions = [
+    ...options.map(option => ({ value: option, label: option })),
+    ...(currentValue && !options.includes(currentValue) ? 
+      [{ value: currentValue, label: currentValue }] : [])
+  ].filter(option => option.value && option.value.trim() !== '');
+
+  return (
+    <div className="form-groupE">
+      <label className="form-label">{label}</label>
+      <CreatableSelect  
+        isMulti={false}
+        options={selectOptions}
+        value={selectOptions.find(option => option.value === currentValue) || null}
+        onChange={(selectedOption) => {
+          const newValue = selectedOption?.value || '';
+          onChange(newValue);
+        }}
+        onCreateOption={(inputValue) => {
+          const newOption = inputValue.trim();
+          if (newOption) {
+            onCreateNew?.(newOption);
+            onChange(newOption);
+          }
+        }}
+        className="react-select-container"
+        classNamePrefix="react-select"
+        placeholder={placeholder}
+        noOptionsMessage={() => noOptionsMessage}
+        isClearable={isClearable}
+        formatCreateLabel={formatCreateLabel}
+      />
+      {error && <div className="error-text">{error}</div>}
+    </div>
+  );
+};
+
+
+const FormInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  placeholder = '',
+  type = 'text',
+  className = '',
+  textarea = false
+}) => {
+  const InputComponent = textarea ? 'textarea' : 'input';
+  
+  return (
+    <div className={`form-groupE ${className}`}>
+      <label>{label}</label>
+      <InputComponent
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`form-inputE ${error ? 'error' : ''}`}
+        placeholder={placeholder}
+        type={type}
+      />
+      {error && <div className="error-text">{error}</div>}
+    </div>
+  );
+};
+
+
 
   return (
     <div className="equipment-form-modal">
@@ -317,31 +355,36 @@ const AddEquipmentForm = ({
                 {errors.type && <div className="error-text">{errors.type}</div>}
               </div>
 
-              <div className="form-groupE">
-                <label>Marca:</label>
-                <input
-                  name="marca"
-                  value={formData.marca}
-                  onChange={handleChange}
-                  className={`form-inputE ${errors.marca ? 'error' : ''}`}
-                  placeholder="Ej: Dell, Apple, Samsung"
-                />
-                {errors.marca && <div className="error-text">{errors.marca}</div>}
-              </div>
+              <CreatableInput
+                label="Marca"
+                value={formData.marca}
+                options={parentAvailableMarcas}
+                onChange={(value) => setFormData(prev => ({ ...prev, marca: value }))}
+                onCreateNew={onAddNewMarca}
+                error={errors.marca}
+              />
 
-              <div className="form-groupE">
-                <label>Modelo:</label>
-                <input
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  className={`form-inputE ${errors.model ? 'error' : ''}`}
-                  placeholder="Ej: XPS 13, MacBook Pro"
-                />
-                {errors.model && <div className="error-text">{errors.model}</div>}
-              </div>
+              <CreatableInput
+                label="Modelo"
+                value={formData.model}
+                options={parentAvailableModels}
+                onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                onCreateNew={onAddNewModel}
+                error={errors.model}
+                noOptionsMessage="No hay números de Modelo disponibles. Escriba para crear uno nuevo."
+                formatCreateLabel={(inputValue) => `Usar nuevo modelo: ${inputValue}`}
+              />
 
-              {renderSerialSelect()}
+               <CreatableInput
+                label="Número de Serie"
+                value={formData.serialNumber}
+                options={parentAvailableSerials}
+                onChange={(value) => setFormData(prev => ({ ...prev, serialNumber: value }))}
+                onCreateNew={onAddNewSerial}
+                error={errors.serialNumber}
+                noOptionsMessage="No hay números de serie disponibles. Escriba para crear uno nuevo."
+                formatCreateLabel={(inputValue) => `Usar nuevo serial: ${inputValue}`}
+              />
               {renderIpSelect()}
 
               <div className="form-groupE">
@@ -388,25 +431,32 @@ const AddEquipmentForm = ({
             <div className="form-groupDatosE">
               <div className="form-groupE">
   <AutocompleteInput
-  value={formData.procesador}
-  onChange={(value) => {
-    // Esto actualiza el formulario directamente
-    setFormData(prev => ({ ...prev, procesador: value }));
-  }}
-  options={availableProcessors.map(p => ({ value: p, label: p }))}
-  onAddNewOption={(newOption) => {
-    // Opcional: actualiza la lista global si está disponible
-    if (typeof setAvailableProcessors === 'function') {
-      setAvailableProcessors(prev => [...prev, newOption]);
-    }
-    // Actualiza el formulario inmediatamente
-    setFormData(prev => ({ ...prev, procesador: newOption }));
-  }}
-  placeholder="Ej: Intel i7, AMD Ryzen 5"
-  label="Procesador"
-  error={errors.procesador}
-  enableDelete={false} // Desactiva temporalmente la eliminación para simplificar
-/>
+    key={`processor-select-form-${availableProcessors.length}`}
+    value={formData.procesador || ''}
+    onChange={(value) => {
+      setFormData(prev => ({ ...prev, procesador: value }));
+    }}
+    options={availableProcessors.map(p => ({ 
+      value: p, 
+      label: p  
+    }))}
+    onAddNewOption={(newOption) => {
+      if (!availableProcessors.includes(newOption)) {
+        setAvailableProcessors(prev => [...prev, newOption]);
+      }
+      setFormData(prev => ({ ...prev, procesador: newOption }));
+    }}
+    onRemoveOption={(optionToRemove) => {
+      setAvailableProcessors(prev => prev.filter(p => p !== optionToRemove));
+      if (formData.procesador === optionToRemove) {
+        setFormData(prev => ({ ...prev, procesador: '' }));
+      }
+    }}
+    placeholder="Ej: Intel i7, AMD Ryzen 5"
+    label="Procesador"
+    error={errors.procesador}
+    enableDelete={true}
+  />
 </div>
 
               <div className="form-groupE">

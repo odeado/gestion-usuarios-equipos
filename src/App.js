@@ -24,6 +24,7 @@ function App() {
   const [equipment, setEquipment] = useState([]);
   const [userIsAdmin, setUserIsAdmin] = useState(false); // Cambia esto según tu lógica de autenticación
   const [availableProcessors, setAvailableProcessors] = useState([]);
+  const [availableCorreos, setAvailableCorreos] = useState([]);
   
 
 // Función para añadir procesador
@@ -44,7 +45,35 @@ const handleRemoveProcessor = (processorToRemove) => {
   });
 };
 
+// Función para añadir correos
+const handleAddCorreos = (newCorreo) => {
+  // Validar formato de correo
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCorreo)) {
+    console.error("Formato de correo inválido");
+    return;
+  }
 
+  setAvailableCorreos(prev => {
+    // Verificar si el correo ya existe (case insensitive)
+    const exists = prev.some(
+      c => c.toLowerCase() === newCorreo.toLowerCase()
+    );
+    if (exists) return prev;
+    
+    const newCorreos = [...prev, newCorreo].sort();
+    console.log("Después de añadir correo:", newCorreos);
+    return newCorreos;
+  });
+};
+
+// Función para eliminar correos
+const handleRemoveCorreo = (correoToRemove) => {
+  setAvailableCorreos(prev => {
+    const newCorreos = prev.filter(p => p !== correoToRemove);
+    console.log("Después de eliminar correo:", newCorreos);
+    return newCorreos;
+  });
+};
 
 
   // Si usas Firebase Auth, podrías hacer algo como esto:
@@ -133,6 +162,9 @@ const handleUserEquipmentChange = (userId, equipmentId, category) => {
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 const [allAvailableSerials, setAllAvailableSerials] = useState([]);
+const [allAvailableMarcas, setAllAvailableMarcas] = useState([]);
+const [allAvailableModels, setAllAvailableModels] = useState([]);
+const [allAvailableRams, setAllAvailableRams] = useState([]);
 // Estados para el gesto táctil y animación
 const [touchStartY, setTouchStartY] = useState(null);
 const [touchEndY, setTouchEndY] = useState(null);
@@ -261,11 +293,7 @@ const handleAssignmentChange = async (userId, equipmentId, category) => {
 };
 
 
-const handleAddNewSerial = (newSerial) => {
-  if (!allAvailableSerials.includes(newSerial)) {
-    setAllAvailableSerials([...allAvailableSerials, newSerial]);
-  }
-};
+
 
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
@@ -317,6 +345,34 @@ const [allAvailableIps, setAllAvailableIps] = useState([
 const handleAddNewIp = (newIp) => {
   if (!allAvailableIps.includes(newIp)) {
     setAllAvailableIps([...allAvailableIps, newIp]);
+  }
+};
+
+// Función para agregar Series nuevas
+const handleAddNewSerial = (newSerial) => {
+  if (!allAvailableSerials.includes(newSerial)) {
+    setAllAvailableSerials([...allAvailableSerials, newSerial]);
+  }
+};
+
+// Función para agregar Marcas nuevas
+const handleAddNewMarca = (newMarca) => {
+  if (!allAvailableMarcas.includes(newMarca)) {
+    setAllAvailableMarcas([...allAvailableMarcas, newMarca]);
+  }
+};
+
+// Función para agregar Modelos nuevas
+const handleAddNewModel = (newModel) => {
+  if (!allAvailableModels.includes(newModel)) {
+    setAllAvailableModels([...allAvailableModels, newModel]);
+  }
+};
+
+// Función para agregar Ram nuevas
+const handleAddNewRam = (newRam) => {
+  if (!allAvailableRams.includes(newRam)) {
+    setAllAvailableRams([...allAvailableRams, newRam]);
   }
 };
 
@@ -1194,6 +1250,15 @@ useEffect(() => {
       const uniqueProcessors = [...new Set(allProcessors)].sort();
       console.log("Procesadores cargados desde Firebase:", uniqueProcessors);
       setAvailableProcessors(uniqueProcessors);
+
+       const allCorreos = [
+  ...usersData.map(user => user.correo),
+  ...equipmentData.map(equip => equip.correo)
+].filter(correo => correo && typeof correo === 'string' && correo.trim() !== '');
+
+const uniqueCorreos = [...new Set(allCorreos)].sort();
+console.log("Correos cargados desde Firebase:", uniqueCorreos);
+setAvailableCorreos(uniqueCorreos);
         
 
 
@@ -1206,7 +1271,7 @@ useEffect(() => {
       setDepartments(departmentsData);
 
       // Extraer todas las IPs únicas de los equipos (usando datos ya limpiados)
-      const allIps = equipmentData.reduce((acc, equip) => {
+        const allIps = equipmentData.reduce((acc, equip) => {
         const equipIps = Array.isArray(equip.IpEquipo) ? equip.IpEquipo : [];
         return [...acc, ...equipIps];
       }, ['192.168.1.1', '192.168.1.2', '10.0.0.1']);
@@ -1219,6 +1284,27 @@ useEffect(() => {
         .filter(serial => serial);
 
       setAllAvailableSerials([...new Set(allSerials)]);
+
+       // Extraer todos los números de serie únicos de los equipos
+      const allMarcas = equipmentData
+        .map(equip => equip.marca)
+        .filter(marca => marca);
+
+      setAllAvailableMarcas([...new Set(allMarcas)]);
+
+       // Extraer todos los números de serie únicos de los equipos
+      const allModels = equipmentData
+        .map(equip => equip.model)
+        .filter(model => model);
+
+      setAllAvailableModels([...new Set(allModels)]);
+
+       // Extraer todos los números de serie únicos de los equipos
+      const allRams = equipmentData
+        .map(equip => equip.ram)
+        .filter(ram => ram);
+
+      setAllAvailableRams([...new Set(allRams)]);
 
       // Actualizar contadores con datos limpios
       setCounters({
@@ -1429,6 +1515,11 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
   }}
   onCancel={() => setShowUserForm(false)}
   equipment={equipment}
+  availableCorreos={availableCorreos}
+  
+  onRemoveCorreo={handleRemoveCorreo}           
+  setAvailableCorreos={setAvailableCorreos}
+  
   availableDepartments={departments}
   onAddDepartment={handleAddDepartment}
   onAssignmentChange={(equipmentId, category) => {
@@ -1495,9 +1586,17 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
   onAddNewIp={handleAddNewIp}
   parentAvailableSerials={allAvailableSerials || []} // Asegurar que siempre es array
   onAddNewSerial={handleAddNewSerial}
-  availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
-  availableProcessors={[...new Set(equipment.map(e => e.procesador).filter(Boolean))]}
-  availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
+  parentAvailableMarcas={allAvailableMarcas || []} // Asegurar que siempre es array
+  onAddNewMarca={handleAddNewMarca}
+  parentAvailableModels={allAvailableModels || []} // Asegurar que siempre es array
+  onAddNewModel={handleAddNewModel}
+   parentAvailableRams={allAvailableRams || []} // Asegurar que siempre es array
+  onAddNewRam={handleAddNewRam}
+  
+  availableProcessors={availableProcessors}
+  onAddProcessor={handleAddProcessor}
+  onRemoveProcessor={handleRemoveProcessor}           
+  setAvailableProcessors={setAvailableProcessors}
 />
                 </div>
               )}
@@ -1538,6 +1637,8 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
       onNext={handleNextUser}
       onPrev={handlePrevUser}
       onOpenEquipmentModal={handleOpenEquipmentModal}
+      availableCorreos={availableCorreos}
+      setAvailableCorreos={setAvailableCorreos}
     />
   </div>
     
@@ -1563,13 +1664,18 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               onAddNewIp={handleAddNewIp}
               availableSerials={allAvailableSerials}
               onAddNewSerial={handleAddNewSerial}
-              availableModels={[...new Set(equipment.map(e => e.model).filter(Boolean))]}
+              availableMarcas={allAvailableMarcas}
+              onAddNewMarca={handleAddNewMarca}
+              availableModels={allAvailableModels}
+              onAddNewModel={handleAddNewModel}
               onAddProcessor={handleAddProcessor}
               onRemoveProcessor={handleRemoveProcessor}
               availableProcessors={availableProcessors}
               
               setAvailableProcessors={setAvailableProcessors}
-              availableBrands={[...new Set(equipment.map(e => e.marca).filter(Boolean))]}
+              availableRams={allAvailableRams}
+              onAddNewRam={handleAddNewRam}
+              
            
             />
           )}

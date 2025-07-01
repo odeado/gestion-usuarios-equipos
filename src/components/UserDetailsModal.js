@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import './UserDetailsModal.css';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/creatable';
+import AutocompleteInput from './AutocompleteInput';
 
 function UserDetailsModal({ 
   user = {}, 
@@ -14,6 +15,8 @@ function UserDetailsModal({
   onOpenEquipmentModal,
   availableDepartments = [],
   onAssignmentChange,
+  availableCorreos = [],
+  setAvailableCorreos,
   onBulkAssignmentChange
 }) {
   const [isMobile, setIsMobile] = useState(false);
@@ -308,16 +311,50 @@ const handleCategoryChange = (equipmentId, category) => {
                   {errors?.name && <span className="error-message">{errors.name}</span>}    
                 </div>
 
-                <div className="form-groupU">
-                  <label>Correo:</label>
-                  <input
-                    name="correo"
-                    value={editedUser.correo}
-                    onChange={handleInputChange}
-                    className={`form-inputU ${errors.correo ? 'error' : ''}`}
-                  />
-                  {errors?.correo && <span className="error-message">{errors.correo}</span>}
-                </div>
+               <div className="form-groupU">
+  
+  <AutocompleteInput
+    key={`correo-select-${user.id}-${availableCorreos.length}`}
+    value={editedUser.correo || ''}
+    onChange={(value) => {
+      setEditedUser(prev => ({ ...prev, correo: value }));
+      if (errors.correo) setErrors(prev => ({ ...prev, correo: '' }));
+    }}
+    options={availableCorreos.map(c => ({ 
+      value: c, 
+      label: c  
+    }))}
+    onAddNewOption={(newCorreo) => {
+      // Validar formato de correo
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCorreo)) {
+        setErrors(prev => ({ ...prev, correo: 'Formato de correo inválido' }));
+        return;
+      }
+      
+      // Actualizar lista global de correos
+      if (!availableCorreos.includes(newCorreo)) {
+        setAvailableCorreos(prev => [...prev, newCorreo].sort());
+      }
+      
+      // Actualizar el correo en el usuario editado
+      setEditedUser(prev => ({ ...prev, correo: newCorreo }));
+    }}
+    onRemoveOption={(correoToRemove) => {
+      setAvailableCorreos(prev => prev.filter(c => c !== correoToRemove));
+      
+      // Si el correo que se está eliminando es el del usuario actual
+      if (editedUser.correo === correoToRemove) {
+        setEditedUser(prev => ({ ...prev, correo: '' }));
+      }
+    }}
+    placeholder="Ej: usuario@empresa.com"
+    label="Correo:"
+    error={errors.correo}
+    enableDelete={true}
+  />
+  {errors?.correo && <span className="error-message">{errors.correo}</span>}
+</div>
+                
 
                 <div className="form-groupU">
                   <label>Departamento:</label>

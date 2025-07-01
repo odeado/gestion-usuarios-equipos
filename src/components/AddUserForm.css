@@ -1,4 +1,56 @@
+/* Estilos base reutilizables */
+.autocomplete-generic-container {
+  margin-bottom: 1rem;
+  width: 100%;
+}
 
+.autocomplete-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.autocomplete-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.autocomplete-select {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.autocomplete-select.error .select__control {
+  border-color: #ff4444;
+}
+
+.delete-option-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.delete-option-btn:hover {
+  background: #cc0000;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  min-height: 1em;
+}
 .equipment-selects-container {
   display: flex;
   flex-direction: column;

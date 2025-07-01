@@ -33,9 +33,8 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
   if (!user) return 'Sin equipo';
   
  const allEquipmentIds = [
-    ...(Array.isArray(user.equiposCasa) ? user.equiposCasa : []),
-    ...(Array.isArray(user.equiposRemoto) ? user.equiposRemoto : []),
-    ...(Array.isArray(user.equiposOficina) ? user.equiposOficina : [])
+    ...(Array.isArray(user.equiposAsignados) ? user.equiposAsignados : []),
+  
   ];
 
   if (allEquipmentIds.length === 0) return 'Sin equipo asignado';
