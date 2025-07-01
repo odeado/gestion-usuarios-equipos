@@ -20,13 +20,52 @@ function UserDetailsModal({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [touchStartX, setTouchStartX] = useState(null);
   const [editedUser, setEditedUser] = useState({
     ...user,
     equiposAsignados: user.equiposAsignados || [],
     categoriasTemporales: user.categoriasTemporales || {}
   });
   
+// Efecto para detectar si es móvil
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
+  // Manejo de gestos táctiles
+ const handleTouchStart = (e) => {
+  if (!isMobile) return;
+  setTouchStartX(e.touches[0].clientX);
+  e.stopPropagation(); // Evita que el evento se propague
+};
+
+
+const handleTouchMove = (e) => {
+  if (!isMobile || touchStartX === null) return;
+  
+  const touchEndX = e.touches[0].clientX;
+  const diff = touchStartX - touchEndX;
+  
+  // Umbral para considerar un gesto (50px)
+  if (diff > 50) {
+    onNext();
+    setTouchStartX(null);
+  } else if (diff < -50) {
+    onPrev();
+    setTouchStartX(null);
+  }
+  
+  e.stopPropagation(); // Evita que el evento se propague
+};
+
+const handleTouchEnd = () => {
+  setTouchStartX(null);
+};
 
 
  useEffect(() => {
@@ -193,7 +232,12 @@ const handleCategoryChange = (equipmentId, category) => {
 };
 
   return (
-    <div className="user-modalU" onClick={e => e.stopPropagation()}>
+    <div className="user-modalU" 
+      onClick={e => e.stopPropagation()}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      >
       <div className="modal-contentU">
         <div className="modal-headerU">
           <div className="user-counter">

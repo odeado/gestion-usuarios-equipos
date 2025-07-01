@@ -131,6 +131,9 @@
   z-index: 1000;
   overflow-y: auto;
   padding: 20px;
+  touch-action: pan-y; /* Permite el desplazamiento vertical pero no horizontal */
+  overscroll-behavior: contain; /* Evita el efecto de rebote en iOS */
+  pointer-events: auto;
 }
 
 .modal-contentU {
@@ -144,8 +147,13 @@
   position: relative;
  border: 1px solid #4a0442;
   animation: modalFadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-  touch-action: pan-y; /* Permite solo scroll vertical */
+  
   user-select: none; /* Evita selección de texto durante el swipe */
+  /* Asegúrate de que el contenido no tenga overflow que interfiera */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+   pointer-events: auto; /* Asegura que los elementos hijos reciban eventos táctiles */
+  max-height: 80vh;
 }
 
 @keyframes modalFadeIn {

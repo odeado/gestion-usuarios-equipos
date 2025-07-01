@@ -270,10 +270,11 @@ const handleAddNewSerial = (newSerial) => {
 // Handlers para el gesto táctil
 const handleTouchStart = (e) => {
   // Solo activar si estamos cerca del borde superior
-  if (window.scrollY <= 10) {
+  if (window.scrollY <= 50) {
     setTouchStartY(e.touches[0].clientY);
     setTouchEndY(e.touches[0].clientY);
     setIsDragging(true);
+    e.preventDefault(); // Prevenir comportamiento por defecto
   }
 };
 
@@ -329,6 +330,49 @@ const handleAddNewIp = (newIp) => {
     }
   };
 
+
+// ==================== FUNCIONES DE MODALES ====================
+
+// Función que cierra el modal de usuario
+const closeUserModal = useCallback(() => {
+  setShowUserModal(false);
+  setSelectedUserId(null);
+  setSelectedUser(null);
+  document.body.style.overflow = ''; // Restaura el scroll
+}, []);
+
+// Función que cierra el modal de equipo
+const closeModal = useCallback(() => {
+  setShowEquipmentModal(false);
+  setSelectedEquipmentId(null);
+  setCurrentEquipmentIndex(0);
+  document.body.style.overflow = ''; // Restaura el scroll
+}, []);
+
+// Función que abre el modal de usuario
+const handleOpenUserModal = (userId) => {
+  const user = users.find(u => u.id === userId);
+  if (user) {
+    setSelectedUser(user);
+    setSelectedUserId(userId);
+    setShowUserModal(true);
+    document.body.style.overflow = 'hidden'; // Deshabilita scroll
+  }
+};
+
+// Función que abre el modal de equipo
+const handleOpenEquipmentModal = (equipmentId) => {
+  setSelectedEquipmentId(equipmentId);
+  setShowEquipmentModal(true);
+  document.body.style.overflow = 'hidden'; // Deshabilita scroll
+};
+
+
+
+
+
+
+
   // ==================== FUNCIONES DE NAVEGACIÓN PARA EQUIPOS ====================
   const handleNextEquipment = () => {
     if (currentEquipmentIndex < equipment.length - 1) {
@@ -343,12 +387,6 @@ const handleAddNewIp = (newIp) => {
       setSelectedEquipmentId(equipment[currentEquipmentIndex - 1].id);
     }
   };
-
-  const closeModal = useCallback(() => {
-  setShowEquipmentModal(false);
-  setSelectedEquipmentId(null);
-  setCurrentEquipmentIndex(0);
-}, []);
 
 
 
@@ -704,11 +742,7 @@ const handleAddUser = async (userData) => {
     }
   };
 
- const closeUserModal = useCallback(() => {
-  setShowUserModal(false);
-  setSelectedUserId(null);
-  setSelectedUser(null);
-}, []);
+
 
     // ==================== FUNCIONES DE EQUIPOS ====================
 
@@ -1032,21 +1066,7 @@ const handleUnassignEquipment = async (userId, equipmentId) => {
 
 
 
- const handleOpenEquipmentModal = (equipmentId) => {
-  setSelectedEquipmentId(equipmentId);
-  setShowEquipmentModal(true);
-};
 
-const handleOpenUserModal = (userId) => {
-  const user = users.find(u => u.id === userId);
-  if (user) {
-    setSelectedUser(user);
-    setSelectedUserId(userId);
-    setShowUserModal(true);
-  } else {
-    console.error("Usuario no encontrado con ID:", userId);
-  }
-};
 
   // ==================== EFECTOS Paginas ====================
 
