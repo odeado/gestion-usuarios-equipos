@@ -26,6 +26,8 @@ function EquipDetailsModal({
   setAvailableProcessors,
   availableRams = [],
   onAddNewRam,
+  availableDiscoDuros = [],
+  onAddNewDiscoDuro,
   availableBrands = [],
   onAssignmentChange,
   onBulkAssignmentChange
@@ -531,6 +533,15 @@ const renderCreatableInput = ({
   onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, ram: newValue })),
   onCreateNew: onAddNewRam,
   error: errors.ram
+})}
+
+ {renderCreatableInput({
+  label: "Disco Duro",
+  value: editedEquipment.discoDuro,
+  availableOptions: availableDiscoDuros,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, discoDuro: newValue })),
+  onCreateNew: onAddNewDiscoDuro,
+  error: errors.discoDuro
 })}
 
                 <div className="form-groupE">

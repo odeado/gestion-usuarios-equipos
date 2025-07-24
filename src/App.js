@@ -165,6 +165,7 @@ const [allAvailableSerials, setAllAvailableSerials] = useState([]);
 const [allAvailableMarcas, setAllAvailableMarcas] = useState([]);
 const [allAvailableModels, setAllAvailableModels] = useState([]);
 const [allAvailableRams, setAllAvailableRams] = useState([]);
+const [allAvailableDiscoDuros, setAllAvailableDiscoDuros] = useState([]);
 // Estados para el gesto táctil y animación
 const [touchStartY, setTouchStartY] = useState(null);
 const [touchEndY, setTouchEndY] = useState(null);
@@ -373,6 +374,13 @@ const handleAddNewModel = (newModel) => {
 const handleAddNewRam = (newRam) => {
   if (!allAvailableRams.includes(newRam)) {
     setAllAvailableRams([...allAvailableRams, newRam]);
+  }
+};
+
+// Función para agregar Disco Duro nuevas
+const handleAddNewDiscoDuro = (newDiscoDuro) => {
+  if (!allAvailableDiscoDuros.includes(newDiscoDuro)) {
+    setAllAvailableDiscoDuros([...allAvailableDiscoDuros, newDiscoDuro]);
   }
 };
 
@@ -1306,6 +1314,13 @@ setAvailableCorreos(uniqueCorreos);
 
       setAllAvailableRams([...new Set(allRams)]);
 
+      // Extraer todos los números de serie únicos de los equipos
+      const allDiscoDuros = equipmentData
+        .map(equip => equip.discoDuro)
+        .filter(discoDuro => discoDuro);
+
+      setAllAvailableDiscoDuros([...new Set(allDiscoDuros)]);
+
       // Actualizar contadores con datos limpios
       setCounters({
         totalUsers: usersData.length,
@@ -1590,8 +1605,10 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
   onAddNewMarca={handleAddNewMarca}
   parentAvailableModels={allAvailableModels || []} // Asegurar que siempre es array
   onAddNewModel={handleAddNewModel}
-   parentAvailableRams={allAvailableRams || []} // Asegurar que siempre es array
+  parentAvailableRams={allAvailableRams || []} // Asegurar que siempre es array
   onAddNewRam={handleAddNewRam}
+  parentAvailableDiscoDuros={allAvailableDiscoDuros || []} // Asegurar que siempre es array
+  onAddNewDiscoDuro={handleAddNewDiscoDuro}
   
   availableProcessors={availableProcessors}
   onAddProcessor={handleAddProcessor}
@@ -1675,6 +1692,8 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               setAvailableProcessors={setAvailableProcessors}
               availableRams={allAvailableRams}
               onAddNewRam={handleAddNewRam}
+              availableDiscoDuros={allAvailableDiscoDuros}
+              onAddNewDiscoDuro={handleAddNewDiscoDuro}
               
            
             />
