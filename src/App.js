@@ -162,10 +162,18 @@ const handleUserEquipmentChange = (userId, equipmentId, category) => {
 
   const [activeView, setActiveView] = useState('users'); // 'users' o 'equipment'
 const [allAvailableSerials, setAllAvailableSerials] = useState([]);
+const [allAvailableNombres, setAllAvailableNombres] = useState([]);
 const [allAvailableMarcas, setAllAvailableMarcas] = useState([]);
+const [allAvailableLugares, setAllAvailableLugares] = useState([]);
+const [allAvailableTypes, setAllAvailableTypes] = useState([]);
+const [allAvailableCiudades, setAllAvailableCiudades] = useState([]);
 const [allAvailableModels, setAllAvailableModels] = useState([]);
 const [allAvailableRams, setAllAvailableRams] = useState([]);
 const [allAvailableDiscoDuros, setAllAvailableDiscoDuros] = useState([]);
+const [allAvailableTarjetasGraficas, setAllAvailableTarjetasGraficas] = useState([]);
+const [allAvailableWindows, setAllAvailableWindows] = useState([]);
+const [allAvailableOffices, setAllAvailableOffices] = useState([]);
+const [allAvailableAntivirus, setAllAvailableAntivirus] = useState([]);
 // Estados para el gesto táctil y animación
 const [touchStartY, setTouchStartY] = useState(null);
 const [touchEndY, setTouchEndY] = useState(null);
@@ -370,6 +378,36 @@ const handleAddNewModel = (newModel) => {
   }
 };
 
+// Función para agregar Lugares nuevos
+const handleAddNewLugar = (newLugar) => {
+  if (!allAvailableLugares.includes(newLugar)) {
+    setAllAvailableLugares([...allAvailableLugares, newLugar]);
+  }
+};
+
+// Función para agregar Tipos nuevos
+const handleAddNewType = (newType) => {
+  if (!allAvailableTypes.includes(newType)) {
+    setAllAvailableTypes([...allAvailableTypes, newType]);
+  }
+};
+
+// Función para agregar Nombres nuevos
+const handleAddNewNombre = (newNombre) => {
+  if (!allAvailableNombres.includes(newNombre)) {
+    setAllAvailableNombres([...allAvailableNombres, newNombre]);
+  }
+};
+
+// Función para agregar Ciudades nuevas
+const handleAddNewCiudad = (newCiudad) => {
+  if (!allAvailableCiudades.includes(newCiudad)) {
+    setAllAvailableCiudades([...allAvailableCiudades, newCiudad]);
+  }
+};
+
+
+
 // Función para agregar Ram nuevas
 const handleAddNewRam = (newRam) => {
   if (!allAvailableRams.includes(newRam)) {
@@ -381,6 +419,34 @@ const handleAddNewRam = (newRam) => {
 const handleAddNewDiscoDuro = (newDiscoDuro) => {
   if (!allAvailableDiscoDuros.includes(newDiscoDuro)) {
     setAllAvailableDiscoDuros([...allAvailableDiscoDuros, newDiscoDuro]);
+  }
+};
+
+// Función para agregar Tarjeta Gráfica nuevas
+const handleAddNewTarjetaGrafica = (newTarjetaGrafica) => {
+  if (!allAvailableTarjetasGraficas.includes(newTarjetaGrafica)) {
+    setAllAvailableTarjetasGraficas([...allAvailableTarjetasGraficas, newTarjetaGrafica]);
+  }
+};
+
+// Función para agregar Windows nuevas
+const handleAddNewWindows = (newWindows) => {
+  if (!allAvailableWindows.includes(newWindows)) {
+    setAllAvailableWindows([...allAvailableWindows, newWindows]);
+  }
+};
+
+// Función para agregar Office nuevas
+const handleAddNewOffice = (newOffice) => {
+  if (!allAvailableOffices.includes(newOffice)) {
+    setAllAvailableOffices([...allAvailableOffices, newOffice]);
+  }
+};
+
+// Función para agregar Antivirus nuevas
+const handleAddNewAntivirus = (newAntivirus) => {
+  if (!allAvailableAntivirus.includes(newAntivirus)) {
+    setAllAvailableAntivirus([...allAvailableAntivirus, newAntivirus]);
   }
 };
 
@@ -1293,6 +1359,13 @@ setAvailableCorreos(uniqueCorreos);
 
       setAllAvailableSerials([...new Set(allSerials)]);
 
+      // Extraer todas las Nombres únicas de los equipos
+      const allNombres = equipmentData
+        .map(equip => equip.nombre)
+        .filter(nombre => nombre);
+
+      setAllAvailableNombres([...new Set(allNombres)]);
+
        // Extraer todos los números de serie únicos de los equipos
       const allMarcas = equipmentData
         .map(equip => equip.marca)
@@ -1300,12 +1373,35 @@ setAvailableCorreos(uniqueCorreos);
 
       setAllAvailableMarcas([...new Set(allMarcas)]);
 
-       // Extraer todos los números de serie únicos de los equipos
+        // Extraer todos los modelos únicos de los equipos
       const allModels = equipmentData
         .map(equip => equip.model)
         .filter(model => model);
 
       setAllAvailableModels([...new Set(allModels)]);
+
+      // Extraer todos los lugares únicos de los equipos
+      const allLugares = equipmentData
+        .map(equip => equip.lugar)
+        .filter(lugar => lugar);
+
+      setAllAvailableLugares([...new Set(allLugares)]);
+
+      // Extraer todos los tipos únicos de los equipos
+      const allTypes = equipmentData
+        .map(equip => equip.type)
+        .filter(type => type);
+
+      setAllAvailableTypes([...new Set(allTypes)]);
+
+      // Extraer todas las ciudades únicas de los equipos
+      const allCiudades = equipmentData
+        .map(equip => equip.ciudad)
+        .filter(ciudad => ciudad);
+
+      setAllAvailableCiudades([...new Set(allCiudades)]);
+
+     
 
        // Extraer todos los números de serie únicos de los equipos
       const allRams = equipmentData
@@ -1320,6 +1416,35 @@ setAvailableCorreos(uniqueCorreos);
         .filter(discoDuro => discoDuro);
 
       setAllAvailableDiscoDuros([...new Set(allDiscoDuros)]);
+
+      // Extraer todas las tarjetas gráficas únicas de los equipos
+      const allTarjetasGraficas = equipmentData
+        .map(equip => equip.tarjetaGrafica)
+        .filter(tarjetaGrafica => tarjetaGrafica);
+
+      setAllAvailableTarjetasGraficas([...new Set(allTarjetasGraficas)]);
+
+      // Extraer todos los sistemas operativos únicos de los equipos
+      const allWindows = equipmentData
+        .map(equip => equip.windows)
+        .filter(windows => windows);
+
+      setAllAvailableWindows([...new Set(allWindows)]);
+
+      // Extraer todos los antivirus únicos de los equipos
+      const allAntivirus = equipmentData
+        .map(equip => equip.antivirus)
+        .filter(antivirus => antivirus);
+
+      setAllAvailableAntivirus([...new Set(allAntivirus)]);
+
+      // Extraer todas las versiones de Office únicas de los equipos
+      const allOffices = equipmentData
+        .map(equip => equip.office)
+        .filter(office => office);
+
+      setAllAvailableOffices([...new Set(allOffices)]);
+
 
       // Actualizar contadores con datos limpios
       setCounters({
@@ -1603,12 +1728,28 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
   onAddNewSerial={handleAddNewSerial}
   parentAvailableMarcas={allAvailableMarcas || []} // Asegurar que siempre es array
   onAddNewMarca={handleAddNewMarca}
+  parentAvailableLugares={allAvailableLugares || []} // Asegurar que siempre es array
+  onAddNewLugar={handleAddNewLugar}
+  parentAvailableTypes={allAvailableTypes || []} // Asegurar que siempre es array
+  onAddNewType={handleAddNewType}
+  parentAvailableNombres={allAvailableNombres || []} // Asegurar que siempre es array
+  onAddNewNombre={handleAddNewNombre}
+  parentAvailableCiudades={allAvailableCiudades || []} // Asegurar que siempre es array
+  onAddNewCiudad={handleAddNewCiudad}
   parentAvailableModels={allAvailableModels || []} // Asegurar que siempre es array
   onAddNewModel={handleAddNewModel}
   parentAvailableRams={allAvailableRams || []} // Asegurar que siempre es array
   onAddNewRam={handleAddNewRam}
   parentAvailableDiscoDuros={allAvailableDiscoDuros || []} // Asegurar que siempre es array
   onAddNewDiscoDuro={handleAddNewDiscoDuro}
+  parentAvailableTarjetasGraficas={allAvailableTarjetasGraficas || []} // Asegurar que siempre es array
+  onAddNewTarjetaGrafica={handleAddNewTarjetaGrafica}
+  parentAvailableWindows={allAvailableWindows || []} // Asegurar que siempre es array
+  onAddNewWindows={handleAddNewWindows}
+  parentAvailableAntivirus={allAvailableAntivirus || []} // Asegurar que siempre es array
+  onAddNewAntivirus={handleAddNewAntivirus}
+  parentAvailableOffices={allAvailableOffices || []} // Asegurar que siempre es array
+  onAddNewOffice={handleAddNewOffice}
   
   availableProcessors={availableProcessors}
   onAddProcessor={handleAddProcessor}
@@ -1683,19 +1824,32 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               onAddNewSerial={handleAddNewSerial}
               availableMarcas={allAvailableMarcas}
               onAddNewMarca={handleAddNewMarca}
+              availableLugares={allAvailableLugares}
+              onAddNewLugar={handleAddNewLugar}
+              availableTypes={allAvailableTypes}
+              onAddNewType={handleAddNewType}
+              availableNombres={allAvailableNombres}
+              onAddNewNombre={handleAddNewNombre}
+              availableCiudades={allAvailableCiudades}
+              onAddNewCiudad={handleAddNewCiudad}
               availableModels={allAvailableModels}
               onAddNewModel={handleAddNewModel}
               onAddProcessor={handleAddProcessor}
               onRemoveProcessor={handleRemoveProcessor}
               availableProcessors={availableProcessors}
-              
               setAvailableProcessors={setAvailableProcessors}
               availableRams={allAvailableRams}
               onAddNewRam={handleAddNewRam}
               availableDiscoDuros={allAvailableDiscoDuros}
               onAddNewDiscoDuro={handleAddNewDiscoDuro}
-              
-           
+              availableTarjetasGraficas={allAvailableTarjetasGraficas}
+              onAddNewTarjetaGrafica={handleAddNewTarjetaGrafica}
+              availableWindows={allAvailableWindows}
+              onAddNewWindows={handleAddNewWindows}
+              availableAntivirus={allAvailableAntivirus}
+              onAddNewAntivirus={handleAddNewAntivirus}
+              availableOffices={allAvailableOffices}
+              onAddNewOffice={handleAddNewOffice}
             />
           )}
         

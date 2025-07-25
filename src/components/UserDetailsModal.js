@@ -436,7 +436,7 @@ const handleCategoryChange = (equipmentId, category) => {
             .filter(eq => (editedUser.categoriasTemporales[eq.id] || 'casa') === 'casa')
             .map(eq => (
               <li key={eq.id}>
-                <div className="equipment-info">
+                <div className="equipment-infoU">
                   <span className="name">{eq.nombre}</span>
                   <span className="type">{eq.type}</span>
                   <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
@@ -473,7 +473,7 @@ const handleCategoryChange = (equipmentId, category) => {
             .filter(eq => editedUser.categoriasTemporales[eq.id] === 'oficina')
             .map(eq => (
               <li key={eq.id}>
-                <div className="equipment-info">
+                <div className="equipment-infoU">
                   <span className="name">{eq.nombre}</span>
                   <span className="type">{eq.type}</span>
                   <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
@@ -509,7 +509,7 @@ const handleCategoryChange = (equipmentId, category) => {
             .filter(eq => editedUser.categoriasTemporales[eq.id] === 'remoto')
             .map(eq => (
               <li key={eq.id}>
-                          <div className="equipment-info">
+                <div className="equipment-infoU">
                   <span className="name">{eq.nombre}</span>
                   <span className="type">{eq.type}</span>
                   <span className="ip">{eq.IpEquipo || 'Sin IP'}</span>
@@ -607,7 +607,8 @@ const handleCategoryChange = (equipmentId, category) => {
                 <span style={{ 
                   color: getEstadoColor(user.estado), 
                   backgroundColor: `${getEstadoColor(user.estado)}20`, 
-                  width: 'max-content' 
+                  maxWidth: 'max-content',
+                  
                 }}>
                   {user.estado}
                 </span>
@@ -648,7 +649,7 @@ const handleCategoryChange = (equipmentId, category) => {
                     className="equipment-item"
                     onClick={() => handleEquipmentClick(equipo)}
                   >
-                    <div className="equipment-info">
+                    <div className="equipment-infoU">
                       <span className="equipment-name">{equipo.nombre}</span>
                       <span className="equipment-type">{equipo.type}</span>
                       <span className="equipment-ip">{ip}</span>

@@ -13,11 +13,21 @@ const AddEquipmentForm = ({
   onAddNewSerial,
   parentAvailableMarcas = [],
   onAddNewMarca,
+  parentAvailableLugares = [],
+  onAddNewLugar,
+  parentAvailableCiudades = [],
+  onAddNewCiudad,
+  parentAvailableNombres = [],
+  onAddNewNombre,
+  parentAvailableTypes = [],
+  onAddNewType,
   parentAvailableModels = [],
   onAddNewModel,
+  
   setAvailableProcessors = () => console.warn('setAvailableProcessors no está definido'),
   availableModels = [],
   availableProcessors = [],
+  
   availableBrands = []
 }) => {
   const [formData, setFormData] = useState({
@@ -331,29 +341,24 @@ const FormInput = ({
 
           <div className="form-fields-container">
             <div className="form-groupDatosE">
-              <div className="form-groupE">
-                <label>Nombre:</label>
-                <input
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  className={`form-inputE ${errors.nombre ? 'error' : ''}`}
-                  placeholder="Ingrese el nombre del equipo"
-                />
-                {errors.nombre && <div className="error-text">{errors.nombre}</div>}
-              </div>
+               <CreatableInput
+                label="Nombre del Equipo"
+                value={formData.nombre}
+                options={parentAvailableNombres}
+                onChange={(value) => setFormData(prev => ({ ...prev, nombre: value }))}
+                onCreateNew={onAddNewNombre}
+                error={errors.nombre}
+              />
 
-              <div className="form-groupE">
-                <label>Tipo:</label>
-                <input
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  className={`form-inputE ${errors.type ? 'error' : ''}`}
-                  placeholder="Ej: Laptop, Teléfono, Monitor"
-                />
-                {errors.type && <div className="error-text">{errors.type}</div>}
-              </div>
+              <CreatableInput
+                label="Tipo de Equipo"
+                value={formData.type}
+                options={parentAvailableTypes}
+                onChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                onCreateNew={onAddNewType}
+                error={errors.type}
+              />
+              
 
               <CreatableInput
                 label="Marca"
@@ -363,6 +368,17 @@ const FormInput = ({
                 onCreateNew={onAddNewMarca}
                 error={errors.marca}
               />
+
+              <CreatableInput
+                label="Ciudad"
+                value={formData.ciudad}
+                options={parentAvailableCiudades}
+                onChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
+                onCreateNew={onAddNewCiudad}
+                error={errors.ciudad}
+              />
+
+
 
               <CreatableInput
                 label="Modelo"
@@ -403,17 +419,14 @@ const FormInput = ({
                 {errors.estado && <div className="error-text">{errors.estado}</div>}
               </div>
             
-              <div className="form-groupE">
-                <label>Lugar:</label>
-                <input
-                  name="lugar"
-                  value={formData.lugar}
-                  onChange={handleChange}
-                  className={`form-inputE ${errors.lugar ? 'error' : ''}`}
-                  placeholder="Ej: Oficina, Casa"
-                />
-                {errors.lugar && <div className="error-text">{errors.lugar}</div>}
-              </div>
+                <CreatableInput
+                label="Lugar"
+                value={formData.lugar}
+                options={parentAvailableLugares}
+                onChange={(value) => setFormData(prev => ({ ...prev, lugar: value }))}
+                onCreateNew={onAddNewLugar}
+                error={errors.lugar}
+              />
 
               <div className="form-groupE">
                 <label>Descripción:</label>

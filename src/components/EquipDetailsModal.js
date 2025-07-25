@@ -20,6 +20,14 @@ function EquipDetailsModal({
   onAddNewSerial,
   availableMarcas = [],
   onAddNewMarca,
+  availableLugares = [],
+  onAddNewLugar,
+  availableTypes = [],
+  onAddNewType,
+  availableNombres = [],
+  onAddNewNombre,
+  availableCiudades = [],
+  onAddNewCiudad,
   availableModels = [],
   onAddNewModel,
   availableProcessors = [],
@@ -28,7 +36,14 @@ function EquipDetailsModal({
   onAddNewRam,
   availableDiscoDuros = [],
   onAddNewDiscoDuro,
-  availableBrands = [],
+  availableTarjetasGraficas = [],
+  onAddNewTarjetaGrafica,
+  availableWindows = [],
+  onAddNewWindows,
+  availableOffices = [],
+  onAddNewOffice,
+  availableAntivirus = [],
+  onAddNewAntivirus,
   onAssignmentChange,
   onBulkAssignmentChange
 }) {
@@ -411,28 +426,23 @@ const renderCreatableInput = ({
 
             <div className="form-fields-container">
               <div className="form-groupDatosE">
-                <div className="form-groupE">
-                  <label>Nombre:</label>
-                  <input
-                    name="nombre"
-                    value={editedEquipment.nombre}
-                    onChange={handleInputChange}
-                    className={`form-inputE ${errors.nombre ? 'error' : ''}`}
-                    placeholder="Ingrese el nombre del equipo"
-                  />
-                  {errors?.nombre && <span className="error-message">{errors.nombre}</span>}    
-                </div>
+               {renderCreatableInput({
+  label: "Nombre del Equipo",
+  value: editedEquipment.nombre,
+  availableOptions: availableNombres,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, nombre: newValue })),
+  onCreateNew: onAddNewNombre,
+  error: errors.nombre
+})}
 
-                <div className="form-groupE">
-                  <label>Tipo:</label>
-                  <input
-                    name="type"
-                    value={editedEquipment.type}
-                    onChange={handleInputChange}
-                    className={`form-inputE ${errors.type ? 'error' : ''}`}
-                  />
-                  {errors?.type && <span className="error-message">{errors.type}</span>}
-                </div>
+                 {renderCreatableInput({
+  label: "Tipo de Equipo",
+  value: editedEquipment.type,
+  availableOptions: availableTypes,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, type: newValue })),
+  onCreateNew: onAddNewType,
+  error: errors.type
+})}
 
              {renderCreatableInput({
   label: "Marca",
@@ -443,13 +453,24 @@ const renderCreatableInput = ({
   error: errors.marca
 })}
 
+           {renderCreatableInput({
+  label: "Ciudad",
+  value: editedEquipment.ciudad,
+  availableOptions: availableCiudades,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, ciudad: newValue })),
+  onCreateNew: onAddNewCiudad,
+  error: errors.ciudad
+})}
+
+
+
                 {renderCreatableInput({
   label: "Modelo",
-  value: editedEquipment.modelo,
+  value: editedEquipment.model,
   availableOptions: availableModels,
-  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, modelo: newValue })),
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, model: newValue })),
   onCreateNew: onAddNewModel,
-  error: errors.modelo
+  error: errors.model
 })}
 
                 {renderCreatableInput({
@@ -478,16 +499,14 @@ const renderCreatableInput = ({
                   {errors?.estado && <span className="error-message">{errors.estado}</span>}
                 </div>
               
-                <div className="form-groupE">
-                  <label>Lugar:</label>
-                  <input
-                    name="lugar"
-                    value={editedEquipment.lugar}
-                    onChange={handleInputChange}
-                    className={`form-inputE ${errors.lugar ? 'error' : ''}`}
-                  />
-                  {errors?.lugar && <span className="error-message">{errors.lugar}</span>}
-                </div>
+                {renderCreatableInput({
+  label: "Lugar",
+  value: editedEquipment.lugar,
+  availableOptions: availableLugares,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, lugar: newValue })),
+  onCreateNew: onAddNewLugar,
+  error: errors.lugar
+})}
 
                <div className="form-groupE">
   <AutocompleteInput
@@ -543,6 +562,45 @@ const renderCreatableInput = ({
   onCreateNew: onAddNewDiscoDuro,
   error: errors.discoDuro
 })}
+
+ {renderCreatableInput({
+  label: "Tarjeta Gráfica",
+  value: editedEquipment.tarjetaGrafica,
+  availableOptions: availableTarjetasGraficas,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, tarjetaGrafica: newValue })),
+  onCreateNew: onAddNewTarjetaGrafica,
+  error: errors.tarjetaGrafica
+})}
+
+ {renderCreatableInput({
+  label: "Windows",
+  value: editedEquipment.windows,
+  availableOptions: availableWindows,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, windows: newValue })),
+  onCreateNew: onAddNewWindows,
+  error: errors.windows
+})}
+
+ {renderCreatableInput({
+  label: "Antivirus",
+  value: editedEquipment.antivirus,
+  availableOptions: availableAntivirus,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, antivirus: newValue })),
+  onCreateNew: onAddNewAntivirus,
+  error: errors.antivirus
+})}
+
+ {renderCreatableInput({
+  label: "Office",
+  value: editedEquipment.office,
+  availableOptions: availableOffices,
+  onChange: (newValue) => setEditedEquipment(prev => ({ ...prev, office: newValue })),
+  onCreateNew: onAddNewOffice,
+  error: errors.office
+})}
+  
+
+
 
                 <div className="form-groupE">
                   <label>Descripción:</label>
@@ -660,6 +718,7 @@ const renderCreatableInput = ({
           </div>
         ) : (
           <div className="view-mode-container">
+            <div className="view-header">
             <div className="equipment-details-container">
               <div className="equipment-header">
                 {equipment.imageBase64?.startsWith('data:image/') && (
@@ -684,6 +743,11 @@ const renderCreatableInput = ({
                   </div>
 
                   <div className="detail-rowE">
+                    <span className="detail-labelE">Ciudad:</span>
+                    <span>{equipment.ciudad}</span>
+                  </div>
+
+                  <div className="detail-rowE">
                     <span className="detail-labelE">Modelo</span>
                     <span>{equipment.model}</span>
                   </div>
@@ -698,7 +762,7 @@ const renderCreatableInput = ({
                     <span style={{ 
                       color: getEstadoColor(equipment.estado), 
                       backgroundColor: `${getEstadoColor(equipment.estado)}20`, 
-                      width: 'max-content' 
+                      maxWidth: 'max-content',
                     }}>
                       {equipment.estado}
                     </span>
@@ -815,6 +879,7 @@ const renderCreatableInput = ({
                 </div>
               </div>
             )}
+            </div>
 
             <div className="modal-actionsE">
               {isMobile ? (

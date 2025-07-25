@@ -101,7 +101,6 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                   className="user-estado" 
                   style={{ 
                     color: getEstadoColor(user.estado),
-                    fontWeight: 'bold',
                     padding: '3px 8px',
                     borderRadius: '4px',
                     width: 'fit-content',
@@ -116,7 +115,6 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                   className="department" 
                   style={{ 
                     color: getDepartmentColor(user.department),
-                    fontWeight: 'bold',
                     width: 'fit-content',
                     padding: '3px 8px',
                     borderRadius: '4px',

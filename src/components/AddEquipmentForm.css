@@ -1,9 +1,20 @@
+.react-select__input {
+  color: #e7dddd !important;
+}
 
+.react-select__single-value {
+  color: #0e22db !important;
+}
+
+.react-select__placeholder {
+  color: #999999 !important;
+}
 
 .user-selector[multiple] {
   height: auto;
   min-height: 100px;
   padding: 5px;
+  
 }
 
 .user-selector[multiple] option {
@@ -72,6 +83,7 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+  
 }
 
 .input-error {
