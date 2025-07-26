@@ -138,15 +138,7 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
                </div>
 
                 <div className="user-actions">
-                  <button
-                    className="edit-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditUser(user);
-                    }}
-                  >
-                    Editar
-                  </button>
+                 
                   <button 
                     className="delete-button"
                     onClick={(e) => {

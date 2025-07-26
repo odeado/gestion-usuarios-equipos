@@ -990,6 +990,7 @@ const handleUnassignEquipment = async (userId, equipmentId) => {
 
 
   const handleEditEquipment = async (equipmentData) => {
+    setEditingEquipment(equipmentData); 
     try {
       const oldEquipment = equipment.find(e => e.id === equipmentData.id);
       
@@ -1007,24 +1008,36 @@ const handleUnassignEquipment = async (userId, equipmentId) => {
       // Nuevos usuarios asignados
       const addedUsers = newUsuarios.filter(id => !oldUsuarios.includes(id));
 
-      // Actualizar usuarios en Firestore
-      await Promise.all([
-        ...removedUsers.map(userId => 
-          updateDoc(doc(db, 'users', userId), {
-            equiposAsignados: arrayRemove(equipmentData.id),
-            updatedAt: new Date()
-          })
-        ),
-        ...addedUsers.map(userId => 
-          updateDoc(doc(db, 'users', userId), {
-            equiposAsignados: arrayUnion(equipmentData.id),
-            updatedAt: new Date()
-          })
-        )
-      ]);
+  // Crear un batch para todas las operaciones
+    const batch = writeBatch(db);
 
-      // Actualizar el equipo
-      await updateDoc(doc(db, 'equipment', equipmentData.id), {
+
+
+       // 1. Actualizar usuarios removidos
+    removedUsers.forEach(userId => {
+      const userRef = doc(db, 'users', userId);
+      batch.update(userRef, {
+        equiposAsignados: arrayRemove(equipmentData.id),
+        [`categoriasTemporales.${equipmentData.id}`]: deleteField(),
+        updatedAt: new Date()
+      });
+    });
+
+     // 2. Actualizar usuarios añadidos
+    addedUsers.forEach(userId => {
+      const userRef = doc(db, 'users', userId);
+      const category = equipmentData.categoriasAsignacion?.[userId] || 'casa';
+      
+      batch.update(userRef, {
+        equiposAsignados: arrayUnion(equipmentData.id),
+        [`categoriasTemporales.${equipmentData.id}`]: category,
+        updatedAt: new Date()
+      });
+    });
+
+      // 3.Actualizar el equipo
+       const equipmentRef = doc(db, 'equipment', equipmentData.id);
+    batch.update(equipmentRef, {
         nombre: equipmentData.nombre,
         type: equipmentData.type,
         model: equipmentData.model,
@@ -1047,6 +1060,9 @@ const handleUnassignEquipment = async (userId, equipmentId) => {
         updatedAt: new Date()
       });
 
+        // Ejecutar todas las operaciones en batch
+    await batch.commit();
+
       // Actualizar estado local
       setEquipment(equipment.map(e => 
         e.id === equipmentData.id 
@@ -1059,20 +1075,27 @@ const handleUnassignEquipment = async (userId, equipmentId) => {
           const equipos = Array.isArray(user.equiposAsignados) ? user.equiposAsignados : [];
           
           if (removedUsers.includes(user.id)) {
+             const { [equipmentData.id]: _, ...restCategorias } = user.categoriasTemporales || {};
             return {
               ...user,
-              equiposAsignados: equipos.filter(id => id !== equipmentData.id)
+              equiposAsignados: equipos.filter(id => id !== equipmentData.id),
+              categoriasTemporales: restCategorias
             };
           }
           
-          if (addedUsers.includes(user.id) && !equipos.includes(equipmentData.id)) {
-            return {
-              ...user,
-              equiposAsignados: [...equipos, equipmentData.id]
-            };
-          }
-          
-          return user;
+          if (addedUsers.includes(user.id)) {
+          const category = equipmentData.categoriasAsignacion?.[user.id] || 'casa';
+          return {
+            ...user,
+            equiposAsignados: [...new Set([...equipos, equipmentData.id])],
+            categoriasTemporales: {
+              ...user.categoriasTemporales,
+              [equipmentData.id]: category
+            }
+          };
+        }
+        
+        return user;
         })
       );
 
@@ -1643,7 +1666,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               {showUserForm && (
                 <div className="forms-usuarios">
                   <AddUserForm 
-  onSave={async (userData) => {
+  onEquipmentAdded={async (userData) => {
     try {
       const newUser = await handleAddUser(userData);
       setShowUserForm(false);
@@ -1712,16 +1735,25 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
        {showEquipmentForm && (
                 <div className="forms-equipos">
                  <AddEquipmentForm 
-  onEquipmentAdded={(equipData) => {
-    handleAddEquipment(equipData);
-    setShowEquipmentForm(false);
-  }}
-  equipmentToEdit={editingEquipment}
-  onEditEquipment={handleEditEquipment}
-  onCancelEdit={() => {
-    setEditingEquipment(null);
-    setShowEquipmentForm(false);
-  }}
+                 equipment={editingEquipment}
+                 mode={editingEquipment ? 'edit' : 'add'}
+               onEquipmentAdded={async (equipmentData) => {
+      try {
+        if (editingEquipment) {
+          await handleEditEquipment(equipmentData);
+        } else {
+          await handleAddEquipment(equipmentData);
+        }
+        setShowEquipmentForm(false);
+        setEditingEquipment(null);
+      } catch (error) {
+        console.error("Error saving equipment:", error);
+      }
+    }}
+    onCancel={() => {
+      setShowEquipmentForm(false);
+      setEditingEquipment(null);
+    }}
   parentAvailableIps={allAvailableIps || []} // Asegurar que siempre es array
   onAddNewIp={handleAddNewIp}
   parentAvailableSerials={allAvailableSerials || []} // Asegurar que siempre es array
@@ -1766,17 +1798,41 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               users={users}
               searchTerm={globalSearchTerm}
               onSelectEquipment={handleSelectEquipment}
-              onEditEquipment={(equipment) => {
-                setEditingEquipment(equipment);
-                setShowEquipmentForm(true);
-                setShowUserForm(false);
-                formRef.current?.scrollIntoView({ 
-                  behavior: 'smooth',
-                  block: 'start'
-                });
-              }}
+              onEditEquipment={handleEditEquipment}
               onDeleteEquipment={handleDeleteEquipment}
               onOpenUserModal={handleOpenUserModal}
+
+               availableIps={allAvailableIps}
+  onAddNewIp={handleAddNewIp}
+  availableSerials={allAvailableSerials}
+  onAddNewSerial={handleAddNewSerial}
+  availableMarcas={allAvailableMarcas}
+  onAddNewMarca={handleAddNewMarca}
+  availableLugares={allAvailableLugares}
+  onAddNewLugar={handleAddNewLugar}
+  availableCiudades={allAvailableCiudades}
+  onAddNewCiudad={handleAddNewCiudad}
+  availableNombres={allAvailableNombres}
+  onAddNewNombre={handleAddNewNombre}
+  availableTypes={allAvailableTypes}
+  onAddNewType={handleAddNewType}
+  availableModels={allAvailableModels}
+  onAddNewModel={handleAddNewModel}
+  availableProcessors={availableProcessors}
+  setAvailableProcessors={setAvailableProcessors}
+  availableRams={allAvailableRams}
+  onAddNewRam={handleAddNewRam}
+  availableDiscoDuros={allAvailableDiscoDuros}
+  onAddNewDiscoDuro={handleAddNewDiscoDuro}
+  availableTarjetasGraficas={allAvailableTarjetasGraficas}
+  onAddNewTarjetaGrafica={handleAddNewTarjetaGrafica}
+  availableWindows={allAvailableWindows}
+  onAddNewWindows={handleAddNewWindows}
+  availableOffices={allAvailableOffices}
+  onAddNewOffice={handleAddNewOffice}
+  availableAntivirus={allAvailableAntivirus}
+  onAddNewAntivirus={handleAddNewAntivirus}
+
             />
           </div>
         </div>

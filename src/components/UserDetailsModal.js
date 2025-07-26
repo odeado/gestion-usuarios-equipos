@@ -566,6 +566,7 @@ const handleCategoryChange = (equipmentId, category) => {
 
 
         <div className="view-mode-container">
+          <div className='caja-modalU'>
           <div className="user-details-container">
             <div className="user-header">
               {user.imageBase64?.startsWith('data:image/') && (
@@ -666,7 +667,7 @@ const handleCategoryChange = (equipmentId, category) => {
     <p>No hay equipos asignados</p>
   )}
 </div>
-
+</div>
           <div className="modal-actionsU">
             {isMobile ? (
               <div className="mobile-edit-button">

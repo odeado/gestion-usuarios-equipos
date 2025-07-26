@@ -3,6 +3,14 @@ import './EquipmentList.css';
 import EquipDetailsModal from './EquipDetailsModal';
 
 
+
+import EquipmentForm from './EquipmentForm';
+
+
+
+
+
+
 const normalizeIP = (ip) => {
   if (ip === null || ip === undefined) return '';
   if (typeof ip === 'number') return String(ip);
@@ -42,8 +50,50 @@ const compareNumericIPs = (ipA, ipB, direction) => {
 };
 
 
-function EquipmentList({ equipment, users, searchTerm, onSelectEquipment, onDeleteEquipment, onEditEquipment, onOpenUserModal }) {
 
+function EquipmentList({
+   equipment, 
+  users, 
+  searchTerm, 
+  onSelectEquipment, 
+  onDeleteEquipment, 
+  onEditEquipment, 
+  onOpenUserModal,
+  equipmentData,
+  availableIps = [],
+  onAddNewIp,
+  availableSerials = [],
+  onAddNewSerial,
+  availableMarcas = [],
+  onAddNewMarca,
+  availableLugares = [],
+  onAddNewLugar,
+  availableCiudades = [],
+  onAddNewCiudad,
+  availableNombres = [],
+  onAddNewNombre,
+  availableTypes = [],
+  onAddNewType,
+  availableModels = [],
+  onAddNewModel,
+  availableProcessors = [],
+  setAvailableProcessors,
+  availableRams = [],
+  onAddNewRam,
+  availableDiscoDuros = [],
+  onAddNewDiscoDuro,
+  availableTarjetasGraficas = [],
+  onAddNewTarjetaGrafica,
+  availableWindows = [],
+  onAddNewWindows,
+  availableOffices = [],
+  onAddNewOffice,
+  availableAntivirus = [],
+  onAddNewAntivirus
+}) {
+  const [editingEquipment, setEditingEquipment] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editedEquipment, setEditedEquipment] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [sortConfig, setSortConfig] = useState({
@@ -114,6 +164,63 @@ const getSortedItems = () => {
   
 
 // final de la funcion ordenar
+
+
+// funcion edicion
+
+const handleEdit = (equip) => {
+  setEditingEquipment({
+    ...equip,
+    usuariosAsignados: equip.usuariosAsignados || [],
+    categoriasAsignacion: equip.categoriasAsignacion || {}
+  });
+};
+
+console.log('Datos enviados a onEditEquipment:', {
+  ...editingEquipment,
+  id: editingId
+});
+
+// Función de guardado mejorada
+const handleSave = async (equipmentData) => {
+  if (!editingEquipment) return;
+  
+  try {
+    await onEditEquipment({
+      ...equipmentData,
+      id: editingEquipment.id // Asegurar que mantenemos el ID correcto
+    });
+    setEditingEquipment(null); // Cerrar el modo edición
+  } catch (error) {
+    console.error("Error al guardar equipo:", error);
+    alert(`Error al guardar: ${error.message}`);
+  }
+};
+
+
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditedEquipment(null);
+  };
+
+   const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setEditedEquipment(prev => ({ 
+    ...prev, 
+    [name]: value 
+  }));
+};
+
+const handleEquipmentChange = (updatedData) => {
+  setEditedEquipment(prev => ({
+    ...prev,
+    ...updatedData
+  }));
+};
+
+
+  // termino de la funcion edicion
 
 
 // Obtener todos los usuarios asignados (array de objetos usuario)
@@ -191,6 +298,18 @@ const handleEquipmentClick = (item) => {
     );
 });
 
+
+
+
+
+console.log('Datos disponibles para autocompletar:', {
+  availableNombres,
+  availableTypes,
+  availableMarcas,
+  availableModels,
+  availableSerials
+});
+
   return (
     <div className="equipment-list-container">
       <div className="equipment-headerL">
@@ -234,9 +353,57 @@ const handleEquipmentClick = (item) => {
           </tr>
         </thead>
         <tbody>
-{getSortedItems().length > 0 ? (
-            getSortedItems().map(item => (
-         
+            {getSortedItems().length > 0 ? (
+          getSortedItems().map(item => (
+            <React.Fragment key={item.id}>
+              {editingEquipment && editingEquipment.id === item.id ? (
+                <tr style={{ backgroundColor: '#503b57ff' }}>
+                  <td colSpan="12" style={{ padding: '20px' }}>
+                    <div style={{ border: '2px solid #ddd', borderRadius: '8px', padding: '20px' }}>
+                    <EquipmentForm
+                    equipment={editingEquipment}
+                    onEquipmentAdded={handleSave}
+                    onCancel={() => setEditingEquipment(null)}
+                    users={users}
+                    availableIps={availableIps}
+        onAddNewIp={onAddNewIp}
+        availableSerials={availableSerials}
+        onAddNewSerial={onAddNewSerial}
+        availableMarcas={availableMarcas}
+        onAddNewMarca={onAddNewMarca}
+        availableLugares={availableLugares}
+        onAddNewLugar={onAddNewLugar}
+        availableCiudades={availableCiudades}
+        onAddNewCiudad={onAddNewCiudad}
+        availableNombres={availableNombres}
+        onAddNewNombre={onAddNewNombre}
+        availableTypes={availableTypes}
+        onAddNewType={onAddNewType}
+        availableModels={availableModels}
+        onAddNewModel={onAddNewModel}
+        availableProcessors={availableProcessors}
+        setAvailableProcessors={setAvailableProcessors}
+        availableRams={availableRams}
+        onAddNewRam={onAddNewRam}
+        availableDiscoDuros={availableDiscoDuros}
+        onAddNewDiscoDuro={onAddNewDiscoDuro}
+        availableTarjetasGraficas={availableTarjetasGraficas}
+        onAddNewTarjetaGrafica={onAddNewTarjetaGrafica}
+        availableWindows={availableWindows}
+        onAddNewWindows={onAddNewWindows}
+        availableOffices={availableOffices}
+        onAddNewOffice={onAddNewOffice}
+        availableAntivirus={availableAntivirus}
+        onAddNewAntivirus={onAddNewAntivirus}
+        onOpenUserModal={onOpenUserModal}
+        mode="edit"
+        onEquipmentChange={setEditedEquipment}
+                  />
+                  </div>
+                </td>
+              </tr>
+            ) : (
+            
               <tr key={item.id} onClick={() => handleEquipmentClick(item)} style={{cursor: 'pointer'}}>
                 <td data-label="Nombre">{item.nombre}</td>
                 <td data-label="Tipo">{item.type}</td>
@@ -293,7 +460,7 @@ const handleEquipmentClick = (item) => {
                   className="edit-btn" 
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEditEquipment(item);
+                    handleEdit(item);
                   }}
                 >
                   Editar
@@ -309,7 +476,10 @@ const handleEquipmentClick = (item) => {
                 </button>
                 </td>
               </tr>
-            ))
+            )}
+            </React.Fragment>
+          
+          ))
           ) : (
             <tr>
               <td colSpan="12" className="no-results">No se encontraron equipos</td>
