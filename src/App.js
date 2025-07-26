@@ -1666,7 +1666,7 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
               {showUserForm && (
                 <div className="forms-usuarios">
                   <AddUserForm 
-  onEquipmentAdded={async (userData) => {
+  onSave={async (userData) => {
     try {
       const newUser = await handleAddUser(userData);
       setShowUserForm(false);

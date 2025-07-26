@@ -810,8 +810,8 @@ display: flex;
   .single-value-container {
     display: flex;
     align-items: center;  
-    gap: 10px;
-    font-size: 13px;
+    gap: 5px;
+    font-size: 10px;
   }
 
    .edit-form {
