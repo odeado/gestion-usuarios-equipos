@@ -355,14 +355,14 @@
 .user-details-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 2px;
   padding-right: 10px;
 }
 
 .user-header {
 display: flex;
   gap: 30px;
-  margin-bottom: 25px;
+  margin-bottom: 5px;
   position: relative;
 }
 
@@ -410,7 +410,7 @@ display: flex;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  padding: 8px 0;
+  padding: 0px 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
@@ -873,6 +873,7 @@ display: flex;
     position: relative;
     left: -3px; /* Ajuste fino de posición */
     width: 95vw; /* Usar viewport width en lugar de porcentaje */
+    max-height: 95%;
     margin: 0 auto; /* Centrar el modal */
     padding: 15px 10px; /* Más padding arriba/abajo, menos en lados */
   }
@@ -910,6 +911,7 @@ display: flex;
   .nombre-apellidoM {
     text-align: center;
     align-items: center;
+    margin-bottom: 0px;
   }
   
   .nombre-apellidoM::after {
