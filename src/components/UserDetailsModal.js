@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import './UserDetailsModal.css';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
+
 import AutocompleteInput from './AutocompleteInput';
 
 function UserDetailsModal({ 
@@ -638,42 +638,79 @@ const handleCategoryChange = (equipmentId, category) => {
               {category === 'oficina' && '🏢 Equipos en Oficina'}
               {category === 'remoto' && '🌐 Equipos Remotos'}
             </h5>
-            <div className="equipment-list">
-              {categoryEquipments.map(equipo => {
-                const ip = Array.isArray(equipo.IpEquipo) 
-                  ? equipo.IpEquipo[0] || 'Sin IP' 
-                  : equipo.IpEquipo || 'Sin IP';
-
-                return (
-                  <div 
-                    key={equipo.id} 
-                    className="equipment-item"
-                    onClick={() => handleEquipmentClick(equipo)}
-                  >
-                    
 
 
-              {equipment.imageBase64?.startsWith('data:image/') && (
-                <div className="equipment-image-container">
-                  <img
-                    src={equipment.imageBase64}
-                    alt={equipment.nombre}
-                    className="equipment-image"
-                  />
-                </div>
-              )}
+           <div className="equipment-list">
+  {categoryEquipments.map(equipo => {
+    const ip = Array.isArray(equipo.IpEquipo) 
+      ? equipo.IpEquipo[0] || 'Sin IP' 
+      : equipo.IpEquipo || 'Sin IP';
 
+    return (
+      <div 
+        key={equipo.id} 
+        className="equipment-item"
+        onClick={() => handleEquipmentClick(equipo)}
+      >
+       <div className="equipment-image-container">
+  {equipo.imageBase64 && equipo.imageBase64.startsWith('data:image/') ? (
+    <img
+      src={equipo.imageBase64}
+      alt={equipo.nombre}
+      className="equipment-image"
+      onError={(e) => {
+        e.target.onerror = null;
+        e.target.style.display = 'none';
+        e.target.parentNode.querySelector('.equipment-image-placeholder').style.display = 'flex';
+      }}
+    />
+  ) : (
+    <div className="equipment-image-placeholder">
+      {equipo.type?.charAt(0)?.toUpperCase() || 'E'}
+    </div>
+  )}
+</div>
 
+        <div className="equipment-details">
+          <div className="equipment-headerU">
+            <span className="equipment-name">{equipo.nombre}</span>
+            <span className="equipment-status" data-status={equipo.estado?.toLowerCase()}>
+              {equipo.estado || 'Sin estado'}
+            </span>
+          </div>
 
-<div className="equipment-infoU">
-                      <span className="equipment-name">{equipo.nombre}</span>
-                      <span className="equipment-type">{equipo.type}</span>
-                      <span className="equipment-ip">{ip}</span>
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="equipment-specs">
+           
+              <div className="spec-row">
+              <span className="spec-label">Serie:</span>
+              <span className="spec-value">{equipo.serialNumber || 'Sin serie'}</span>
             </div>
+
+            <div className="spec-row">
+              <span className="spec-label">IP:</span>
+              <span className="spec-value">{ip}</span>
+            </div>
+
+            <div className="spec-row">
+              <span className="spec-label">Ubicación:</span>
+              <span className="spec-value">{equipo.lugar || equipo.ciudad || 'No especificada'}</span>
+            </div>
+          </div>
+
+          <div className="equipment-meta">
+          
+            <span className="meta-item">{equipo.windows || 'S.O. no especificado'}</span>
+          </div>
+          
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+
+
+            
           </div>
         );
       })}
