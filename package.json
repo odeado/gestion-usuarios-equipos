@@ -11,6 +11,8 @@
     "browser-image-compression": "^2.0.2",
     "firebase": "^11.6.1",
     "react": "^19.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
     "react-select": "^5.10.1",

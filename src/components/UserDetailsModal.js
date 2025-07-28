@@ -650,7 +650,22 @@ const handleCategoryChange = (equipmentId, category) => {
                     className="equipment-item"
                     onClick={() => handleEquipmentClick(equipo)}
                   >
-                    <div className="equipment-infoU">
+                    
+
+
+              {equipment.imageBase64?.startsWith('data:image/') && (
+                <div className="equipment-image-container">
+                  <img
+                    src={equipment.imageBase64}
+                    alt={equipment.nombre}
+                    className="equipment-image"
+                  />
+                </div>
+              )}
+
+
+
+<div className="equipment-infoU">
                       <span className="equipment-name">{equipo.nombre}</span>
                       <span className="equipment-type">{equipo.type}</span>
                       <span className="equipment-ip">{ip}</span>
