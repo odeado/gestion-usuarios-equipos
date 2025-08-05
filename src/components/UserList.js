@@ -65,6 +65,12 @@ function UserList({ users, equipment, searchTerm, onSelectUser, onDeleteUser, on
     String(user.ciudad || '').toLowerCase().includes(searchLower) ||
     equipmentNames.toLowerCase().includes(searchLower)
   );
+   })
+  .sort((a, b) => {
+    // Ordenar alfabéticamente por nombre
+    const nameA = a.name?.toLowerCase() || '';
+    const nameB = b.name?.toLowerCase() || '';
+    return nameA.localeCompare(nameB);
 });
 
   return (

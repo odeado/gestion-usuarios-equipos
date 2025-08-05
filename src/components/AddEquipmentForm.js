@@ -68,11 +68,11 @@ const AddEquipmentForm = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData(prev => ({ ...prev, [name]: value }));
+  if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+};
 
   const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -206,7 +206,8 @@ const CreatableInput = ({
   placeholder = 'Seleccione o ingrese un valor',
   noOptionsMessage = "No hay opciones disponibles. Escriba para crear una nueva.",
   formatCreateLabel = (inputValue) => `Crear nuevo: ${inputValue}`,
-  isClearable = true
+  isClearable = true,
+  forceUppercase = false // Nueva prop para forzar mayúsculas
 }) => {
   const currentValue = value || '';
   
@@ -225,10 +226,11 @@ const CreatableInput = ({
         value={selectOptions.find(option => option.value === currentValue) || null}
         onChange={(selectedOption) => {
           const newValue = selectedOption?.value || '';
-          onChange(newValue);
+          onChange(forceUppercase ? newValue.toUpperCase() : newValue);
+          
         }}
         onCreateOption={(inputValue) => {
-          const newOption = inputValue.trim();
+          const newOption = forceUppercase ? inputValue.trim().toUpperCase() : inputValue.trim();
           if (newOption) {
             onCreateNew?.(newOption);
             onChange(newOption);
@@ -239,7 +241,7 @@ const CreatableInput = ({
         placeholder={placeholder}
         noOptionsMessage={() => noOptionsMessage}
         isClearable={isClearable}
-        formatCreateLabel={formatCreateLabel}
+        formatCreateLabel={(inputValue) => formatCreateLabel(forceUppercase ? inputValue.toUpperCase() : inputValue)}
       />
       {error && <div className="error-text">{error}</div>}
     </div>
@@ -341,14 +343,23 @@ const FormInput = ({
 
           <div className="form-fields-container">
             <div className="form-groupDatosE">
-               <CreatableInput
+ <CreatableInput
                 label="Nombre del Equipo"
                 value={formData.nombre}
                 options={parentAvailableNombres}
-                onChange={(value) => setFormData(prev => ({ ...prev, nombre: value }))}
-                onCreateNew={onAddNewNombre}
+                onChange={(value) => {
+                setFormData(prev => ({ ...prev, nombre: value }));
+        }}
+                onCreateNew={(inputValue) => {
+                onAddNewNombre && onAddNewNombre(inputValue);
+                }}
                 error={errors.nombre}
+                noOptionsMessage="No hay nombres de equipo disponibles. Escriba para crear uno nuevo."
+                formatCreateLabel={(inputValue) => `Usar nuevo nombre: ${inputValue}`}
+                forceUppercase={true} // Esto forzará mayúsculas en tiempo real
               />
+
+
 
               <CreatableInput
                 label="Tipo de Equipo"
@@ -395,11 +406,16 @@ const FormInput = ({
                 label="Número de Serie"
                 value={formData.serialNumber}
                 options={parentAvailableSerials}
-                onChange={(value) => setFormData(prev => ({ ...prev, serialNumber: value }))}
-                onCreateNew={onAddNewSerial}
+                onChange={(value) => {
+                setFormData(prev => ({ ...prev, serialNumber: value }));
+        }}
+                onCreateNew={(inputValue) => {
+                onAddNewSerial && onAddNewSerial(inputValue);
+                }}
                 error={errors.serialNumber}
                 noOptionsMessage="No hay números de serie disponibles. Escriba para crear uno nuevo."
                 formatCreateLabel={(inputValue) => `Usar nuevo serial: ${inputValue}`}
+                forceUppercase={true} // Esto forzará mayúsculas en tiempo real
               />
               {renderIpSelect()}
 
