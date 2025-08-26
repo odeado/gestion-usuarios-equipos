@@ -63,12 +63,14 @@
   font-weight: 600;
   color: white;
   border: solid, 2px, #302f2f;
+  font-size: 12px;
 }
 
 .equipment-table td {
   padding: 0px 15px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
+  font-size: 12px;
 }
 
 /* Estilos de los botones */
