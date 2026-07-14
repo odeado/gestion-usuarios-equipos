@@ -13,6 +13,7 @@ import './components/UserList.css';
 import { useSpring, animated } from 'react-spring';
 import imageCompression from 'browser-image-compression';
 import ResetDataPanel from './components/ResetDataPanel';
+import { exportToExcel } from './utils/exportToExcel';
 
 function App() {
   // Referencias y estados
@@ -1651,16 +1652,25 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
             >
               <div className="page-header">
                 <h3>Listado de Usuarios</h3>
-                <button 
-                  onClick={() => {
-                    setShowUserForm(!showUserForm);
-                    setShowEquipmentForm(false);
-                    setEditingUser(null);
-                  }}
-                  className="toggle-form-btn"
-                >
-                  {showUserForm ? 'Ocultar Formulario' : 'Añadir Usuario'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => exportToExcel(users, equipment, departments)}
+                    className="toggle-form-btn"
+                    title="Descarga usuarios, equipos y departamentos en un solo archivo Excel"
+                  >
+                    Exportar a Excel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowUserForm(!showUserForm);
+                      setShowEquipmentForm(false);
+                      setEditingUser(null);
+                    }}
+                    className="toggle-form-btn"
+                  >
+                    {showUserForm ? 'Ocultar Formulario' : 'Añadir Usuario'}
+                  </button>
+                </div>
               </div>
 
               {showUserForm && (
@@ -1720,16 +1730,25 @@ function StatsPanel({ counters, visible, position, setShowCounters }) {
             >
               <div className="page-header">
                 <h3>Listado de Equipos</h3>
-                <button 
-                  onClick={() => {
-                    setShowEquipmentForm(!showEquipmentForm);
-                    setShowUserForm(false);
-                    setEditingEquipment(null);
-                  }}
-                  className="toggle-form-btn"
-                >
-                  {showEquipmentForm ? 'Ocultar Formulario' : 'Añadir Equipo'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => exportToExcel(users, equipment, departments)}
+                    className="toggle-form-btn"
+                    title="Descarga usuarios, equipos y departamentos en un solo archivo Excel"
+                  >
+                    Exportar a Excel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowEquipmentForm(!showEquipmentForm);
+                      setShowUserForm(false);
+                      setEditingEquipment(null);
+                    }}
+                    className="toggle-form-btn"
+                  >
+                    {showEquipmentForm ? 'Ocultar Formulario' : 'Añadir Equipo'}
+                  </button>
+                </div>
               </div>
 
        {showEquipmentForm && (
